@@ -10,7 +10,7 @@ import numpy as np
 import torch
 
 from turbovla.split.client import RemoteTurboVLAPolicy
-from turbovla.split.protocol import decode_request, encode_request, MAX_REQUEST_BYTES
+from turbovla.split.protocol import available_codecs, decode_request, encode_request, MAX_REQUEST_BYTES
 from turbovla.split.server import InferenceService, PolicyHTTPServer
 
 
@@ -65,6 +65,45 @@ class SplitInferenceTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 decode_request(body[:-1])
 
+    def test_all_codecs_preserve_bits_and_reject_truncated_or_extra_payload(self):
+        for precision, dtype in (("bf16", torch.bfloat16), ("fp32", torch.float32)):
+            generator = torch.Generator().manual_seed(42)
+            pixels = torch.randn((1, 2, 3, 256, 256), generator=generator).to(dtype)
+            state = torch.tensor([[0., -0., 1., -1., 0.125, -0.125, 3., 4.]], dtype=dtype)
+            for codec in available_codecs():
+                with self.subTest(precision=precision, codec=codec):
+                    header = {**self.header(precision), "compression": codec}
+                    body, _ = encode_request(header, pixels, state)
+                    got_header, got_pixels, got_state = decode_request(body)
+                    self.assertEqual(got_header, header)
+                    self.assertTrue(torch.equal(got_pixels.view(torch.uint8), pixels.view(torch.uint8)))
+                    self.assertTrue(torch.equal(got_state.view(torch.uint8), state.view(torch.uint8)))
+                    for invalid in (body[:-1], body + b"extra"):
+                        with self.assertRaises(ValueError):
+                            decode_request(invalid)
+            for value in (float("nan"), float("inf"), -float("inf")):
+                state[0, 0] = value
+                with self.assertRaises(ValueError):
+                    encode_request(self.header(precision), pixels, state)
+
+    def test_keepalive_reuses_one_connection_and_can_be_disabled(self):
+        image = np.zeros((256, 256, 3), np.uint8)
+        for keepalive, expected_connections in ((True, 1), (False, 4)):
+            with patch.object(self.server, "get_request", wraps=self.server.get_request) as accept:
+                with RemoteTurboVLAPolicy(self.url, keepalive=keepalive) as client:
+                    for _ in range(3):
+                        client.predict_env_action_chunk(image, image, "move", np.zeros(8, np.float32), 12)
+                        self.assertEqual(client.last_timing["connection_reused"], keepalive)
+                        self.assertGreaterEqual(client.last_timing["server_receive_s"], 0)
+                    self.assertEqual(accept.call_count, expected_connections)
+
+    def test_legacy_codec_negotiation_and_unavailable_codec(self):
+        self.service.metadata.pop("transport")
+        with RemoteTurboVLAPolicy(self.url) as client:
+            self.assertEqual(client.compression, "zlib")
+        with self.assertRaisesRegex(ValueError, "unavailable"):
+            RemoteTurboVLAPolicy(self.url, compression="lz4_shuffle")
+
     def test_two_views_preprocessed_on_client_and_actions_return_over_http(self):
         client = RemoteTurboVLAPolicy(self.url)
         image = np.full((256, 256, 3), 128, dtype=np.uint8)
@@ -115,6 +154,8 @@ class SplitInferenceTests(unittest.TestCase):
         client = RemoteTurboVLAPolicy(self.url, timeout=0.05)
         self.server.shutdown()
         self.server.server_close()
+        # A listener shutdown does not terminate established HTTP/1.1 sockets.
+        client.close()
         image = np.zeros((256, 256, 3), np.uint8)
         with self.assertRaisesRegex(RuntimeError, "Thor request failed"):
             client.predict_env_action_chunk(image, image, "move", np.zeros(8, np.float32))

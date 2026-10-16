@@ -51,6 +51,8 @@ class GenerateConfig:
     allow_hf_download: bool = False
     remote_policy_url: str = ""
     remote_timeout_s: float = 120.0
+    remote_compression: str = "auto"
+    remote_keepalive: bool = True
 
     task_suite_name: str = "libero_10"
     task_ids: str = ""
@@ -403,6 +405,7 @@ def eval_libero(cfg: GenerateConfig) -> float:
         policy = RemoteTurboVLAPolicy(
             cfg.remote_policy_url, timeout=cfg.remote_timeout_s,
             precision=cfg.precision, chunk_size=cfg.chunk_size,
+            compression=cfg.remote_compression, keepalive=cfg.remote_keepalive,
         )
         if policy.server_info["stats_key"] != cfg.stats_key:
             raise ValueError("stats_key differs from the loaded Thor policy")
@@ -472,6 +475,8 @@ def eval_libero(cfg: GenerateConfig) -> float:
         "policy_backend": "remote" if cfg.remote_policy_url else "local",
         "remote_policy_url": cfg.remote_policy_url or None,
         "remote_server": getattr(policy, "server_info", None),
+        "remote_transport": {"compression": getattr(policy, "compression", None),
+                             "keepalive_requested": cfg.remote_keepalive} if cfg.remote_policy_url else None,
         "inference_scope": "complete policy call, including client preprocessing and network for remote mode",
         "dinov3_output_hidden_states": cfg.dinov3_output_hidden_states,
         "save_realtime_video": cfg.save_video and cfg.save_realtime_video,
@@ -593,6 +598,8 @@ def eval_libero(cfg: GenerateConfig) -> float:
 
     logging.info("Final success rate: %.4f (%d/%d)", final_rate, total_successes, total_episodes)
     logging.info("Saved result json: %s", result_path)
+    if cfg.remote_policy_url:
+        policy.close()
     return final_rate
 
 

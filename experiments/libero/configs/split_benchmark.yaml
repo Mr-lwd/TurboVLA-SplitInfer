@@ -13,6 +13,8 @@ benchmark:
 evaluation:
   remote_policy_url: http://192.168.123.38:8765
   remote_timeout_s: 120.0
+  remote_keepalive: true
+  remote_compression: auto  # 双端协商：zstd_shuffle > lz4_shuffle > zlib_shuffle > zlib
   stats_key: libero_all4_no_noops
   task_suite_name: libero_spatial
   task_ids: ""

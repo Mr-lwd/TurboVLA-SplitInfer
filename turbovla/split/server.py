@@ -17,13 +17,14 @@ import uuid
 
 import numpy as np
 
-from turbovla.split.protocol import MAX_REQUEST_BYTES, VERSION, decode_request
+from turbovla.split.protocol import MAX_REQUEST_BYTES, VERSION, available_codecs, decode_request
 
 
 class InferenceService:
     def __init__(self, policy, metadata):
         self.policy = policy
         self.metadata = metadata
+        self.metadata.setdefault("transport", {"codecs": available_codecs(), "keepalive": True})
         self.lock = threading.Lock()
 
     def predict(self, body):
@@ -76,9 +77,12 @@ class PolicyHTTPServer(ThreadingHTTPServer):
 
 
 class PolicyRequestHandler(BaseHTTPRequestHandler):
+    protocol_version = "HTTP/1.1"
+
     def setup(self):
         super().setup()
         self.connection.settimeout(120)
+        self.connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 
     def _json(self, status, payload):
         body = json.dumps(payload, allow_nan=False).encode("utf-8")
@@ -96,23 +100,31 @@ class PolicyRequestHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         if self.path != "/predict":
+            self.close_connection = True  # Unread request body cannot be reused.
             self._json(404, {"error": "unknown endpoint"})
             return
         try:
             length = int(self.headers.get("Content-Length", "0"))
             if self.headers.get("Transfer-Encoding") or not 4 < length <= MAX_REQUEST_BYTES:
+                self.close_connection = True
                 self._json(413, {"error": "invalid request length; maximum is 2 MiB"})
                 return
+            receive_start = time.perf_counter()
             body = self.rfile.read(length)
+            receive_s = time.perf_counter() - receive_start
             if len(body) != length:
                 raise ValueError("incomplete request body")
             result = self.server.service.predict(body)
+            result["timing"]["receive_s"] = receive_s
             self._json(200, result)
         except (ValueError, KeyError, TypeError) as error:
+            self.close_connection = True
             self._json(400, {"error": str(error)})
         except (BrokenPipeError, ConnectionResetError, TimeoutError):
+            self.close_connection = True
             logging.warning("Orin client disconnected or timed out")
         except Exception:
+            self.close_connection = True
             logging.exception("Thor inference failed")
             self._json(500, {"error": "Thor inference failed; inspect the server log"})
 

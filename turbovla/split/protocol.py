@@ -15,6 +15,29 @@ MAX_HEADER_BYTES = 16384
 MAX_REQUEST_BYTES = 2 * 1024 * 1024
 MAX_RESPONSE_BYTES = 128 * 1024
 DTYPES = {"bf16": torch.bfloat16, "fp32": torch.float32}
+CODECS = ("zlib", "zlib_shuffle", "lz4", "lz4_shuffle", "zstd", "zstd_shuffle")
+
+
+def available_codecs():
+    codecs = ["zlib", "zlib_shuffle"]
+    try:
+        import lz4.block  # noqa: F401
+    except ImportError:
+        pass
+    else:
+        codecs.extend(["lz4", "lz4_shuffle"])
+    try:
+        import zstandard  # noqa: F401
+    except ImportError:
+        pass
+    else:
+        codecs.extend(["zstd", "zstd_shuffle"])
+    return codecs
+
+
+def _finite(array, precision):
+    # BF16 exponent bits detect NaN/Inf without launching CPU torch kernels.
+    return not np.any((array & 0x7F80) == 0x7F80) if precision == "bf16" else np.isfinite(array).all()
 
 
 def validate_header(header):
@@ -25,6 +48,8 @@ def validate_header(header):
             raise ValueError(f"invalid {key}")
     if header.get("precision") not in DTYPES:
         raise ValueError("precision must be bf16 or fp32")
+    if header.get("compression", "zlib") not in CODECS:
+        raise ValueError("unsupported compression codec")
     if not isinstance(header.get("instruction"), str) or not 1 <= len(header["instruction"]) <= 4096:
         raise ValueError("instruction must contain 1..4096 characters")
     if type(header.get("execute_steps")) is not int or not 1 <= header["execute_steps"] <= 12:
@@ -38,18 +63,33 @@ def encode_request(header, pixels, state):
         if tuple(tensor.shape) != shape or tensor.device.type != "cpu":
             raise ValueError(f"expected CPU tensor with shape {shape}")
         tensor = tensor.to(DTYPES[header["precision"]]).contiguous()
-        if not torch.isfinite(tensor).all():
-            raise ValueError("input tensors must be finite")
         if header["precision"] == "bf16":
             array = tensor.view(torch.uint16).numpy().astype("<u2", copy=False)
         else:
             array = tensor.numpy().astype("<f4", copy=False)
+        if not _finite(array, header["precision"]):
+            raise ValueError("input tensors must be finite")
         arrays.append(array.tobytes())
     metadata = json.dumps(header, ensure_ascii=False, allow_nan=False).encode("utf-8")
     if len(metadata) > MAX_HEADER_BYTES:
         raise ValueError("request header is too large")
     raw = b"".join(arrays)
-    body = struct.pack("!I", len(metadata)) + metadata + zlib.compress(raw, level=1)
+    codec = header.get("compression", "zlib")
+    payload = raw
+    if codec.endswith("_shuffle"):
+        itemsize = 2 if header["precision"] == "bf16" else 4
+        payload = np.frombuffer(raw, np.uint8).reshape(-1, itemsize).T.copy().tobytes()
+    if codec.startswith("zstd"):
+        import zstandard
+
+        payload = zstandard.ZstdCompressor(level=1).compress(payload)
+    elif codec.startswith("lz4"):
+        import lz4.block
+
+        payload = lz4.block.compress(payload, store_size=False)
+    else:
+        payload = zlib.compress(payload, level=1)
+    body = struct.pack("!I", len(metadata)) + metadata + payload
     if len(body) > MAX_REQUEST_BYTES:
         raise ValueError("request body is too large")
     return body, len(raw)
@@ -66,14 +106,45 @@ def decode_request(body):
     dtype = np.dtype("<u2" if header["precision"] == "bf16" else "<f4")
     pixel_count = math.prod(PIXEL_SHAPE)
     expected = (pixel_count + math.prod(STATE_SHAPE)) * dtype.itemsize
-    decoder = zlib.decompressobj()
-    raw = decoder.decompress(body[4 + header_size:], max_length=expected + 1)
-    if len(raw) != expected or not decoder.eof or decoder.unused_data or decoder.unconsumed_tail:
-        raise ValueError("invalid decompressed tensor payload")
+    codec = header.get("compression", "zlib")
+    payload = body[4 + header_size:]
+    if codec.startswith("zstd"):
+        import zstandard
+
+        try:
+            # The frame must advertise exactly our protocol's fixed-size payload.
+            if zstandard.frame_content_size(payload) != expected:
+                raise ValueError("invalid Zstandard output size")
+            raw = zstandard.ZstdDecompressor(max_window_size=MAX_REQUEST_BYTES // 1024).decompress(
+                payload, max_output_size=expected, allow_extra_data=False)
+        except zstandard.ZstdError as exc:
+            raise ValueError("invalid Zstandard tensor payload") from exc
+        if len(raw) != expected:
+            raise ValueError("invalid decompressed tensor payload")
+    elif codec.startswith("lz4"):
+        import lz4.block
+
+        try:
+            # Explicit bound; never trust a remote embedded allocation size.
+            raw = lz4.block.decompress(payload, uncompressed_size=expected)
+        except lz4.block.LZ4BlockError as exc:
+            raise ValueError("invalid LZ4 tensor payload") from exc
+        if len(raw) != expected:
+            raise ValueError("invalid decompressed tensor payload")
+    else:
+        decoder = zlib.decompressobj()
+        try:
+            raw = decoder.decompress(payload, max_length=expected + 1)
+        except zlib.error as exc:
+            raise ValueError("invalid zlib tensor payload") from exc
+        if len(raw) != expected or not decoder.eof or decoder.unused_data or decoder.unconsumed_tail:
+            raise ValueError("invalid decompressed tensor payload")
+    if codec.endswith("_shuffle"):
+        raw = np.frombuffer(raw, np.uint8).reshape(dtype.itemsize, -1).T.copy().tobytes()
     array = np.frombuffer(raw, dtype=dtype).copy()
+    if not _finite(array, header["precision"]):
+        raise ValueError("input tensors must be finite")
     tensor = torch.from_numpy(array)
     if header["precision"] == "bf16":
         tensor = tensor.view(torch.bfloat16)
-    if not torch.isfinite(tensor).all():
-        raise ValueError("input tensors must be finite")
     return header, tensor[:pixel_count].reshape(PIXEL_SHAPE), tensor[pixel_count:].reshape(STATE_SHAPE)

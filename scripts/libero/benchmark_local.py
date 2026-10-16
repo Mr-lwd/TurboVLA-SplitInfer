@@ -26,7 +26,8 @@ PATH_ENV = {"ckpt_path": "CKPT_PATH", "libero_root": "LIBERO_ROOT",
             "dinov3_path": "DINOV3_PATH", "bert_path": "BERT_PATH", "stats_path": "STATS_PATH"}
 LIBERO_KEYS = {"benchmark_root", "bddl_files", "init_states", "assets", "datasets"}
 REMOTE_STAGES = ("client_preprocess_s", "client_encode_s", "round_trip_s", "server_decode_s",
-                 "server_queue_s", "server_inference_s", "server_total_s", "transport_overhead_s")
+                 "server_queue_s", "server_inference_s", "server_total_s", "transport_overhead_s",
+                 "client_request_send_s", "client_response_wait_s", "client_response_read_s", "server_receive_s")
 REMOTE_BYTES = ("request_bytes", "uncompressed_tensor_bytes")
 REMOTE_MEMORY = ("server_cuda_peak_allocated_bytes", "server_cuda_peak_reserved_bytes")
 BASE_COLUMNS = ["task_id", "episode", "call_index", "step", "duration_s", "duration_ms", "included_in_filtered"]
@@ -128,6 +129,8 @@ def summarize(result, exclude_first_calls):
                     if not isinstance(remote, dict):
                         raise ValueError("Remote call is missing remote timing data")
                     rows[-1]["request_id"] = remote.get("request_id")
+                    rows[-1]["compression"] = remote.get("compression")
+                    rows[-1]["connection_reused"] = remote.get("connection_reused")
                     for key in (*REMOTE_STAGES, *REMOTE_BYTES, *REMOTE_MEMORY):
                         value = remote.get(key)
                         if value is not None and (not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0):
@@ -182,12 +185,17 @@ def summarize(result, exclude_first_calls):
         summary["remote_memory_scope"] = "server process lifetime PyTorch allocator peak, including model load/warmup and possibly earlier clients; not this rollout alone or total shared RAM"
         summary["remote_stage_note"] = "round_trip includes server_total, which includes decode/queue/inference; do not add overlapping stages. transport_overhead includes HTTP and response handling, not pure network latency"
         summary["remote_payload_note"] = "request_bytes is the HTTP body including protocol header and compressed tensors; excludes HTTP/TCP headers"
+        summary["remote_transport"] = {
+            "codecs_used": sorted({r["compression"] for r in rows if r["compression"] is not None}),
+            "connection_reused_count": sum(r["connection_reused"] is True for r in rows),
+            "connection_reuse_missing_count": sum(r["connection_reused"] is None for r in rows),
+        }
     return summary, rows
 
 
 def write_reports(prefix, summary, rows):
     write_json(prefix.with_name(prefix.name + "_summary.json"), summary)
-    columns = BASE_COLUMNS + (["request_id", *REMOTE_STAGES, *REMOTE_BYTES, *REMOTE_MEMORY]
+    columns = BASE_COLUMNS + (["request_id", "compression", "connection_reused", *REMOTE_STAGES, *REMOTE_BYTES, *REMOTE_MEMORY]
                               if summary["policy_backend"] == "remote" else [])
     with prefix.with_suffix(".csv").open("w", newline="", encoding="utf-8") as stream:
         writer = csv.DictWriter(stream, fieldnames=columns)
@@ -308,8 +316,11 @@ def main(split=False):
         from turbovla.split.client import RemoteTurboVLAPolicy
 
         remote = RemoteTurboVLAPolicy(cfg.remote_policy_url, timeout=cfg.remote_timeout_s,
-                                      precision=cfg.precision, chunk_size=cfg.chunk_size)
+                                      precision=cfg.precision, chunk_size=cfg.chunk_size,
+                                      compression=cfg.remote_compression, keepalive=cfg.remote_keepalive)
         server = remote.server_info
+        metadata["remote_transport"] = {"compression": remote.compression, "keepalive_requested": cfg.remote_keepalive}
+        remote.close()
         if server["stats_key"] != cfg.stats_key:
             raise ValueError("stats_key differs from the loaded server policy")
         metadata["remote_server"] = server

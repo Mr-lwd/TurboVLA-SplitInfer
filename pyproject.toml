@@ -19,6 +19,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+split = ["lz4>=4.3,<5", "zstandard>=0.22,<1"]
 libero = [
   "bddl",
   "cloudpickle",
@@ -70,7 +71,7 @@ include = [
 ]
 
 [tool.setuptools.package-data]
-"experiments.libero" = ["configs/*.json"]
+"experiments.libero" = ["configs/*.json", "configs/*.yaml"]
 "experiments.robotwin" = ["configs/*.json", "configs/*.yaml", "evaluation/*.yml"]
 "starVLA.config" = ["deepseeds/*.yaml"]
 

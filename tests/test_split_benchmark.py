@@ -101,6 +101,7 @@ class SplitBenchmarkTests(unittest.TestCase):
                  patch("torch.cuda.max_memory_reserved", return_value=0), \
                  patch.object(rollout, "eval_libero", side_effect=evaluate):
                 remote.return_value.server_info = deepcopy(server)
+                remote.return_value.compression = "zlib"
                 main(split=True)
             report = next(root.glob("orin_to_thor_split_*/*_summary.json"))
             self.assertEqual(json.loads(report.read_text())["filtered_calls"]["count"], 2)

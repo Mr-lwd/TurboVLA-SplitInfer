@@ -1,21 +1,20 @@
 """Lightweight Orin policy: preprocess locally and receive actions from Thor."""
 
 import json
+from http.client import HTTPConnection, HTTPException
 import time
 import uuid
-from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
-from urllib.request import ProxyHandler, Request, build_opener
 
 import numpy as np
 import torch
 
 from turbovla.evaluation.policy import _build_manual_rgb_normalizer, state_from_libero_obs
-from turbovla.split.protocol import DTYPES, MAX_RESPONSE_BYTES, VERSION, encode_request
+from turbovla.split.protocol import DTYPES, MAX_RESPONSE_BYTES, VERSION, available_codecs, encode_request
 
 
 class RemoteTurboVLAPolicy:
-    def __init__(self, url, timeout=120.0, precision="bf16", chunk_size=12):
+    def __init__(self, url, timeout=120.0, precision="bf16", chunk_size=12, compression="auto", keepalive=True):
         parsed = urlsplit(url)
         if parsed.scheme != "http" or not parsed.hostname or parsed.username or parsed.password:
             raise ValueError("remote_policy_url must be an HTTP URL without credentials")
@@ -25,14 +24,25 @@ class RemoteTurboVLAPolicy:
             raise ValueError("remote_timeout_s must be positive")
         self.url = url.rstrip("/")
         self.timeout = timeout
-        # Local device traffic must not be redirected through shell HTTP proxies.
-        self.opener = build_opener(ProxyHandler({}))
+        # HTTPConnection bypasses proxies, reuses TCP and enables TCP_NODELAY.
+        self.connection = HTTPConnection(parsed.hostname, parsed.port or 80, timeout=timeout)
+        self.keepalive = keepalive
+        self.last_http_timing = {}
         self.server_info = self._request("/health")
         info = self.server_info
         if info.get("version") != VERSION or not info.get("ready"):
+            self.close()
             raise RuntimeError("Thor server is not ready or uses an incompatible protocol")
         if info.get("precision") != precision or info.get("chunk_size") != chunk_size:
+            self.close()
             raise ValueError("client precision/chunk_size must match the Thor server")
+        common = set(available_codecs()) & set(info.get("transport", {}).get("codecs", ["zlib"]))
+        if compression == "auto":
+            compression = next((c for c in ("zstd_shuffle", "lz4_shuffle", "zlib_shuffle", "zlib") if c in common), None)
+        if compression not in common:
+            self.close()
+            raise ValueError(f"Compression {compression!r} unavailable on both devices; common codecs: {sorted(common)}")
+        self.compression = compression
         self.precision = precision
         self.chunk_size = chunk_size
         self.checkpoint_name = info["checkpoint_name"]
@@ -48,18 +58,52 @@ class RemoteTurboVLAPolicy:
         self.last_timing = {}
 
     def _request(self, path, body=None):
-        request = Request(self.url + path, data=body, headers={"Content-Type": "application/octet-stream"})
+        start = time.perf_counter()
+        reused = self.connection.sock is not None
         try:
-            with self.opener.open(request, timeout=self.timeout) as response:
-                payload = response.read(MAX_RESPONSE_BYTES + 1)
+            self.connection.request("POST" if body is not None else "GET", path, body=body,
+                                    headers={"Content-Type": "application/octet-stream",
+                                             "Connection": "keep-alive" if self.keepalive else "close"})
+            sent = time.perf_counter()
+            response = self.connection.getresponse()
+            headers_received = time.perf_counter()
+            payload = response.read(MAX_RESPONSE_BYTES + 1)
             if len(payload) > MAX_RESPONSE_BYTES:
                 raise RuntimeError("Thor response exceeded the size limit")
-            return json.loads(payload)
-        except HTTPError as error:
-            detail = error.read(4096).decode("utf-8", errors="replace")
-            raise RuntimeError(f"Thor HTTP {error.code}: {detail}") from error
-        except (URLError, TimeoutError, OSError) as error:
+            if response.status != 200:
+                raise RuntimeError(f"Thor HTTP {response.status}: {payload[:4096].decode('utf-8', errors='replace')}")
+            result = json.loads(payload)
+            self.last_http_timing = {
+                "client_request_send_s": sent - start,
+                "client_response_wait_s": headers_received - sent,
+                "client_response_read_s": time.perf_counter() - headers_received,
+                "connection_reused": reused,
+            }
+            return result
+        except (HTTPException, TimeoutError, OSError) as error:
+            self.close()
+            # Never replay a POST automatically: the server may already have run it.
             raise RuntimeError(f"Thor request failed at {self.url}: {error}") from error
+        except Exception:
+            self.close()
+            raise
+        finally:
+            if not self.keepalive:
+                self.close()
+
+    def close(self):
+        self.connection.close()
+
+    def __del__(self):
+        connection = getattr(self, "connection", None)
+        if connection is not None:
+            connection.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.close()
 
     def predict_env_action_chunk(self, primary_image, wrist_image, instruction, state_or_obs, execute_steps=None):
         self.last_timing = {}
@@ -80,6 +124,9 @@ class RemoteTurboVLAPolicy:
             "version": VERSION, "request_id": request_id, "server_id": self.server_info["server_id"],
             "precision": self.precision, "instruction": instruction, "execute_steps": steps,
         }
+        # Keep the original header compatible with older zlib-only servers.
+        if self.compression != "zlib":
+            header["compression"] = self.compression
         body, raw_bytes = encode_request(header, pixels, normalized_state)
         encoded = time.perf_counter()
         response = self._request("/predict", body)
@@ -102,7 +149,11 @@ class RemoteTurboVLAPolicy:
             # This residual includes HTTP/socket/response overhead; it is not pure wire latency.
             "transport_overhead_s": max(0.0, received - encoded - server_timing["total_s"]),
             "request_bytes": len(body), "uncompressed_tensor_bytes": raw_bytes,
+            "compression": self.compression,
+            **self.last_http_timing,
         }
+        if "receive_s" in server_timing:
+            self.last_timing["server_receive_s"] = server_timing["receive_s"]
         # Optional in protocol v1: older servers simply omit allocator metrics.
         for key, value in response.get("memory", {}).items():
             if key in {"cuda_peak_allocated_bytes", "cuda_peak_reserved_bytes"}:
