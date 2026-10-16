@@ -141,6 +141,11 @@ exports the same summary/CSV/metadata format as the local benchmark, plus per-st
 statistics. Existing split JSON files can be summarized without rerunning inference with
 `python scripts/libero/summarize_split.py <result.json> --client_device orin`.
 
+For an isolated comparison of synchronous execution, background prediction with aligned action
+replacement, and short-window action blending, see [the async experiment guide](ASYNC_INFERENCE.md).
+Run `bash scripts/libero/run_async_benchmark.sh`; settings live in `configs/async_benchmark.yaml`.
+This experiment leaves the normal evaluator and pretrained model unchanged.
+
 One invocation evaluates one checkpoint on one suite. Checkpoint selection and multi-GPU scheduling are intentionally outside the evaluator.
 
 ```bash
