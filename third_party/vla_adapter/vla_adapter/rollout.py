@@ -102,7 +102,7 @@ def _parse_bool(value) -> bool:
     raise argparse.ArgumentTypeError(f"Expected a boolean value, got {value!r}")
 
 
-def parse_args() -> GenerateConfig:
+def parse_args(argv=None) -> GenerateConfig:
     parser = argparse.ArgumentParser(
         description="VLA-Adapter-derived aligned LIBERO evaluation for TurboVLA checkpoints."
     )
@@ -123,7 +123,7 @@ def parse_args() -> GenerateConfig:
             parser.add_argument(arg_name, dashed_arg_name, type=float, **kwargs)
         else:
             parser.add_argument(arg_name, dashed_arg_name, type=str, **kwargs)
-    return GenerateConfig(**vars(parser.parse_args()))
+    return GenerateConfig(**vars(parser.parse_args(argv)))
 
 
 def _import_turbovla_adapter():
@@ -466,6 +466,7 @@ def eval_libero(cfg: GenerateConfig) -> float:
         "requested_task_ids": task_ids,
         "num_trials_per_task": cfg.num_trials_per_task,
         "num_open_loop_steps": cfg.num_open_loop_steps,
+        "chunk_size": policy.chunk_size,
         "seed": cfg.seed,
         "precision": cfg.precision,
         "policy_backend": "remote" if cfg.remote_policy_url else "local",

@@ -55,6 +55,61 @@ torchrun --nproc_per_node=4 experiments/libero/train.py \
 
 ## Evaluation
 
+### Orin / Thor 本机推理耗时评测
+
+在各设备上激活自己的 Python 环境，然后执行同一条命令：
+
+```bash
+# Orin: conda activate turbovla-libero
+# Thor: conda activate turbovla
+bash scripts/libero/run_local_benchmark.sh
+```
+
+默认沿用 `libero_spatial`、每任务 1 次、seed 7、BF16、chunk/open-loop 12、
+EGL，并保存普通回放和带真实等待时间的回放。所有模型推理均在当前设备执行。
+脚本检查 CUDA/BF16 支持，不会静默切换精度。它使用当前环境的 `python`，也可通过
+`TURBOVLA_PYTHON=/path/to/python` 指定。比较两台设备时应使用相同权重、参数及任务，
+停止其他推理负载，保持功耗模式和散热条件一致；脚本不会停止服务或修改功耗模式。
+
+路径自动从代码库位置推导：权重位于 `pretrained/TurboVLA/checkpoints/libero/`，
+LIBERO 位于相邻的 `../LIBERO`，模型依次查找 `../models`、`~/models`、仓库内的 `models`。
+可用 `CKPT_PATH`、`LIBERO_ROOT`、`DINOV3_PATH`、`BERT_PATH` 或原评测的同名 CLI 路径参数覆盖。
+LIBERO 自身的 BDDL/init_states/assets 路径仍由各机器的 `~/.libero/config.yaml` 管理。
+
+```bash
+# 只检查设备、路径并打印评测命令，不加载权重
+bash scripts/libero/run_local_benchmark.sh --print_command
+# 单任务冒烟测试
+bash scripts/libero/run_local_benchmark.sh --task_ids 0 --save_video false
+# 修改套件、重复次数、输出根目录
+bash scripts/libero/run_local_benchmark.sh \
+  --task_suite_name libero_object --num_trials_per_task 3 \
+  --output_root outputs/evaluation/local
+```
+
+自动根据 GPU / Jetson 板卡名称识别 `orin` 或 `thor`，未识别设备使用清理后的 GPU 名称。
+每次创建独立目录，例如：
+`outputs/evaluation/local/orin_libero_spatial_bf16_<时间戳>/`。
+JSON、CSV、日志文件的文件名均包含设备、套件、精度和时间戳；视频保存在该目录的
+`orin_videos/` 或 `thor_videos/` 下，内部保留任务/episode 文件名。生成数据被 Git 忽略。
+
+- `*_summary.json`：所有调用、每个 episode 首次调用、过滤后调用的 count/mean/median/p95/min/max，
+  成功率、完整 rollout 时间、推理总时间、非推理时间及吞吐量。
+- `*.csv`：每次调用的任务、episode、step、秒/毫秒耗时及是否计入过滤统计。
+- `*.json`（无额外后缀）：原始评测结果，包含逐 episode 耗时、逐次调用及视频路径。
+- `*_metadata.json`：GPU、板卡、软件版本、Git 状态、完整配置、运行状态、功耗模式（可读取时）、
+  PyTorch CUDA 分配器峰值内存和包含加载/视频导出等开销的总时间。峰值内存不等于 Jetson 总共享内存。
+- `*.log`：评测器日志；异常时 metadata 标为 failed，不生成成功汇总。
+
+一次调用预测一个 chunk，默认 12 个 action。耗时包含预处理、神经网络、CPU/GPU 传输和
+动作解码，返回 CPU NumPy 动作意味着本次 GPU 工作已完成；这是完整 policy 调用耗时，
+不是纯 GPU kernel 时间。图像旋转在调用计时之外。
+默认额外统计“排除每个 episode 第一次调用”的分布，可通过 `--exclude_first_calls 0` 保留全部。
+这只是事后筛选，不进行额外 warmup，也不保证筛选后的调用已达到稳态，原始数据始终保留。
+`filtered_amortized_ms_per_predicted_action` 是 chunk 延迟除以模型 chunk 大小，
+不表示每隔这么多毫秒就有一个动作返回。实际执行步数可能因提前成功而少于预测动作数。
+rollout 时间不包含模型加载、reset、settling 或视频编码；非推理差值也包含图像处理和 Python 开销。
+
 For Orin preprocessing with neural inference on a remote Jetson Thor and actions returned to Orin, see [the split inference guide](SPLIT_INFERENCE.md). The evaluator supports `--remote_policy_url http://192.168.123.38:8765` and saves network/server timing alongside both replay videos.
 
 One invocation evaluates one checkpoint on one suite. Checkpoint selection and multi-GPU scheduling are intentionally outside the evaluator.
