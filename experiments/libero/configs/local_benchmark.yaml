@@ -1,0 +1,48 @@
+# 相对路径均以 TurboVLA 仓库根目录为基准；支持 ~、环境变量、${REPO_ROOT}。
+# 路径列表按顺序选取第一个存在的路径，适配 Orin / Thor 的不同目录布局。
+paths:
+  ckpt_path: pretrained/TurboVLA/checkpoints/libero/turbovla_libero.pth
+  libero_root: ../LIBERO
+  dinov3_path:
+    - ../models/DINOv3
+    - ~/models/DINOv3
+    - models/DINOv3
+  bert_path:
+    - ../models/bert-base-uncased
+    - ~/models/bert-base-uncased
+    - models/bert-base-uncased
+  stats_path: experiments/libero/configs/libero_all4_stats.json
+
+# ${libero_root} 引用上面最终解析的 LIBERO 路径。
+# 每次运行将这些路径写入输出目录的 libero_config/config.yaml。
+# datasets 是演示数据目录，在线 rollout 不要求下载演示数据。
+libero_paths:
+  benchmark_root: ${libero_root}/libero/libero
+  bddl_files: ${libero_root}/libero/libero/bddl_files
+  init_states: ${libero_root}/libero/libero/init_files
+  assets: ${libero_root}/libero/libero/assets
+  datasets: ${libero_root}/data
+
+benchmark:
+  output_root: outputs/evaluation/local
+  exclude_first_calls: 1
+
+# 可填写 GenerateConfig 的其他非路径参数；命令行参数优先于此处。
+evaluation:
+  stats_key: libero_all4_no_noops
+  allow_hf_download: false
+  task_suite_name: libero_spatial
+  task_ids: ""                  # 例如 "0,1,2"；空字符串表示使用 max_tasks
+  max_tasks: -1                 # -1 表示全部任务
+  num_trials_per_task: 1
+  num_steps_wait: 10
+  chunk_size: 12
+  num_open_loop_steps: 12
+  env_img_res: 256
+  seed: 7
+  precision: bf16
+  control_mode: relative
+  mujoco_gl: egl
+  pyopengl_platform: egl
+  save_video: true
+  save_realtime_video: true

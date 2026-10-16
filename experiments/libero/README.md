@@ -71,10 +71,34 @@ EGL，并保存普通回放和带真实等待时间的回放。所有模型推�
 `TURBOVLA_PYTHON=/path/to/python` 指定。比较两台设备时应使用相同权重、参数及任务，
 停止其他推理负载，保持功耗模式和散热条件一致；脚本不会停止服务或修改功耗模式。
 
-路径自动从代码库位置推导：权重位于 `pretrained/TurboVLA/checkpoints/libero/`，
-LIBERO 位于相邻的 `../LIBERO`，模型依次查找 `../models`、`~/models`、仓库内的 `models`。
-可用 `CKPT_PATH`、`LIBERO_ROOT`、`DINOV3_PATH`、`BERT_PATH` 或原评测的同名 CLI 路径参数覆盖。
-LIBERO 自身的 BDDL/init_states/assets 路径仍由各机器的 `~/.libero/config.yaml` 管理。
+路径和评测参数统一在 [`configs/local_benchmark.yaml`](configs/local_benchmark.yaml) 修改，无需编辑 Python：
+
+- `paths`：checkpoint、LIBERO 代码目录、DINOv3、BERT、统计文件；支持单一路径或候选路径列表。
+- `libero_paths`：演示数据 `datasets`、BDDL、初始状态、assets 和 benchmark 根目录。
+- `benchmark`：输出根目录和每个 episode 排除的首次调用数。
+- `evaluation`：套件、任务 ID、次数、seed、精度、chunk、图像大小、视频开关等原评测参数。
+
+所有相对路径（包括 `--config`）均相对于仓库根目录，支持 `~`、`${REPO_ROOT}` 和环境变量。
+`libero_paths` 还支持 `${libero_root}`，引用最终选中的 LIBERO 目录。
+默认模型路径列表依次查找 `../models`、`~/models`、仓库内 `models`，可直接改为自己的绝对路径。
+路径优先级为 **CLI > 环境变量 > YAML**，支持的环境变量是 `CKPT_PATH`、`LIBERO_ROOT`、
+`DINOV3_PATH`、`BERT_PATH`、`STATS_PATH`；非路径参数为 **CLI > YAML > 原评测器默认值**。
+YAML 中的参数名称和类型会被检查，`task_ids` 应写为字符串，例如 `"0,1"`。
+
+每次运行在输出目录生成 `libero_config/config.yaml`，通过 `LIBERO_CONFIG_PATH` 供本次评测读取，
+不修改或读取全局 `~/.libero/config.yaml`。数据集、BDDL、初始状态和 assets 均以此处配置为准。
+在线 rollout 不读取演示数据，因此 `datasets` 允许尚不存在，其余 LIBERO 资源目录会检查存在性。
+也可使用 `--libero_datasets /path/to/data`、`--libero_bddl_files ...`、`--libero_init_states ...`、
+`--libero_assets ...`、`--libero_benchmark_root ...` 临时覆盖对应路径。
+
+```bash
+# 可选：复制一份本机配置，修改路径和参数（*.local.yaml 不提交到 Git）
+cp experiments/libero/configs/local_benchmark.yaml experiments/libero/configs/orin.local.yaml
+bash scripts/libero/run_local_benchmark.sh --config experiments/libero/configs/orin.local.yaml
+```
+
+自定义配置文件应保留四个配置区块及路径字段；`evaluation` 可增减参数。
+元数据会保存配置文件内容、最终评测参数和 LIBERO 资源路径，方便复现。
 
 ```bash
 # 只检查设备、路径并打印评测命令，不加载权重
