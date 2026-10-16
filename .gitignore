@@ -11,6 +11,9 @@ venv/
 build/
 dist/
 /data/
+/datasets/
+/pretrained/
+/models/
 playground/
 outputs/
 checkpoints/
@@ -25,7 +28,25 @@ tmp/
 *.pth
 *.ckpt
 *.safetensors
+*.bin
+*.onnx
+*.engine
+*.plan
+*.tflite
+*.h5
+*.hdf5
+*.tfrecord
+*.tfrecord-*
+*.arrow
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
 *.mp4
+*.avi
+*.mov
+*.webm
 *.log
 *.out
 *.npy
@@ -37,6 +58,8 @@ tmp/
 .*api_key
 .idea/
 .vscode/
+.cache/
+.ipynb_checkpoints/
 
 # Local migration sources and homepage files excluded from the main branch.
 /benchmarks/
