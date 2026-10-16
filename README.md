@@ -2,7 +2,7 @@
 
 This fork runs image/state preprocessing and LIBERO simulation on Jetson Orin, sends normalized tensors to Jetson Thor for TurboVLA neural inference, and returns action chunks to Orin. It records per-request network/server timing and both control-step and wall-clock videos.
 
-See the [two-device setup, architecture, commands, and validation guide](experiments/libero/SPLIT_INFERENCE.md). Start Thor with `bash scripts/libero/serve_thor.sh`, then run Orin with `bash scripts/libero/run_split_orin.sh`.
+See the [two-device setup, architecture, commands, and validation guide](experiments/libero/SPLIT_INFERENCE.md). Start Thor with `bash scripts/libero/serve_thor.sh`, then run Orin with `bash scripts/libero/run_async_benchmark.sh` (sync / async replacement / async blending). Use `--modes sync` for the synchronous baseline. All remote benchmark settings live in [`async_benchmark.yaml`](experiments/libero/configs/async_benchmark.yaml).
 
 ## Upstream TurboVLA: Real-Time Vision-Language-Action Model at 32 Hz on an RTX 4090 with &lt;1 GB VRAM
 

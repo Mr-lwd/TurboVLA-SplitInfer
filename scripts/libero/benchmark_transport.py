@@ -13,7 +13,7 @@ import time
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 import numpy as np
 
-from scripts.libero.benchmark_local import REMOTE_STAGES, device_label, distribution, hardware_info, write_json
+from scripts.libero.benchmark_common import REMOTE_STAGES, device_label, distribution, hardware_info, write_json
 from turbovla.split.client import RemoteTurboVLAPolicy
 
 

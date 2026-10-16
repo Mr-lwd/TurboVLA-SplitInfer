@@ -7,10 +7,12 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from scripts.libero.benchmark_local import (
+from scripts.libero.benchmark_common import (
     DEFAULT_CONFIG, device_label, distribution, expand_path, load_settings,
-    local_path, main, summarize,
+    local_path, summarize,
 )
+
+from scripts.libero.benchmark_local import main
 
 
 class LocalBenchmarkTests(unittest.TestCase):

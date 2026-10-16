@@ -1,13 +1,13 @@
 # Orin → Thor → Orin 双设备推理
 
-Orin 从 LIBERO 双路相机获取连续画面，完成图像与机器人状态的预处理，把模型输入发给 Thor。Thor 运行 TurboVLA，返回 12 步、每步 7 维的动作。Orin 执行动作后获取新画面，再次发起请求，形成闭环。这对应“端侧初步计算 → 网络传输 → 边缘神经网络分析 → 返回结果”的两设备结构。
+Orin 从 LIBERO 双路相机获取连续画面，完成图像与机器人状态的预处理，把模型输入发给 Thor。Thor 运行 TurboVLA，返回 12 步、每步 7 维的动作。Orin 根据同步、异步替换或异步融合模式调度动作和新观测，形成闭环。这对应“端侧初步计算 → 网络传输 → 边缘神经网络分析 → 返回结果”的两设备结构。
 
 ```mermaid
 flowchart LR
     subgraph A[Jetson Orin / 192.168.123.141]
         Camera[LIBERO 两路 RGB 画面 + 状态]
         Pre[画面旋转 / RGB 归一化\n状态归一化 / bf16 / 无损压缩]
-        Control[执行 12 步动作\n保存视频与耗时]
+        Control[调度动作缓冲区\n保存视频与耗时]
         Camera --> Pre
         Control --> Camera
     end
@@ -62,9 +62,9 @@ evaluation:
 
 ```bash
 # 使用协商后的快速模式
-bash scripts/libero/run_split_orin.sh
+bash scripts/libero/run_async_benchmark.sh --modes sync
 # 同一新版服务上的 zlib / 短连接对照
-bash scripts/libero/run_split_orin.sh --remote_compression zlib --remote_keepalive false
+bash scripts/libero/run_async_benchmark.sh --modes sync --remote_compression zlib --remote_keepalive false
 ```
 
 结果记录实际 `compression` 和逐次 `connection_reused`。新增阶段 `client_request_send_s`
@@ -116,48 +116,42 @@ echo $! > outputs/split/thor_server.pid
 
 ```bash
 cd /home/nano1/Desktop/lwd/VLA/TurboVLA
-bash scripts/libero/run_split_orin.sh
+# 运行 YAML 中配置的模式，默认 sync / replace / blend
+bash scripts/libero/run_async_benchmark.sh
+# 只运行原来的同步 split 基线
+bash scripts/libero/run_async_benchmark.sh --modes sync
+# 单任务、不生成视频
+bash scripts/libero/run_async_benchmark.sh --task_ids 0 --save_video false
+# 检查路径、设备和 Thor /health，不执行推理
+bash scripts/libero/run_async_benchmark.sh --preflight
 ```
 
-默认运行 `libero_spatial` 的 10 个任务，每个 1 回合。仅检查单个任务可以加 `--max_tasks 1`。Orin 只需现有的 `turbovla-libero` 环境和 LIBERO 资产；无需提供本地 checkpoint、DINOv3 或 BERT 路径。
+默认 `libero_spatial` 全部任务，每任务每模式 1 回合。Orin 只需现有的
+`turbovla-libero` 环境和 LIBERO 资产，无需本地 checkpoint、DINOv3 或 BERT。
+唯一远程评测配置为 [`configs/async_benchmark.yaml`](configs/async_benchmark.yaml)，
+包含 LIBERO 路径、Thor 地址、评测参数和调度策略。修改配置或使用 CLI 覆盖即可。
+`THOR_URL`、`LIBERO_ROOT` 可覆盖对应 YAML 字段；输出用 `--output_root`，
+脚本解释器用 `TURBOVLA_PYTHON` 指定。
 
-路径、服务地址和评测参数统一在 [`configs/split_benchmark.yaml`](configs/split_benchmark.yaml) 修改，
-也可用 `--config experiments/libero/configs/my_split.local.yaml` 指定本机配置。
-配置结构和 local 相同，但 `paths` 仅需 `libero_root`，服务地址在 `evaluation.remote_policy_url`。
-每次运行生成独立 LIBERO 路径配置，不修改 `~/.libero/config.yaml`。
-脚本使用当前激活环境的 `python`；`TURBOVLA_PYTHON` 可指定解释器。
-`THOR_URL`、`LIBERO_ROOT`、`SPLIT_OUTPUT` 环境变量覆盖 YAML，命令行参数优先级最高。
+结果写入 `outputs/evaluation/async/<客户端>_to_<服务端>_async_<套件>_<时间戳>/`，
+每个模式各有 summary、原始 JSON、请求 CSV、控制步 CSV 和两类视频，
+另有整体 comparison 和 metadata。同步模式也使用这一格式，便于三模式直接比较。
+详细调度机制、字段、配置和示例见 [统一评测说明](ASYNC_INFERENCE.md)。
 
-新输出自动按两端设备和时间戳命名，例如：
-`outputs/evaluation/split/orin_to_thor_split_libero_spatial_bf16_<时间戳>/`。
+`benchmark.exclude_first_calls` 默认按回合排除第一次请求，仅影响过滤统计，
+不会删除原始记录。所有远程阶段使用相同筛选规则，后续网络抖动仍保留。
+`remote_stage_timings.<阶段>.filtered_calls` 提供平均/中位数/p95，缺失阶段为 null。
+各阶段存在包含关系，不可相加。服务端显存是进程启动以来的 PyTorch 分配器峰值，
+包括加载、预热和之前的请求，不是本回合峰值或 Jetson 总内存。
 
-- `*_summary.json`：与 local 相同的 `all_calls`、`first_call_per_episode`、`filtered_calls`，
-  每组均含 count/mean/median/P95/min/max；另含各远程阶段、请求大小、服务端内存的汇总。
-- `*.csv`：逐次调用耗时、任务/回合/step、request_id、全部远程阶段及字节数，可与 Thor 日志对齐。
-- `*_metadata.json`：客户端软件、设备、功耗模式（可读取时）、配置、Git 状态、CUDA 分配器峰值，
-  以及服务端身份、checkpoint 哈希和运行信息（新版 Thor 服务提供）。
-- `*.json`（无额外后缀）：原始任务结果、逐次计时与视频路径。
-- `*.log`：客户端评测器日志。
-- `orin_videos/turbovla_libero/libero_spatial/`：普通回放和 `*_realtime.mp4` 墙钟回放。
+### 代码职责
 
-`benchmark.exclude_first_calls` 默认为 1：**按回合排除首次调用**，同一筛选规则用于完整调用和所有远程阶段。
-这不是按耗时剔除异常值，后续网络抖动仍被保留，也不等价于保证进入稳态。
-`remote_stage_timings.<阶段>.filtered_calls` 可直接查看阶段过滤后的平均/中位数/P95 等。
-阶段分布单位为毫秒，`total` 按 `total_unit` 标明秒或字节。缺失数据以 `null` 和 `missing_count` 表示。
-注意：round_trip 已包含 server_total，而 server_total 已包含 decode/queue/inference，不能将这些嵌套阶段相加。
-
-新版 Thor 服务还返回软件版本、启动预热次数和每次响应时的 PyTorch CUDA 分配器峰值。
-峰值范围是**服务进程自启动以来**，包括模型加载、预热和之前的请求，不等于本回合峰值或 Jetson 总内存。
-该采集位于推理阶段计时结束后，其少量开销会包含在完整请求往返中。
-更新 Thor 代码后需重启服务才能使用；旧服务仍兼容，未提供的指标保持为空。
-这些信息不能通过客户端升级追溯恢复。
-
-```bash
-# 验证本地路径、查询 Thor /health 并打印命令，不执行推理
-bash scripts/libero/run_split_orin.sh --print_command
-# 单任务，不生成视频
-bash scripts/libero/run_split_orin.sh --task_ids 0 --save_video false
-```
+- `run_async_benchmark.sh` / `benchmark_async.py`：统一远程评测入口。
+- `async_benchmark.yaml`：独立完整配置；不再继承其他评测 YAML。
+- `turbovla/evaluation/async_rollout.py`：sync / replace / blend 调度。
+- `turbovla/split/`、`serve_thor.sh`：共享客户端、协议和 Thor 服务，三模式都依赖它们。
+- `run_local_benchmark.sh`：Orin 或 Thor 的本机基准，继续独立保留。
+- `benchmark_transport.py`、`check_split_parity.py`：固定观测传输测试和动作一致性验证。
 
 ### 补算已有 split 数据
 
@@ -171,21 +165,6 @@ python scripts/libero/summarize_split.py \
 metadata 记录源文件 SHA-256、原有字段及导出时间；导出时间不是原评测时间。
 `--client_device` 指定原始客户端名称，默认 `unknown_client`，不会误用当前导出机器名称。
 历史结果未记录的软件版本、内存、完整启动配置等无法恢复，不会用当前机器状态填充。
-
-原始评估入口同样支持：
-
-```bash
-python experiments/libero/evaluate.py \
-  --remote_policy_url http://192.168.123.38:8765 \
-  --libero_root /home/nano1/Desktop/lwd/VLA/LIBERO \
-  --task_suite_name libero_spatial --num_trials_per_task 1 \
-  --precision bf16 --chunk_size 12 --num_open_loop_steps 12 \
-  --mujoco_gl egl --pyopengl_platform egl \
-  --save_video true --save_realtime_video true \
-  --result_json_path outputs/evaluation/split_thor/libero_spatial.json
-```
-
-省略 `--remote_policy_url` 时，原来的单机本地评估方式仍可用。
 
 ## 如何读计时
 
@@ -206,7 +185,7 @@ python experiments/libero/evaluate.py \
 | `request_bytes` | 压缩后的 HTTP 请求体字节数，不含 HTTP/TCP 头 |
 | `uncompressed_tensor_bytes` | 压缩前张量字节数，bf16 下为 786448 |
 
-两台机器都用各自的单调时钟记录时间间隔，不依赖系统时钟同步。服务启动预热 3 次，预热不在评估计时中；不同指令仍可能有额外首次调用开销。仿真是同步的：等待 Thor 时环境暂停，不模拟实体机器人在推理期间继续运动。
+两台机器都用各自的单调时钟记录时间间隔，不依赖系统时钟同步。服务启动预热 3 次，预热不在评估计时中；不同指令仍可能有额外首次调用开销。`sync` 在等待 Thor 时暂停环境；`replace` / `blend` 在后台预测期间继续执行缓冲区动作。异步的仿真步与墙钟对齐限制见统一评测说明。
 
 HTTP 服务用于当前局域网，默认底层服务入口监听回环地址，Thor 启动脚本显式监听其局域网 IP。输入尺寸/请求体有上限，支持超时，服务按请求编号回应；断网或无效响应会结束评估，不会悄悄改为 Orin 本地推理。网络与仿真开销都可能抵消 Thor 模型计算的加速，应同时查看完整调用耗时和模型耗时。
 
@@ -215,7 +194,7 @@ HTTP 服务用于当前局域网，默认底层服务入口监听回环地址，
 本地单元测试：
 
 ```bash
-python -m unittest discover -s tests -v
+PYTHONPATH=third_party/vla_adapter:. python -m unittest discover -s tests -v
 ```
 
 在 Thor 上检查直接推理与 HTTP 路径的一致性（先启动服务）：

@@ -136,15 +136,15 @@ rollout 时间不包含模型加载、reset、settling 或视频编码；非推�
 
 For Orin preprocessing with neural inference on a remote Jetson Thor and actions returned to Orin, see [the split inference guide](SPLIT_INFERENCE.md). The evaluator supports `--remote_policy_url http://192.168.123.38:8765` and saves network/server timing alongside both replay videos.
 
-`bash scripts/libero/run_split_orin.sh` now uses `configs/split_benchmark.yaml` and automatically
-exports the same summary/CSV/metadata format as the local benchmark, plus per-stage remote
-statistics. Existing split JSON files can be summarized without rerunning inference with
+Remote benchmarks use one entry point, `bash scripts/libero/run_async_benchmark.sh`, and one
+standalone configuration, [`configs/async_benchmark.yaml`](configs/async_benchmark.yaml).
+Use `--modes sync` for synchronous split inference, `--modes replace` for asynchronous replacement,
+or `--modes blend` for asynchronous blending; omitting `--modes` runs the modes configured in YAML.
+See [the scheduling and benchmark guide](ASYNC_INFERENCE.md) for timing, videos and comparison reports.
+The shared `turbovla/split/` client/server/transport remains necessary for all three modes.
+Local inference still uses `run_local_benchmark.sh` and `configs/local_benchmark.yaml`.
+Historical synchronous split JSON files can be summarized without rerunning inference with
 `python scripts/libero/summarize_split.py <result.json> --client_device orin`.
-
-For an isolated comparison of synchronous execution, background prediction with aligned action
-replacement, and short-window action blending, see [the async experiment guide](ASYNC_INFERENCE.md).
-Run `bash scripts/libero/run_async_benchmark.sh`; settings live in `configs/async_benchmark.yaml`.
-This experiment leaves the normal evaluator and pretrained model unchanged.
 
 One invocation evaluates one checkpoint on one suite. Checkpoint selection and multi-GPU scheduling are intentionally outside the evaluator.
 

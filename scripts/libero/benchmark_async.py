@@ -1,8 +1,8 @@
-"""Isolated synchronous/async-replacement/async-blending LIBERO comparison."""
+"""Unified remote LIBERO benchmark: sync, async replacement and async blending."""
 
 import argparse
 import csv
-from dataclasses import asdict, fields
+from dataclasses import asdict
 from datetime import datetime
 import json
 import logging
@@ -15,8 +15,8 @@ import time
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT), str(ROOT / "third_party/vla_adapter")]
 
-from scripts.libero.benchmark_local import (
-    REMOTE_BYTES, REMOTE_MEMORY, REMOTE_STAGES, device_label, distribution,
+from scripts.libero.benchmark_common import (
+    LIBERO_KEYS, REMOTE_BYTES, REMOTE_MEMORY, REMOTE_STAGES, device_label, distribution,
     expand_path, hardware_info, load_settings, local_path, write_json,
 )
 from turbovla.evaluation.async_rollout import MODES, overlap_seconds, run_episode, save_realtime_video
@@ -108,33 +108,34 @@ def main():
     import yaml
     from vla_adapter import rollout
 
-    parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
+    parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False,
+        epilog="Evaluation options are forwarded to evaluate.py (e.g. --task_ids 0 --save_video false).")
     parser.add_argument("--config", default="experiments/libero/configs/async_benchmark.yaml")
     parser.add_argument("--modes", nargs="+", choices=MODES)
     parser.add_argument("--replan_every_steps", type=int)
     parser.add_argument("--blend_steps", type=int)
     parser.add_argument("--control_hz", type=float)
     parser.add_argument("--extra_delay_s", type=float)
-    parser.add_argument("--output_root")
+    parser.add_argument("--output_root", "--output-root")
+    parser.add_argument("--exclude_first_calls", "--exclude-first-calls", type=int)
+    for key in sorted(LIBERO_KEYS):
+        parser.add_argument(f"--libero_{key}", f"--libero-{key.replace('_', '-')}")
     parser.add_argument("--preflight", action="store_true")
     args, rest = parser.parse_known_args()
     os.chdir(ROOT)
     config_path = expand_path(args.config)
-    config = yaml.safe_load(config_path.read_text())
-    if not isinstance(config, dict) or set(config) != {"base_config", "evaluation", "experiment"}:
-        parser.error("Expected base_config, evaluation and experiment sections")
-    if not isinstance(config["base_config"], str) or any(not isinstance(config[k], dict) for k in ("evaluation", "experiment")):
-        parser.error("base_config must be a path; evaluation and experiment must be mappings")
-    base = load_settings(expand_path(config["base_config"]), rollout.GenerateConfig, split=True)
+    config = load_settings(config_path, rollout.GenerateConfig, remote=True)
+    output_root = args.output_root if args.output_root is not None else config["benchmark"]["output_root"]
+    exclude_first_calls = args.exclude_first_calls if args.exclude_first_calls is not None else config["benchmark"]["exclude_first_calls"]
+    if not output_root.strip() or exclude_first_calls < 0:
+        parser.error("output_root must be nonempty; exclude_first_calls must be nonnegative")
     experiment = dict(config["experiment"])
-    expected = {"modes", "replan_every_steps", "blend_steps", "control_hz", "extra_delay_s", "output_root"}
+    expected = {"modes", "replan_every_steps", "blend_steps", "control_hz", "extra_delay_s"}
     if set(experiment) != expected:
         parser.error(f"experiment requires {sorted(expected)}")
     for key in expected:
         if getattr(args, key) is not None:
             experiment[key] = getattr(args, key)
-    if not isinstance(experiment["output_root"], str) or not experiment["output_root"].strip():
-        parser.error("output_root must be a nonempty path")
     modes = experiment["modes"]
     if not isinstance(modes, list) or not modes or any(m not in MODES for m in modes) or len(set(modes)) != len(modes):
         parser.error("modes must be a nonempty unique list of sync/replace/blend")
@@ -146,12 +147,8 @@ def main():
             parser.error(f"{key} must be finite numeric")
     if experiment["control_hz"] <= 0 or experiment["extra_delay_s"] < 0:
         parser.error("control_hz must be positive; extra_delay_s must be nonnegative")
-    evaluation = {**base["evaluation"], **config["evaluation"]}
-    known = {field.name: type(field.default) for field in fields(rollout.GenerateConfig)}
     defaults = []
-    for key, value in evaluation.items():
-        if key not in known or (type(value) is not known[key] and not (known[key] is float and type(value) is int)):
-            parser.error(f"Unknown evaluation key or invalid YAML type: {key}")
+    for key, value in config["evaluation"].items():
         defaults.extend([f"--{key}", str(value).lower() if isinstance(value, bool) else str(value)])
     if os.environ.get("THOR_URL"):
         defaults += ["--remote_policy_url", os.environ["THOR_URL"]]
@@ -166,9 +163,10 @@ def main():
         parser.error("Unknown LIBERO suite")
     if cfg.result_json_path or cfg.log_path or cfg.video_out_path != "outputs/evaluation":
         parser.error("Use --output_root for this experiment's separate output files")
-    roots = base["paths"]["libero_root"]
+    roots = config["paths"]["libero_root"]
     cfg.libero_root = local_path(cfg.libero_root, "LIBERO_ROOT", roots if isinstance(roots, list) else [roots], directory=True)
-    libero_paths = {key: str(expand_path(value, cfg.libero_root)) for key, value in base["libero_paths"].items()}
+    libero_paths = {key: str(expand_path(getattr(args, f"libero_{key}") or value, cfg.libero_root))
+                    for key, value in config["libero_paths"].items()}
     for key, value in libero_paths.items():
         if key != "datasets" and not Path(value).is_dir():
             raise FileNotFoundError(value)
@@ -186,9 +184,10 @@ def main():
             raise ValueError("Server stats_key mismatch")
         server_name = device_label(policy.server_info.get("gpu_name", ""), "", "server")
         stamp = datetime.now().astimezone().strftime("%Y%m%dT%H%M%S_%f%z")
-        root = expand_path(experiment["output_root"]) / f"{metadata['device_name']}_to_{server_name}_async_{cfg.task_suite_name}_{stamp}"
+        root = expand_path(output_root) / f"{metadata['device_name']}_to_{server_name}_async_{cfg.task_suite_name}_{stamp}"
         metadata.update(config=asdict(cfg), experiment=experiment, source_config=config,
-                        base_config=base, resolved_libero_paths=libero_paths,
+                        config_file=str(config_path), resolved_libero_paths=libero_paths,
+                        output_root=str(expand_path(output_root)), exclude_first_calls_per_episode=exclude_first_calls,
                         remote_server=policy.server_info, compression=policy.compression,
                         alignment="executed LIBERO control steps since observation; never elapsed network wall-time / period",
                         experiment_type="inference-only scheduling heuristic; no retraining, no delay-conditioned model",
@@ -249,11 +248,11 @@ def main():
                                 record["realtime_video_duration_s"] = save_realtime_video(realtime, episode, mode)
                         outcomes[mode].append(record)
                         order.append({"task_id": task_id, "episode": episode_index, "mode": mode})
-                        export_mode(root, mode, outcomes[mode], experiment, base["benchmark"]["exclude_first_calls"])
+                        export_mode(root, mode, outcomes[mode], experiment, exclude_first_calls)
                         logging.info("mode=%s task=%d episode=%d success=%s steps=%d calls=%d holds=%d wall=%.3fs",
                                      mode, task_id, episode_index, episode.success, len(episode.actions), len(episode.calls),
                                      sum(s["hold"] for s in episode.steps), episode.rollout_wall_time_s)
-            comparison = {mode: summarize_episodes(outcomes[mode], base["benchmark"]["exclude_first_calls"]) for mode in modes}
+            comparison = {mode: summarize_episodes(outcomes[mode], exclude_first_calls) for mode in modes}
             write_json(root / f"{root.name}_comparison.json", comparison)
             write_csv(root / f"{root.name}_comparison.csv", [{"mode": mode, **result} for mode, result in comparison.items()])
             metadata["status"] = "completed"

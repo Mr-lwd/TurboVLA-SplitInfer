@@ -9,7 +9,7 @@ import re
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from scripts.libero.benchmark_local import device_label, summarize, write_json, write_reports
+from scripts.libero.benchmark_common import device_label, summarize, write_json, write_reports
 
 
 def export_result(source, output_root=None, client_device="unknown_client", exclude_first_calls=1):

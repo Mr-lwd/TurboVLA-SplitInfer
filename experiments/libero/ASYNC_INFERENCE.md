@@ -1,7 +1,7 @@
-# 异步推理实验：边执行、边预测
+# 统一远程评测：同步、异步替换与异步融合
 
-此实验复用预训练权重，在推理调度层比较三种模式。没有修改模型、训练流程、
-`evaluate.py` 或原同步 rollout。独立入口为 `scripts/libero/run_async_benchmark.sh`，
+远程评测复用预训练权重，在推理调度层比较三种模式。模型、训练流程、
+`evaluate.py` 和原同步 rollout 保持不变。统一入口为 `scripts/libero/run_async_benchmark.sh`，
 调度实现位于 `turbovla/evaluation/async_rollout.py`。
 
 目前实验入口针对 **Orin → Thor split**：Orin 主线程执行 LIBERO，后台线程完成
@@ -17,27 +17,50 @@ conda activate turbovla
 bash scripts/libero/serve_thor.sh
 ```
 
-Orin 运行独立实验：
+Orin 运行统一评测：
 
 ```bash
 conda activate turbovla-libero
 # 只检查配置、LIBERO 资源路径和服务元数据，不执行 rollout
 bash scripts/libero/run_async_benchmark.sh --preflight
-# 默认 task 0、1、2，每任务三种模式各一次，保存两类视频
+# 默认全部任务，每任务三种模式各一次，保存两类视频
 bash scripts/libero/run_async_benchmark.sh
 ```
 
-路径和参数均通过 YAML 配置，无需修改 Python：
+所有路径和参数都在 [`configs/async_benchmark.yaml`](configs/async_benchmark.yaml) 中配置，无需修改 Python：
 
-- [`configs/async_benchmark.yaml`](configs/async_benchmark.yaml)：实验模式、重规划间隔、
-  融合窗口、控制节拍上限、额外模拟延迟、输出目录及评测参数覆盖。
-- `base_config` 指向 [`configs/split_benchmark.yaml`](configs/split_benchmark.yaml)：
-  LIBERO 代码/资源/数据目录、服务 URL、精度、chunk、随机种子及首次调用筛选数。
-  可以改为自己的 `*.local.yaml`；这些本机配置已被 Git 忽略。
-- 相对路径均以仓库根目录为准，支持环境变量；`libero_paths` 支持 `${libero_root}`。
-  LIBERO 运行配置写入每次输出目录，不修改全局 `~/.libero/config.yaml`。
-- 参数优先级：命令行 > async YAML 的 `evaluation` > base YAML > 原评测器默认值。
-  `THOR_URL` 可覆盖 YAML 的服务地址，`LIBERO_ROOT` 可覆盖 YAML 的代码目录。
+| 区块 | 配置内容 |
+| --- | --- |
+| `paths` | LIBERO 代码根目录，支持路径或候选路径列表 |
+| `libero_paths` | benchmark、BDDL、初始状态、assets、演示数据目录 |
+| `benchmark` | 输出根目录、每个 episode 排除的首次调用数 |
+| `evaluation` | Thor URL、压缩方式、精度、任务、次数、seed、chunk、视频等 |
+| `experiment` | 模式列表、重规划间隔、融合窗口、节拍上限、额外延迟 |
+
+相对路径均以仓库根目录为准，支持环境变量；`libero_paths` 支持 `${libero_root}`。
+LIBERO 运行配置写入每次输出目录，不修改全局 `~/.libero/config.yaml`。
+参数优先级为命令行 > 环境变量（对应字段）> YAML > 原评测器默认值。
+`THOR_URL` 可覆盖服务地址，`LIBERO_ROOT` 可覆盖代码根目录。
+输出使用 `benchmark.output_root` 或 `--output_root`；筛选数量使用
+`benchmark.exclude_first_calls` 或 `--exclude_first_calls`。可用
+`--libero_datasets`、`--libero_assets` 等临时覆盖 LIBERO 资源路径。
+
+需要本机配置时复制完整 YAML，再通过 `--config` 指定；`*.local.yaml` 已被 Git 忽略。
+旧的 `base_config` 继承格式已移除，旧本机配置应将路径、服务地址等迁入这份完整配置，
+并将原 `experiment.output_root` 移到 `benchmark.output_root`。
+
+```bash
+cp experiments/libero/configs/async_benchmark.yaml experiments/libero/configs/orin_async.local.yaml
+bash scripts/libero/run_async_benchmark.sh --config experiments/libero/configs/orin_async.local.yaml
+# 原同步 split 基线也通过同一入口运行
+bash scripts/libero/run_async_benchmark.sh --modes sync
+```
+
+源码分工：`benchmark_async.py` 负责统一远程评测，`benchmark_local.py` 负责本机评测，
+`benchmark_common.py` 提供公共配置、设备识别与报告工具。
+`turbovla/split/` 是三种远程模式共享的通信层，`serve_thor.sh` 仍负责启动模型服务。
+`benchmark_transport.py` / `check_split_parity.py` 保留用于传输性能与动作一致性检查；
+`summarize_split.py` 仅补算历史同步结果，不用于运行新评测。
 
 ```bash
 # 单任务三模式对比，指定服务器

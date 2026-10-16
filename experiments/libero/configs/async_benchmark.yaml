@@ -1,8 +1,35 @@
-# 独立实验；不修改同步评测配置。所有相对路径以仓库根目录为准。
-base_config: experiments/libero/configs/split_benchmark.yaml
+# Orin→Thor 统一评测配置：sync / replace（异步替换）/ blend（异步融合）。
+# Orin 不加载本地模型权重。所有相对路径以仓库根目录为准。
+paths:
+  libero_root: ../LIBERO
+libero_paths:
+  benchmark_root: ${libero_root}/libero/libero
+  bddl_files: ${libero_root}/libero/libero/bddl_files
+  init_states: ${libero_root}/libero/libero/init_files
+  assets: ${libero_root}/libero/libero/assets
+  datasets: ${libero_root}/data
+benchmark:
+  output_root: outputs/evaluation/async
+  exclude_first_calls: 1  # 每个 episode 排除首次调用，仅影响过滤后的统计
 evaluation:
-  task_ids: "0,1,2"        # 小规模测试；设为 "" 则运行全部任务
+  remote_policy_url: http://192.168.123.38:8765
+  remote_timeout_s: 120.0
+  remote_keepalive: true
+  remote_compression: auto  # 双端协商无损压缩
+  stats_key: libero_all4_no_noops
+  task_suite_name: libero_spatial
+  task_ids: ""        # 全部任务；小规模测试可改为 "0,1,2"
+  max_tasks: -1
   num_trials_per_task: 1
+  num_steps_wait: 10
+  chunk_size: 12
+  num_open_loop_steps: 12
+  env_img_res: 256
+  seed: 7
+  precision: bf16
+  control_mode: relative
+  mujoco_gl: egl
+  pyopengl_platform: egl
   save_video: true
   save_realtime_video: true
 experiment:
@@ -11,4 +38,3 @@ experiment:
   blend_steps: 3           # 仅在重叠部分，对前 6 维做线性过渡
   control_hz: 20.0         # 墙钟节拍上限；仿真慢时不跳步、不追赶
   extra_delay_s: 0.0       # 每次请求额外延迟，用于压力测试，三种模式同样生效
-  output_root: outputs/evaluation/async

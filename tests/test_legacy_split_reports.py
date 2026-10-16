@@ -1,15 +1,10 @@
-from contextlib import redirect_stdout
-from copy import deepcopy
 import csv
-import io
 import json
-import os
 from pathlib import Path
 import tempfile
 import unittest
-from unittest.mock import patch
 
-from scripts.libero.benchmark_local import DEFAULT_CONFIG, load_settings, main, summarize
+from scripts.libero.benchmark_common import summarize
 from scripts.libero.summarize_split import export_result
 
 
@@ -29,7 +24,7 @@ def recorded_result():
     return result
 
 
-class SplitBenchmarkTests(unittest.TestCase):
+class LegacySplitReportTests(unittest.TestCase):
     def test_remote_filtering_units_and_missing_data(self):
         summary, rows = summarize(recorded_result(), 1)
         self.assertEqual(summary["chunk_size"], 12)
@@ -67,47 +62,6 @@ class SplitBenchmarkTests(unittest.TestCase):
                 rows = list(csv.DictReader(stream))
             self.assertEqual(len(rows), 4)
             self.assertEqual(rows[0]["server_cuda_peak_allocated_bytes"], "")
-
-    def test_split_runner_needs_no_local_weights_and_exports_stages(self):
-        import yaml
-        from vla_adapter import rollout
-
-        saved_cwd = Path.cwd()
-        self.addCleanup(os.chdir, saved_cwd)
-        server = {"gpu_name": "NVIDIA Thor", "hostname": "test-thor", "stats_key": "libero_all4_no_noops", "chunk_size": 12}
-        def evaluate(cfg):
-            self.assertEqual(cfg.ckpt_path, "")
-            self.assertEqual(cfg.dinov3_path, "")
-            self.assertEqual(cfg.bert_path, "")
-            self.assertEqual(cfg.remote_policy_url, "http://cli:8765")
-            result = recorded_result()
-            result["remote_server"] = server
-            Path(cfg.result_json_path).write_text(json.dumps(result))
-
-        with tempfile.TemporaryDirectory() as temp, patch.dict(os.environ, {"THOR_URL": "http://env:8765", "SPLIT_OUTPUT": temp}):
-            root = Path(temp)
-            for name in ("bddl_files", "init_files", "assets"):
-                (root / "libero/libero" / name).mkdir(parents=True)
-            settings = load_settings(DEFAULT_CONFIG.with_name("split_benchmark.yaml"), rollout.GenerateConfig, split=True)
-            settings["paths"]["libero_root"] = temp
-            config = root / "split.yaml"
-            config.write_text(yaml.safe_dump(settings))
-            argv = ["benchmark_split.py", "--config", str(config), "--remote_policy_url", "http://cli:8765"]
-            with patch("sys.argv", argv), redirect_stdout(io.StringIO()), \
-                 patch("scripts.libero.benchmark_local.hardware_info", return_value={"device_name": "orin", "gpu_name": "Orin"}), \
-                 patch("turbovla.split.client.RemoteTurboVLAPolicy") as remote, \
-                 patch("torch.cuda.reset_peak_memory_stats"), \
-                 patch("torch.cuda.max_memory_allocated", return_value=0), \
-                 patch("torch.cuda.max_memory_reserved", return_value=0), \
-                 patch.object(rollout, "eval_libero", side_effect=evaluate):
-                remote.return_value.server_info = deepcopy(server)
-                remote.return_value.compression = "zlib"
-                main(split=True)
-            report = next(root.glob("orin_to_thor_split_*/*_summary.json"))
-            self.assertEqual(json.loads(report.read_text())["filtered_calls"]["count"], 2)
-            metadata = json.loads(next(root.glob("orin_to_thor_split_*/*_metadata.json")).read_text())
-            self.assertEqual(metadata["status"], "completed")
-            self.assertEqual(metadata["remote_server"], server)
 
 
 if __name__ == "__main__":
