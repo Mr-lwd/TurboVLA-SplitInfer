@@ -15,13 +15,16 @@ from collections import deque
 from dataclasses import dataclass, fields
 import json
 import logging
+import math
 import os
 from pathlib import Path
 import sys
+import time
 from typing import Optional
 
 import imageio
 import numpy as np
+from PIL import Image, ImageDraw
 import tqdm
 
 
@@ -61,6 +64,7 @@ class GenerateConfig:
     osmesa_library: str = ""
 
     save_video: bool = False
+    save_realtime_video: bool = True
     video_out_path: str = "outputs/evaluation"
     result_json_path: str = ""
     log_path: str = ""
@@ -221,6 +225,58 @@ def _save_video(path: Path, frames: list[np.ndarray], fps: int = 20) -> None:
     imageio.mimwrite(path, [np.asarray(x) for x in frames], fps=fps)
 
 
+@dataclass
+class EpisodeResult:
+    success: bool
+    frames: list[np.ndarray]
+    executed_actions: list[list[float]]
+    frame_timestamps_s: list[float]
+    inference_timings: list[dict]
+    rollout_wall_time_s: float
+
+
+def _save_realtime_video(path: Path, episode: EpisodeResult, fps: int = 20) -> float:
+    """Resample measured wall time, streaming repeated frames to the encoder.
+
+    The terminal observation is the last frame in episode.frames. One extra
+    frame shows that observation; total timing quantization is less than 2/fps.
+    """
+    if not episode.frames:
+        return 0.0
+    path.parent.mkdir(parents=True, exist_ok=True)
+    num_frames = max(1, math.ceil(episode.rollout_wall_time_s * fps))
+    frame_index = 0
+    inference_index = 0
+    with imageio.get_writer(path, fps=fps) as writer:
+        for index in range(num_frames + 1):
+            elapsed = min(index / fps, episode.rollout_wall_time_s)
+            while (
+                frame_index + 1 < len(episode.frames)
+                and episode.frame_timestamps_s[frame_index + 1] <= elapsed
+            ):
+                frame_index += 1
+            while (
+                inference_index < len(episode.inference_timings)
+                and episode.inference_timings[inference_index]["end_s"] <= elapsed
+            ):
+                inference_index += 1
+            phase = "ENV / CONTROL"
+            if (
+                inference_index < len(episode.inference_timings)
+                and episode.inference_timings[inference_index]["start_s"] <= elapsed
+            ):
+                phase = "INFERENCE (waiting)"
+            if index == num_frames:
+                frame_index = len(episode.frames) - 1
+                phase = "SUCCESS" if episode.success else "END"
+            frame = Image.fromarray(episode.frames[frame_index])
+            draw = ImageDraw.Draw(frame)
+            draw.rectangle((0, 0, frame.width, 20), fill="black")
+            draw.text((5, 3), f"Wall {elapsed:.2f}s | {phase}", fill="white")
+            writer.append_data(np.asarray(frame))
+    return (num_frames + 1) / fps
+
+
 def _result_path(cfg: GenerateConfig) -> Path:
     if cfg.result_json_path:
         return Path(cfg.result_json_path)
@@ -236,26 +292,33 @@ def _run_episode(
     initial_state: np.ndarray,
     get_libero_dummy_action,
     rotate_libero_image,
-) -> tuple[bool, list[np.ndarray], list[list[float]]]:
+) -> EpisodeResult:
     env.reset()
     obs = env.set_init_state(initial_state)
     action_queue: deque[np.ndarray] = deque()
     replay_images: list[np.ndarray] = []
+    frame_timestamps_s: list[float] = []
+    inference_timings: list[dict] = []
     executed_actions: list[list[float]] = []
     dummy_action = np.asarray(get_libero_dummy_action(), dtype=np.float32)
     max_steps = TASK_MAX_STEPS[cfg.task_suite_name]
 
     success = False
+    episode_start = None
     for t in range(max_steps + cfg.num_steps_wait):
         if t < cfg.num_steps_wait:
             obs, _, _, _ = env.step(dummy_action.tolist())
             continue
 
+        if episode_start is None:
+            episode_start = time.perf_counter()
+        frame_timestamps_s.append(time.perf_counter() - episode_start)
         primary = rotate_libero_image(obs["agentview_image"])
         wrist = rotate_libero_image(obs["robot0_eye_in_hand_image"])
         replay_images.append(np.concatenate([primary, wrist], axis=1))
 
         if not action_queue:
+            inference_start = time.perf_counter()
             env_actions = policy.predict_env_action_chunk(
                 primary,
                 wrist,
@@ -263,6 +326,15 @@ def _run_episode(
                 obs,
                 execute_steps=cfg.num_open_loop_steps,
             )
+            # The policy returns CPU NumPy actions, so the CUDA work has
+            # completed here. Include preprocessing, transfers and decoding.
+            inference_end = time.perf_counter()
+            inference_timings.append({
+                "step": len(executed_actions),
+                "start_s": inference_start - episode_start,
+                "end_s": inference_end - episode_start,
+                "duration_s": inference_end - inference_start,
+            })
             action_queue.extend(np.asarray(row, dtype=np.float32) for row in env_actions)
 
         action = action_queue.popleft() if action_queue else dummy_action
@@ -272,7 +344,18 @@ def _run_episode(
             success = True
             break
 
-    return success, replay_images, executed_actions
+    rollout_wall_time_s = time.perf_counter() - episode_start if episode_start is not None else 0.0
+    if replay_images:
+        # Include the observation after the final action in the timed video.
+        replay_images.append(np.concatenate([
+            rotate_libero_image(obs["agentview_image"]),
+            rotate_libero_image(obs["robot0_eye_in_hand_image"]),
+        ], axis=1))
+        frame_timestamps_s.append(rollout_wall_time_s)
+    return EpisodeResult(
+        success, replay_images, executed_actions, frame_timestamps_s,
+        inference_timings, rollout_wall_time_s,
+    )
 
 
 def eval_libero(cfg: GenerateConfig) -> float:
@@ -365,6 +448,9 @@ def eval_libero(cfg: GenerateConfig) -> float:
         "seed": cfg.seed,
         "precision": cfg.precision,
         "dinov3_output_hidden_states": cfg.dinov3_output_hidden_states,
+        "save_realtime_video": cfg.save_video and cfg.save_realtime_video,
+        "video_fps": 20,
+        "timing_scope": "after settling, through final env.step; excludes reset, model load and video encoding",
         "tasks": [],
         "total_episodes": 0,
         "total_successes": 0,
@@ -392,9 +478,10 @@ def eval_libero(cfg: GenerateConfig) -> float:
         env, task_description = _make_libero_env(task, cfg)
         task_successes = 0
         task_episodes = 0
+        episode_results = []
         try:
             for episode_idx in tqdm.tqdm(range(cfg.num_trials_per_task), desc=f"task {task_id}", leave=False):
-                success, replay_images, executed_actions = _run_episode(
+                episode = _run_episode(
                     cfg,
                     env,
                     policy,
@@ -403,6 +490,7 @@ def eval_libero(cfg: GenerateConfig) -> float:
                     get_libero_dummy_action,
                     rotate_libero_image,
                 )
+                success = episode.success
                 task_episodes += 1
                 total_episodes += 1
                 if success:
@@ -420,7 +508,30 @@ def eval_libero(cfg: GenerateConfig) -> float:
                     100.0 * total_successes / max(total_episodes, 1),
                 )
                 if cfg.save_video:
-                    _save_video(video_root / f"task{task_id:02d}_ep{episode_idx:03d}_{suffix}.mp4", replay_images)
+                    video_path = video_root / f"task{task_id:02d}_ep{episode_idx:03d}_{suffix}.mp4"
+                    # Preserve the original one-observation-per-control-step replay.
+                    _save_video(video_path, episode.frames[:-1])
+                timing = {
+                    "episode": episode_idx,
+                    "success": success,
+                    "executed_steps": len(episode.executed_actions),
+                    "rollout_wall_time_s": episode.rollout_wall_time_s,
+                    "inference_total_s": sum(item["duration_s"] for item in episode.inference_timings),
+                    "inference_timings": episode.inference_timings,
+                }
+                if cfg.save_video:
+                    timing["video_path"] = str(video_path)
+                    timing["video_duration_s"] = len(episode.executed_actions) / 20
+                    if cfg.save_realtime_video:
+                        realtime_path = video_path.with_name(f"{video_path.stem}_realtime.mp4")
+                        timing["realtime_video_duration_s"] = _save_realtime_video(realtime_path, episode)
+                        timing["realtime_video_path"] = str(realtime_path)
+                episode_results.append(timing)
+                logging.info(
+                    "task=%d episode=%d wall_time=%.3fs inference=%.3fs calls=%d",
+                    task_id, episode_idx, episode.rollout_wall_time_s,
+                    timing["inference_total_s"], len(episode.inference_timings),
+                )
         finally:
             env.close()
 
@@ -432,6 +543,7 @@ def eval_libero(cfg: GenerateConfig) -> float:
                 "episodes": task_episodes,
                 "successes": task_successes,
                 "success_rate": task_rate,
+                "episode_results": episode_results,
             }
         )
         logging.info("task=%d success_rate=%.4f (%d/%d)", task_id, task_rate, task_successes, task_episodes)

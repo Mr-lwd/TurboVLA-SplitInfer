@@ -76,4 +76,11 @@ python experiments/libero/evaluate.py \
 
 Use `--dry_run_model_load true` to validate checkpoint compatibility without a simulator rollout. Complete release checkpoints contain BERT, DINOv3, the vision-language interaction module, and the action head in one strict-loadable state dict. `configs/online_text_layout.json` stores tokenizer padding metadata for the 40 standard instructions; it contains no embeddings or cached model outputs.
 
+With `--save_video true`, each episode produces two 20 FPS videos:
+
+- `task00_ep000_success.mp4`: the original replay, one frame per control step, omitting computation delays.
+- `task00_ep000_success_realtime.mp4`: a wall-clock replay that holds each observation for its measured duration and labels inference waits. Timing starts after the settling steps and ends after the final action. It includes preprocessing, inference, transfers, and environment stepping, but excludes model loading, environment reset, settling, and video encoding. The final observation is shown for one additional frame; duration differs from the measured time by at most 0.1 seconds.
+
+The result JSON includes per-episode wall time, video durations, and each action chunk's inference timing. Inference time includes preprocessing and CPU/GPU transfers until CPU actions are available. The simulator pauses while synchronous inference runs; the timed video reproduces that pause and does not model a physical robot moving during inference. Use `--save_realtime_video false` to save only the original replay. Videos recorded before timing was added cannot recover their original delays.
+
 The rollout protocol is derived from [VLA-Adapter](https://github.com/OpenHelix-Team/VLA-Adapter/commit/23fa0c9c159e2aa04341cdd3e924f44061311060). See `third_party/licenses/VLA-Adapter.txt` for the retained license and attribution.
