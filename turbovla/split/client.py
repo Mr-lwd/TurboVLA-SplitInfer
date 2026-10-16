@@ -103,4 +103,8 @@ class RemoteTurboVLAPolicy:
             "transport_overhead_s": max(0.0, received - encoded - server_timing["total_s"]),
             "request_bytes": len(body), "uncompressed_tensor_bytes": raw_bytes,
         }
+        # Optional in protocol v1: older servers simply omit allocator metrics.
+        for key, value in response.get("memory", {}).items():
+            if key in {"cuda_peak_allocated_bytes", "cuda_peak_reserved_bytes"}:
+                self.last_timing[f"server_{key}"] = value
         return actions

@@ -136,6 +136,11 @@ rollout 时间不包含模型加载、reset、settling 或视频编码；非推�
 
 For Orin preprocessing with neural inference on a remote Jetson Thor and actions returned to Orin, see [the split inference guide](SPLIT_INFERENCE.md). The evaluator supports `--remote_policy_url http://192.168.123.38:8765` and saves network/server timing alongside both replay videos.
 
+`bash scripts/libero/run_split_orin.sh` now uses `configs/split_benchmark.yaml` and automatically
+exports the same summary/CSV/metadata format as the local benchmark, plus per-stage remote
+statistics. Existing split JSON files can be summarized without rerunning inference with
+`python scripts/libero/summarize_split.py <result.json> --client_device orin`.
+
 One invocation evaluates one checkpoint on one suite. Checkpoint selection and multi-GPU scheduling are intentionally outside the evaluator.
 
 ```bash

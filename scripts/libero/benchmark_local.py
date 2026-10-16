@@ -1,4 +1,4 @@
-"""Run local LIBERO evaluation and save device-labelled latency measurements."""
+"""Shared LIBERO benchmark runner and reports; defaults to local inference."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ from dataclasses import asdict, fields
 from datetime import datetime
 import importlib.metadata
 import json
+import math
 import os
 from pathlib import Path
 import platform
@@ -24,6 +25,11 @@ DEFAULT_CONFIG = REPO_ROOT / "experiments/libero/configs/local_benchmark.yaml"
 PATH_ENV = {"ckpt_path": "CKPT_PATH", "libero_root": "LIBERO_ROOT",
             "dinov3_path": "DINOV3_PATH", "bert_path": "BERT_PATH", "stats_path": "STATS_PATH"}
 LIBERO_KEYS = {"benchmark_root", "bddl_files", "init_states", "assets", "datasets"}
+REMOTE_STAGES = ("client_preprocess_s", "client_encode_s", "round_trip_s", "server_decode_s",
+                 "server_queue_s", "server_inference_s", "server_total_s", "transport_overhead_s")
+REMOTE_BYTES = ("request_bytes", "uncompressed_tensor_bytes")
+REMOTE_MEMORY = ("server_cuda_peak_allocated_bytes", "server_cuda_peak_reserved_bytes")
+BASE_COLUMNS = ["task_id", "episode", "call_index", "step", "duration_s", "duration_ms", "included_in_filtered"]
 
 
 def expand_path(value, libero_root=None):
@@ -37,7 +43,7 @@ def expand_path(value, libero_root=None):
     return (path if path.is_absolute() else REPO_ROOT / path).resolve()
 
 
-def load_settings(path, config_type):
+def load_settings(path, config_type, split=False):
     import yaml
 
     with path.open(encoding="utf-8") as stream:
@@ -48,7 +54,7 @@ def load_settings(path, config_type):
     for section in sections:
         if not isinstance(settings[section], dict):
             raise ValueError(f"{section} must be a mapping")
-    for section, keys in (("paths", set(PATH_ENV)), ("libero_paths", LIBERO_KEYS),
+    for section, keys in (("paths", {"libero_root"} if split else set(PATH_ENV)), ("libero_paths", LIBERO_KEYS),
                           ("benchmark", {"output_root", "exclude_first_calls"})):
         if set(settings[section]) != keys:
             raise ValueError(f"{section} requires exactly these keys: {sorted(keys)}")
@@ -66,6 +72,8 @@ def load_settings(path, config_type):
         raise ValueError("benchmark.exclude_first_calls must be a nonnegative integer")
     defaults = {field.name: field.default for field in fields(config_type)}
     forbidden = set(PATH_ENV) | {"result_json_path", "log_path", "video_out_path", "remote_policy_url", "dry_run_model_load"}
+    if split:
+        forbidden.remove("remote_policy_url")
     for key, value in settings["evaluation"].items():
         if key not in defaults or key in forbidden:
             raise ValueError(f"Unsupported evaluation option: {key}; configure paths/output in their own sections")
@@ -84,23 +92,25 @@ def device_label(gpu_name, board_name, hostname):
     return re.sub(r"[^a-z0-9_-]+", "_", gpu_name.lower() or hostname.lower()).strip("_") or "unknown"
 
 
-def distribution(values):
+def distribution(values, unit="ms", scale=1000):
     values = sorted(values)
     if not values:
-        return {"count": 0, "mean_ms": None, "median_ms": None,
-                "p95_ms": None, "min_ms": None, "max_ms": None}
+        return {"count": 0, **{f"{key}_{unit}": None for key in ("mean", "median", "p95", "min", "max")}}
     position = (len(values) - 1) * 0.95
     lo = int(position)
     hi = min(lo + 1, len(values) - 1)
-    return {"count": len(values), "mean_ms": statistics.mean(values) * 1000,
-            "median_ms": statistics.median(values) * 1000,
-            "p95_ms": (values[lo] + (values[hi] - values[lo]) * (position - lo)) * 1000,
-            "min_ms": values[0] * 1000, "max_ms": values[-1] * 1000}
+    return {"count": len(values), f"mean_{unit}": statistics.mean(values) * scale,
+            f"median_{unit}": statistics.median(values) * scale,
+            f"p95_{unit}": (values[lo] + (values[hi] - values[lo]) * (position - lo)) * scale,
+            f"min_{unit}": values[0] * scale, f"max_{unit}": values[-1] * scale}
 
 
 def summarize(result, exclude_first_calls):
-    if result.get("policy_backend") != "local":
-        raise ValueError("This benchmark requires local inference")
+    if exclude_first_calls < 0:
+        raise ValueError("exclude_first_calls must be nonnegative")
+    backend = result.get("policy_backend")
+    if backend not in {"local", "remote"}:
+        raise ValueError("Expected a local or remote evaluation result")
     rows, episodes = [], []
     for task in result["tasks"]:
         for episode in task["episode_results"]:
@@ -111,13 +121,27 @@ def summarize(result, exclude_first_calls):
                              "duration_s": timing["duration_s"],
                              "duration_ms": timing["duration_s"] * 1000,
                              "included_in_filtered": index >= exclude_first_calls})
+                if not math.isfinite(timing["duration_s"]) or timing["duration_s"] < 0:
+                    raise ValueError("Invalid inference duration")
+                if backend == "remote":
+                    remote = timing.get("remote")
+                    if not isinstance(remote, dict):
+                        raise ValueError("Remote call is missing remote timing data")
+                    rows[-1]["request_id"] = remote.get("request_id")
+                    for key in (*REMOTE_STAGES, *REMOTE_BYTES, *REMOTE_MEMORY):
+                        value = remote.get(key)
+                        if value is not None and (not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0):
+                            raise ValueError(f"Invalid remote metric: {key}")
+                        rows[-1][key] = value
     all_calls = [row["duration_s"] for row in rows]
     filtered = [row["duration_s"] for row in rows if row["included_in_filtered"]]
     first_calls = [row["duration_s"] for row in rows if row["call_index"] == 0]
     wall = sum(ep["rollout_wall_time_s"] for ep in episodes)
     inference = sum(all_calls)
     steps = sum(ep["executed_steps"] for ep in episodes)
-    chunk = result["chunk_size"]
+    chunk = result.get("chunk_size") or (result.get("remote_server") or {}).get("chunk_size")
+    if not isinstance(chunk, int) or chunk <= 0:
+        raise ValueError("Result must record a positive model chunk_size")
     summary = {
         "scope": "complete synchronous policy call: preprocessing, inference, transfers and action decoding; not GPU-only",
         "filter": f"exclude first {exclude_first_calls} calls of EACH episode from filtered statistics only; no extra warmup calls",
@@ -137,8 +161,38 @@ def summarize(result, exclude_first_calls):
         "inference_fraction_of_rollout": inference / wall if wall else None,
         "executed_steps_per_rollout_second": steps / wall if wall else None,
         "rollout_scope": result["timing_scope"],
+        "policy_backend": backend,
     }
+    if backend == "remote":
+        summary["scope"] = "complete client policy call including preprocessing, encoding, HTTP round trip, response validation; not server-only"
+        groups = {"all_calls": rows, "first_call_per_episode": [r for r in rows if r["call_index"] == 0],
+                  "filtered_calls": [r for r in rows if r["included_in_filtered"]]}
+        def metric_groups(key, unit="ms", scale=1000):
+            output = {}
+            for name, group in groups.items():
+                values = [r[key] for r in group if r[key] is not None]
+                output[name] = {**distribution(values, unit, scale), "missing_count": len(group) - len(values),
+                                "total": sum(values) if values else None, "total_unit": "s" if unit == "ms" else unit}
+            return output
+        summary["remote_stage_timings"] = {key: metric_groups(key) for key in REMOTE_STAGES}
+        summary["remote_payload"] = {key: metric_groups(key, "bytes", 1) for key in REMOTE_BYTES}
+        summary["remote_memory"] = {
+            key: {"max_bytes": max((r[key] for r in rows if r[key] is not None), default=None),
+                  "missing_count": sum(r[key] is None for r in rows)} for key in REMOTE_MEMORY}
+        summary["remote_memory_scope"] = "server process lifetime PyTorch allocator peak, including model load/warmup and possibly earlier clients; not this rollout alone or total shared RAM"
+        summary["remote_stage_note"] = "round_trip includes server_total, which includes decode/queue/inference; do not add overlapping stages. transport_overhead includes HTTP and response handling, not pure network latency"
+        summary["remote_payload_note"] = "request_bytes is the HTTP body including protocol header and compressed tensors; excludes HTTP/TCP headers"
     return summary, rows
+
+
+def write_reports(prefix, summary, rows):
+    write_json(prefix.with_name(prefix.name + "_summary.json"), summary)
+    columns = BASE_COLUMNS + (["request_id", *REMOTE_STAGES, *REMOTE_BYTES, *REMOTE_MEMORY]
+                              if summary["policy_backend"] == "remote" else [])
+    with prefix.with_suffix(".csv").open("w", newline="", encoding="utf-8") as stream:
+        writer = csv.DictWriter(stream, fieldnames=columns)
+        writer.writeheader()
+        writer.writerows(rows)
 
 
 def command_output(command):
@@ -191,10 +245,11 @@ def write_json(path, payload):
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False, allow_nan=False) + "\n")
 
 
-def main():
+def main(split=False):
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False,
         epilog="Other options are forwarded to evaluate.py (e.g. --task_ids 0 --save_video false).")
-    parser.add_argument("--config", default=str(DEFAULT_CONFIG), help="Benchmark YAML configuration")
+    default_config = DEFAULT_CONFIG.with_name("split_benchmark.yaml") if split else DEFAULT_CONFIG
+    parser.add_argument("--config", default=str(default_config), help="Benchmark YAML configuration")
     parser.add_argument("--output_root", "--output-root")
     parser.add_argument("--exclude_first_calls", "--exclude-first-calls", type=int)
     for key in sorted(LIBERO_KEYS):
@@ -206,9 +261,9 @@ def main():
     sys.path[:0] = [str(REPO_ROOT), str(REPO_ROOT / "third_party/vla_adapter")]
     from vla_adapter.rollout import GenerateConfig, eval_libero, parse_args
     config_path = expand_path(args.config)
-    settings = load_settings(config_path, GenerateConfig)
+    settings = load_settings(config_path, GenerateConfig, split=split)
     if args.output_root is None:
-        args.output_root = settings["benchmark"]["output_root"]
+        args.output_root = (os.environ.get("SPLIT_OUTPUT") if split else None) or settings["benchmark"]["output_root"]
     if args.exclude_first_calls is None:
         args.exclude_first_calls = settings["benchmark"]["exclude_first_calls"]
     if args.exclude_first_calls < 0:
@@ -219,14 +274,18 @@ def main():
     # Empty evaluator defaults allow path precedence: CLI > environment > YAML.
     for key in PATH_ENV:
         defaults.extend([f"--{key}", ""])
+    if split and os.environ.get("THOR_URL"):
+        defaults.extend(["--remote_policy_url", os.environ["THOR_URL"]])
     cfg = parse_args([*defaults, *remaining])
-    if cfg.remote_policy_url or cfg.dry_run_model_load:
-        parser.error("Use local rollouts only; for a configuration check use --print_command")
+    if bool(cfg.remote_policy_url) != split or cfg.dry_run_model_load:
+        parser.error("Backend must match the benchmark entry point; use --print_command for preflight")
     if cfg.num_trials_per_task < 1 or cfg.chunk_size < 1 or not 1 <= cfg.num_open_loop_steps <= cfg.chunk_size:
         parser.error("Require trials >= 1 and 1 <= num_open_loop_steps <= chunk_size")
     if cfg.result_json_path or cfg.log_path or cfg.video_out_path != "outputs/evaluation":
         parser.error("Output paths are automatically named; use --output_root")
     for key, env_name in PATH_ENV.items():
+        if split and key != "libero_root":
+            continue
         candidates = settings["paths"][key]
         candidates = candidates if isinstance(candidates, list) else [candidates]
         setattr(cfg, key, local_path(getattr(cfg, key), env_name, candidates,
@@ -242,10 +301,22 @@ def main():
     os.environ["PYOPENGL_PLATFORM"] = cfg.pyopengl_platform
     import torch
     metadata = hardware_info(torch)
-    if cfg.precision == "bf16" and not metadata["bf16_supported"]:
+    if not split and cfg.precision == "bf16" and not metadata["bf16_supported"]:
         raise RuntimeError("This CUDA device does not support bf16; select --precision fp32")
+    device_tag = metadata["device_name"]
+    if split:
+        from turbovla.split.client import RemoteTurboVLAPolicy
+
+        remote = RemoteTurboVLAPolicy(cfg.remote_policy_url, timeout=cfg.remote_timeout_s,
+                                      precision=cfg.precision, chunk_size=cfg.chunk_size)
+        server = remote.server_info
+        if server["stats_key"] != cfg.stats_key:
+            raise ValueError("stats_key differs from the loaded server policy")
+        metadata["remote_server"] = server
+        server_tag = device_label(server.get("gpu_name", ""), "", server.get("hostname", "unknown"))
+        device_tag = f"{device_tag}_to_{server_tag}_split"
     stamp = datetime.now().astimezone().strftime("%Y%m%dT%H%M%S_%f%z")
-    run_name = f"{metadata['device_name']}_{cfg.task_suite_name}_{cfg.precision}_{stamp}"
+    run_name = f"{device_tag}_{cfg.task_suite_name}_{cfg.precision}_{stamp}"
     run_dir = expand_path(args.output_root) / run_name
     prefix = run_dir / run_name
     cfg.result_json_path = str(prefix.with_suffix(".json"))
@@ -278,14 +349,12 @@ def main():
     try:
         eval_libero(cfg)
         result = json.loads(Path(cfg.result_json_path).read_text())
+        if split:
+            metadata["remote_server"] = result["remote_server"]
         summary, rows = summarize(result, args.exclude_first_calls)
         summary.update({"device_name": metadata["device_name"], "source_result": cfg.result_json_path,
                         "metadata_path": str(metadata_path)})
-        write_json(prefix.with_name(run_name + "_summary.json"), summary)
-        with prefix.with_suffix(".csv").open("w", newline="") as stream:
-            writer = csv.DictWriter(stream, fieldnames=["task_id", "episode", "call_index", "step", "duration_s", "duration_ms", "included_in_filtered"])
-            writer.writeheader()
-            writer.writerows(rows)
+        write_reports(prefix, summary, rows)
         metadata["status"] = "completed"
         print(json.dumps({k: summary[k] for k in ("all_calls", "filtered_calls", "overall_success_rate")}, indent=2))
     except BaseException as exc:
@@ -297,6 +366,8 @@ def main():
         metadata["cuda_peak_allocated_bytes"] = torch.cuda.max_memory_allocated()
         metadata["cuda_peak_reserved_bytes"] = torch.cuda.max_memory_reserved()
         metadata["memory_scope"] = "PyTorch allocator peak since preflight; not total shared RAM or simulator GPU memory"
+        if split:
+            metadata["memory_scope"] = "client PyTorch allocator only; server process lifetime peaks are reported separately in summary.remote_memory when available"
         write_json(metadata_path, metadata)
     print(f"Saved benchmark: {run_dir}")
 

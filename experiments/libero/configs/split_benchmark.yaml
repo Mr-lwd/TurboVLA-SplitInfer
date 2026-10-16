@@ -1,0 +1,31 @@
+# Orin 只需要 LIBERO，不加载本地模型权重。所有相对路径以仓库根目录为准。
+paths:
+  libero_root: ../LIBERO
+libero_paths:
+  benchmark_root: ${libero_root}/libero/libero
+  bddl_files: ${libero_root}/libero/libero/bddl_files
+  init_states: ${libero_root}/libero/libero/init_files
+  assets: ${libero_root}/libero/libero/assets
+  datasets: ${libero_root}/data
+benchmark:
+  output_root: outputs/evaluation/split
+  exclude_first_calls: 1
+evaluation:
+  remote_policy_url: http://192.168.123.38:8765
+  remote_timeout_s: 120.0
+  stats_key: libero_all4_no_noops
+  task_suite_name: libero_spatial
+  task_ids: ""
+  max_tasks: -1
+  num_trials_per_task: 1
+  num_steps_wait: 10
+  chunk_size: 12
+  num_open_loop_steps: 12
+  env_img_res: 256
+  seed: 7
+  precision: bf16
+  control_mode: relative
+  mujoco_gl: egl
+  pyopengl_platform: egl
+  save_video: true
+  save_realtime_video: true

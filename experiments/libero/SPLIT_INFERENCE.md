@@ -66,14 +66,56 @@ bash scripts/libero/run_split_orin.sh
 
 默认运行 `libero_spatial` 的 10 个任务，每个 1 回合。仅检查单个任务可以加 `--max_tasks 1`。Orin 只需现有的 `turbovla-libero` 环境和 LIBERO 资产；无需提供本地 checkpoint、DINOv3 或 BERT 路径。
 
-输出位于 `outputs/evaluation/split_thor/`：
+路径、服务地址和评测参数统一在 [`configs/split_benchmark.yaml`](configs/split_benchmark.yaml) 修改，
+也可用 `--config experiments/libero/configs/my_split.local.yaml` 指定本机配置。
+配置结构和 local 相同，但 `paths` 仅需 `libero_root`，服务地址在 `evaluation.remote_policy_url`。
+每次运行生成独立 LIBERO 路径配置，不修改 `~/.libero/config.yaml`。
+脚本使用当前激活环境的 `python`；`TURBOVLA_PYTHON` 可指定解释器。
+`THOR_URL`、`LIBERO_ROOT`、`SPLIT_OUTPUT` 环境变量覆盖 YAML，命令行参数优先级最高。
 
-- `libero_spatial.json`：任务结果、Thor 身份和 checkpoint 哈希、逐次请求计时。
-- `libero_spatial.log`：Orin 评估日志。
-- `videos/turbovla_libero/libero_spatial/*.mp4`：20 FPS 的控制步回放。
-- 同目录 `*_realtime.mp4`：包含端侧预处理、请求往返和仿真耗时的墙钟回放，等待时显示 `THOR / NETWORK`。
+新输出自动按两端设备和时间戳命名，例如：
+`outputs/evaluation/split/orin_to_thor_split_libero_spatial_bf16_<时间戳>/`。
 
-再次使用同一路径会更新同名结果；可用 `SPLIT_OUTPUT=outputs/evaluation/split_run2 bash scripts/libero/run_split_orin.sh` 为下一次运行选择新目录。`THOR_URL`、`LIBERO_ROOT`、`TURBOVLA_PYTHON` 可覆盖默认配置。
+- `*_summary.json`：与 local 相同的 `all_calls`、`first_call_per_episode`、`filtered_calls`，
+  每组均含 count/mean/median/P95/min/max；另含各远程阶段、请求大小、服务端内存的汇总。
+- `*.csv`：逐次调用耗时、任务/回合/step、request_id、全部远程阶段及字节数，可与 Thor 日志对齐。
+- `*_metadata.json`：客户端软件、设备、功耗模式（可读取时）、配置、Git 状态、CUDA 分配器峰值，
+  以及服务端身份、checkpoint 哈希和运行信息（新版 Thor 服务提供）。
+- `*.json`（无额外后缀）：原始任务结果、逐次计时与视频路径。
+- `*.log`：客户端评测器日志。
+- `orin_videos/turbovla_libero/libero_spatial/`：普通回放和 `*_realtime.mp4` 墙钟回放。
+
+`benchmark.exclude_first_calls` 默认为 1：**按回合排除首次调用**，同一筛选规则用于完整调用和所有远程阶段。
+这不是按耗时剔除异常值，后续网络抖动仍被保留，也不等价于保证进入稳态。
+`remote_stage_timings.<阶段>.filtered_calls` 可直接查看阶段过滤后的平均/中位数/P95 等。
+阶段分布单位为毫秒，`total` 按 `total_unit` 标明秒或字节。缺失数据以 `null` 和 `missing_count` 表示。
+注意：round_trip 已包含 server_total，而 server_total 已包含 decode/queue/inference，不能将这些嵌套阶段相加。
+
+新版 Thor 服务还返回软件版本、启动预热次数和每次响应时的 PyTorch CUDA 分配器峰值。
+峰值范围是**服务进程自启动以来**，包括模型加载、预热和之前的请求，不等于本回合峰值或 Jetson 总内存。
+该采集位于推理阶段计时结束后，其少量开销会包含在完整请求往返中。
+更新 Thor 代码后需重启服务才能使用；旧服务仍兼容，未提供的指标保持为空。
+这些信息不能通过客户端升级追溯恢复。
+
+```bash
+# 验证本地路径、查询 Thor /health 并打印命令，不执行推理
+bash scripts/libero/run_split_orin.sh --print_command
+# 单任务，不生成视频
+bash scripts/libero/run_split_orin.sh --task_ids 0 --save_video false
+```
+
+### 补算已有 split 数据
+
+```bash
+python scripts/libero/summarize_split.py \
+  outputs/evaluation/split_thor/libero_spatial.json --client_device orin
+```
+
+无需连接 Thor、加载权重或重新推理。新汇总、CSV 和溯源 metadata 写入原始文件旁的
+`reports/orin_to_thor_split_<套件>_backfill_<导出时间戳>/`，原 JSON 和视频保持不变。
+metadata 记录源文件 SHA-256、原有字段及导出时间；导出时间不是原评测时间。
+`--client_device` 指定原始客户端名称，默认 `unknown_client`，不会误用当前导出机器名称。
+历史结果未记录的软件版本、内存、完整启动配置等无法恢复，不会用当前机器状态填充。
 
 原始评估入口同样支持：
 

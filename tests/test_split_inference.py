@@ -2,6 +2,7 @@ from copy import deepcopy
 import json
 import threading
 import unittest
+from unittest.mock import patch
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
@@ -83,6 +84,16 @@ class SplitInferenceTests(unittest.TestCase):
         image = np.zeros((256, 256, 3), np.uint8)
         with self.assertRaisesRegex(RuntimeError, "server instance changed"):
             client.predict_env_action_chunk(image, image, "move", np.zeros(8, np.float32), 12)
+
+    def test_optional_server_memory_survives_http_roundtrip(self):
+        self.policy.device = torch.device("cuda")
+        client = RemoteTurboVLAPolicy(self.url)
+        image = np.zeros((256, 256, 3), np.uint8)
+        with patch("torch.cuda.max_memory_allocated", return_value=1234), \
+             patch("torch.cuda.max_memory_reserved", return_value=5678):
+            client.predict_env_action_chunk(image, image, "move", np.zeros(8, np.float32), 12)
+        self.assertEqual(client.last_timing["server_cuda_peak_allocated_bytes"], 1234)
+        self.assertEqual(client.last_timing["server_cuda_peak_reserved_bytes"], 5678)
 
     def test_oversized_request_is_rejected_before_reading_payload(self):
         req = Request(self.url + "/predict", data=b"x", headers={"Content-Length": str(MAX_REQUEST_BYTES + 1)})

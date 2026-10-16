@@ -2,11 +2,15 @@
 
 import argparse
 import hashlib
+import importlib.metadata
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import logging
 from pathlib import Path
+import platform
 import socket
+import subprocess
+import sys
 import threading
 import time
 import uuid
@@ -40,6 +44,14 @@ class InferenceService:
             if actions.shape != (header["execute_steps"], 7) or not np.isfinite(actions).all():
                 raise RuntimeError("model returned invalid actions")
             done = time.perf_counter()
+            memory = {}
+            if getattr(getattr(self.policy, "device", None), "type", None) == "cuda":
+                import torch
+
+                memory = {
+                    "cuda_peak_allocated_bytes": torch.cuda.max_memory_allocated(self.policy.device),
+                    "cuda_peak_reserved_bytes": torch.cuda.max_memory_reserved(self.policy.device),
+                }
         timing = {
             "decode_s": decoded - start, "queue_s": acquired - decoded,
             "inference_s": done - acquired, "total_s": done - start,
@@ -51,6 +63,7 @@ class InferenceService:
         return {
             "version": VERSION, "request_id": header["request_id"],
             "server_id": self.metadata["server_id"], "actions": actions.tolist(), "timing": timing,
+            "memory": memory,
         }
 
 
@@ -116,6 +129,17 @@ def build_metadata(policy):
     with open(policy.ckpt_path, "rb") as stream:
         for block in iter(lambda: stream.read(1024 * 1024), b""):
             checksum.update(block)
+    packages = {}
+    for package in ("transformers", "numpy"):
+        try:
+            packages[package] = importlib.metadata.version(package)
+        except importlib.metadata.PackageNotFoundError:
+            packages[package] = None
+    try:
+        power = subprocess.run(["nvpmodel", "-q"], capture_output=True, text=True, timeout=5)
+        power_mode = power.stdout.strip() if power.returncode == 0 else None
+    except (OSError, subprocess.TimeoutExpired):
+        power_mode = None
     return {
         "ready": True, "version": VERSION, "server_id": uuid.uuid4().hex,
         "hostname": socket.gethostname(), "device": str(policy.device),
@@ -131,6 +155,10 @@ def build_metadata(policy):
         "proprio_mean": policy.proprio_mean.tolist(), "proprio_std": policy.proprio_std.tolist(),
         "stats_key": policy.stats_key,
         "split_boundary": "normalized image and state tensors; all neural layers execute on server",
+        "runtime": {"python": sys.version, "python_executable": sys.executable,
+                    "torch": str(torch.__version__), "cuda": torch.version.cuda,
+                    "packages": packages, "platform": platform.platform(), "nvpmodel": power_mode},
+        "memory_scope": "PyTorch allocator peak since server process start, including load/warmup and earlier requests; not per rollout or total shared RAM",
     }
 
 
@@ -169,6 +197,7 @@ def main():
             "pick up the black bowl between the plate and the ramekin and place it on the plate",
         )
     metadata = build_metadata(policy)
+    metadata["warmup_steps"] = args.warmup_steps
     with PolicyHTTPServer((args.host, args.port), InferenceService(policy, metadata)) as server:
         logging.info("READY http://%s:%d GPU=%s server_id=%s", args.host, args.port,
                      metadata["gpu_name"], metadata["server_id"])
