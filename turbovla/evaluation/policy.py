@@ -517,6 +517,21 @@ class TurboVLAPolicy:
             state = np.asarray(state_or_obs, dtype=np.float32)
 
         samples, states = self._build_batch([primary_image], [wrist_image], [state])
+        return self.predict_normalized_action_chunk_from_tensors(samples["dinov3"], states, instruction)
+
+    def predict_normalized_action_chunk_from_tensors(
+        self,
+        pixel_values: torch.Tensor,
+        normalized_state: torch.Tensor,
+        instruction: str,
+    ) -> np.ndarray:
+        """Run the model on already normalized inputs, including remote inputs."""
+        if tuple(pixel_values.shape) != (1, 2, 3, EXPECTED_IMAGE_SIZE, EXPECTED_IMAGE_SIZE):
+            raise ValueError("pixel_values must have shape [1, 2, 3, 256, 256]")
+        if tuple(normalized_state.shape) != (1, STATE_DIM):
+            raise ValueError("normalized_state must have shape [1, 8]")
+        samples = {"dinov3": pixel_values.to(self.device)}
+        states = normalized_state.to(self.device)
         samples, states = self._prepare_model_inputs(samples, states)
         with torch.inference_mode():
             pred = self.model([instruction], samples, states)

@@ -55,6 +55,8 @@ torchrun --nproc_per_node=4 experiments/libero/train.py \
 
 ## Evaluation
 
+For Orin preprocessing with neural inference on a remote Jetson Thor and actions returned to Orin, see [the split inference guide](SPLIT_INFERENCE.md). The evaluator supports `--remote_policy_url http://192.168.123.38:8765` and saves network/server timing alongside both replay videos.
+
 One invocation evaluates one checkpoint on one suite. Checkpoint selection and multi-GPU scheduling are intentionally outside the evaluator.
 
 ```bash

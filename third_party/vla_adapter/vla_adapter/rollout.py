@@ -49,6 +49,8 @@ class GenerateConfig:
     stats_key: str = "libero_all4_no_noops"
     normalize_binary_gripper: str = "auto"
     allow_hf_download: bool = False
+    remote_policy_url: str = ""
+    remote_timeout_s: float = 120.0
 
     task_suite_name: str = "libero_10"
     task_ids: str = ""
@@ -265,7 +267,11 @@ def _save_realtime_video(path: Path, episode: EpisodeResult, fps: int = 20) -> f
                 inference_index < len(episode.inference_timings)
                 and episode.inference_timings[inference_index]["start_s"] <= elapsed
             ):
-                phase = "INFERENCE (waiting)"
+                phase = (
+                    "THOR / NETWORK (waiting)"
+                    if "remote" in episode.inference_timings[inference_index]
+                    else "INFERENCE (waiting)"
+                )
             if index == num_frames:
                 frame_index = len(episode.frames) - 1
                 phase = "SUCCESS" if episode.success else "END"
@@ -335,6 +341,8 @@ def _run_episode(
                 "end_s": inference_end - episode_start,
                 "duration_s": inference_end - inference_start,
             })
+            if getattr(policy, "last_timing", None):
+                inference_timings[-1]["remote"] = dict(policy.last_timing)
             action_queue.extend(np.asarray(row, dtype=np.float32) for row in env_actions)
 
         action = action_queue.popleft() if action_queue else dummy_action
@@ -360,15 +368,15 @@ def _run_episode(
 
 def eval_libero(cfg: GenerateConfig) -> float:
     _setup_logging(cfg)
-    if not cfg.ckpt_path:
+    if not cfg.remote_policy_url and not cfg.ckpt_path:
         raise ValueError("--ckpt_path is required for TurboVLA evaluation.")
-    if not Path(cfg.ckpt_path).exists():
+    if not cfg.remote_policy_url and not Path(cfg.ckpt_path).exists():
         raise FileNotFoundError(f"TurboVLA checkpoint not found: {cfg.ckpt_path}")
-    if not cfg.dinov3_path:
+    if not cfg.remote_policy_url and not cfg.dinov3_path:
         raise ValueError("--dinov3_path is required")
-    if not cfg.bert_path:
+    if not cfg.remote_policy_url and not cfg.bert_path:
         raise ValueError("--bert_path is required")
-    if not Path(cfg.stats_path).is_file():
+    if not cfg.remote_policy_url and not Path(cfg.stats_path).is_file():
         raise FileNotFoundError(f"stats file not found: {cfg.stats_path}")
     if cfg.task_suite_name not in LIBERO_SUITES:
         raise ValueError(f"Unknown task suite {cfg.task_suite_name}; choose from {LIBERO_SUITES}")
@@ -388,33 +396,46 @@ def eval_libero(cfg: GenerateConfig) -> float:
     ) = _import_turbovla_adapter()
     set_seed_everywhere(cfg.seed)
 
-    logging.info("Loading TurboVLA policy from %s", cfg.ckpt_path)
-    policy = TurboVLAPolicy(
-        ckpt_path=cfg.ckpt_path,
-        dinov3_path=cfg.dinov3_path,
-        bert_path=cfg.bert_path,
-        stats_path=cfg.stats_path,
-        stats_key=cfg.stats_key,
-        normalize_binary_gripper=cfg.normalize_binary_gripper,
-        allow_hf_download=cfg.allow_hf_download,
-        hidden_dim=cfg.hidden_dim,
-        nheads=cfg.nheads,
-        dim_feedforward=cfg.dim_feedforward,
-        max_text_len=cfg.max_text_len,
-        text_padding_length=cfg.text_padding_length,
-        vla_feature_enhancer_layers=cfg.vla_feature_enhancer_layers,
-        enhancer_inner_dim=cfg.enhancer_inner_dim,
-        action_dim=cfg.action_dim,
-        chunk_size=cfg.chunk_size,
-        state_dim=cfg.state_dim,
-        num_state_tokens=cfg.num_state_tokens,
-        text_dropout=cfg.text_dropout,
-        fusion_dropout=cfg.fusion_dropout,
-        fusion_droppath=cfg.fusion_droppath,
-        sub_sentence_present=cfg.sub_sentence_present,
-        precision=cfg.precision,
-        dinov3_output_hidden_states=cfg.dinov3_output_hidden_states,
-    )
+    if cfg.remote_policy_url:
+        from turbovla.split.client import RemoteTurboVLAPolicy
+
+        logging.info("Connecting to Thor policy at %s; preprocessing and simulation run locally", cfg.remote_policy_url)
+        policy = RemoteTurboVLAPolicy(
+            cfg.remote_policy_url, timeout=cfg.remote_timeout_s,
+            precision=cfg.precision, chunk_size=cfg.chunk_size,
+        )
+        if policy.server_info["stats_key"] != cfg.stats_key:
+            raise ValueError("stats_key differs from the loaded Thor policy")
+        cfg.ckpt_path = policy.checkpoint_name
+        logging.info("Remote policy ready: %s / %s", policy.server_info["hostname"], policy.server_info["gpu_name"])
+    else:
+        logging.info("Loading TurboVLA policy from %s", cfg.ckpt_path)
+        policy = TurboVLAPolicy(
+            ckpt_path=cfg.ckpt_path,
+            dinov3_path=cfg.dinov3_path,
+            bert_path=cfg.bert_path,
+            stats_path=cfg.stats_path,
+            stats_key=cfg.stats_key,
+            normalize_binary_gripper=cfg.normalize_binary_gripper,
+            allow_hf_download=cfg.allow_hf_download,
+            hidden_dim=cfg.hidden_dim,
+            nheads=cfg.nheads,
+            dim_feedforward=cfg.dim_feedforward,
+            max_text_len=cfg.max_text_len,
+            text_padding_length=cfg.text_padding_length,
+            vla_feature_enhancer_layers=cfg.vla_feature_enhancer_layers,
+            enhancer_inner_dim=cfg.enhancer_inner_dim,
+            action_dim=cfg.action_dim,
+            chunk_size=cfg.chunk_size,
+            state_dim=cfg.state_dim,
+            num_state_tokens=cfg.num_state_tokens,
+            text_dropout=cfg.text_dropout,
+            fusion_dropout=cfg.fusion_dropout,
+            fusion_droppath=cfg.fusion_droppath,
+            sub_sentence_present=cfg.sub_sentence_present,
+            precision=cfg.precision,
+            dinov3_output_hidden_states=cfg.dinov3_output_hidden_states,
+        )
 
     if cfg.dry_run_model_load:
         logging.info("dry_run_model_load=True; exiting before LIBERO rollout.")
@@ -447,6 +468,10 @@ def eval_libero(cfg: GenerateConfig) -> float:
         "num_open_loop_steps": cfg.num_open_loop_steps,
         "seed": cfg.seed,
         "precision": cfg.precision,
+        "policy_backend": "remote" if cfg.remote_policy_url else "local",
+        "remote_policy_url": cfg.remote_policy_url or None,
+        "remote_server": getattr(policy, "server_info", None),
+        "inference_scope": "complete policy call, including client preprocessing and network for remote mode",
         "dinov3_output_hidden_states": cfg.dinov3_output_hidden_states,
         "save_realtime_video": cfg.save_video and cfg.save_realtime_video,
         "video_fps": 20,
@@ -519,6 +544,13 @@ def eval_libero(cfg: GenerateConfig) -> float:
                     "inference_total_s": sum(item["duration_s"] for item in episode.inference_timings),
                     "inference_timings": episode.inference_timings,
                 }
+                if cfg.remote_policy_url:
+                    timing["remote_inference_total_s"] = sum(
+                        item["remote"]["server_inference_s"] for item in episode.inference_timings
+                    )
+                    timing["remote_round_trip_total_s"] = sum(
+                        item["remote"]["round_trip_s"] for item in episode.inference_timings
+                    )
                 if cfg.save_video:
                     timing["video_path"] = str(video_path)
                     timing["video_duration_s"] = len(episode.executed_actions) / 20

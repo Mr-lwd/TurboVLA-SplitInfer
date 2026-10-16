@@ -1,4 +1,10 @@
-# TurboVLA: Real-Time Vision-Language-Action Model at 32 Hz on an RTX 4090 with &lt;1 GB VRAM
+# TurboVLA-SplitInfer: Jetson Orin + Jetson Thor
+
+This fork runs image/state preprocessing and LIBERO simulation on Jetson Orin, sends normalized tensors to Jetson Thor for TurboVLA neural inference, and returns action chunks to Orin. It records per-request network/server timing and both control-step and wall-clock videos.
+
+See the [two-device setup, architecture, commands, and validation guide](experiments/libero/SPLIT_INFERENCE.md). Start Thor with `bash scripts/libero/serve_thor.sh`, then run Orin with `bash scripts/libero/run_split_orin.sh`.
+
+## Upstream TurboVLA: Real-Time Vision-Language-Action Model at 32 Hz on an RTX 4090 with &lt;1 GB VRAM
 
 <div align="center">
   <a href="https://arxiv.org/abs/2607.27205"><img src="https://img.shields.io/badge/Paper-arXiv-b31b1b?logo=arxiv&logoColor=white" alt="Paper"></a>
@@ -14,7 +20,7 @@
   <sup>*</sup> Equal contribution, listed alphabetically by surname. <sup>&dagger;</sup> Project Lead.
 </div>
 
-This repository contains the official implementation of **TurboVLA** for the paper **TurboVLA: Real-Time Vision-Language-Action Model at 32 Hz on an RTX 4090 with &lt;1 GB VRAM**.
+This project builds on the official implementation of **TurboVLA** for the paper **TurboVLA: Real-Time Vision-Language-Action Model at 32 Hz on an RTX 4090 with &lt;1 GB VRAM**. The upstream authors, paper, and original model documentation are retained below.
 
 <div align="center">
   <img src="assets/figures/real-world-tasks.gif" alt="TurboVLA real-world tasks with synchronous inference" width="100%">
