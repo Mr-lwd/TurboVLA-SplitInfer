@@ -1,4 +1,7 @@
 <script setup>
+import { useLocaleText } from './i18n'
+const { t } = useLocaleText()
+
 import { computed, ref } from 'vue'
 import { withBase } from 'vitepress'
 import catalog from '../../../reports/evaluation/latest.json'
@@ -7,7 +10,7 @@ const selected = ref('')
 const metricId = ref('inference')
 const group = computed(() => catalog.groups[0])
 const matched = computed(() => group.value.selection?.kind === 'common_success')
-const excluded = computed(() => group.value.selection?.excluded.map(e => `${e.task_id}/${e.episode}`).join(', ') || 'None')
+const excluded = computed(() => group.value.selection?.excluded.map(e => `${e.task_id}/${e.episode}`).join(t(", ")) || t("None"))
 const rows = computed(() => group.value.run_ids.flatMap(id => {
   const run = catalog.runs.find(r => r.id === id)
   const records = matched.value ? group.value.derived_records.filter(item => item.run_id === id).map(item => item.record) : run.records
@@ -19,16 +22,16 @@ const originalSuccess = row => {
 }
 const active = computed(() => rows.value.find(row => row.key === selected.value) || rows.value[0])
 const hasStages = computed(() => rows.value.some(row => row.metrics.remote_stage_timings))
-const format = (value, digits = 2) => value == null ? 'Not recorded' : Number(value).toFixed(digits)
-const name = row => ({ 'Orin local': 'Orin local', 'Thor local': 'Thor local', 'Async / replace': 'Async' }[row.label] || row.label)
+const format = (value, digits = 2) => value == null ? t("Not recorded") : Number(value).toFixed(digits)
+const name = row => ({ 'Orin local': t("Orin local"), 'Thor local': t("Thor local"), 'Async / replace': 'Async' }[row.label] || row.label)
 const color = row => ({ orin: '#637C97', thor: '#247F78', sync: '#BB8A4F', replace: '#557CAF', blend: '#9175A0' }[row.mode === 'local' ? row.run.hardware.device_name : row.mode] || '#637C97')
 const metrics = computed(() => [
-  { id: 'inference', label: 'Response latency', title: 'Mean response latency', unit: 'ms / chunk', value: row => row.metrics.filtered_calls.mean_ms },
-  { id: 'control', label: 'Control interval', title: 'Control interval p95', unit: 'ms', value: row => row.metrics.control_intervals?.p95_ms },
-  { id: 'wall', label: 'Task time', title: 'Total task time', unit: 's', value: row => row.metrics.rollout_wall_time_s },
+  { id: 'inference', label: t("Response latency"), title: t("Mean response latency"), unit: t("ms / chunk"), value: row => row.metrics.filtered_calls.mean_ms },
+  { id: 'control', label: t("Control interval"), title: t("Control interval p95"), unit: 'ms', value: row => row.metrics.control_intervals?.p95_ms },
+  { id: 'wall', label: t("Task time"), title: t("Total task time"), unit: 's', value: row => row.metrics.rollout_wall_time_s },
   matched.value
-    ? { id: 'success', label: 'Executed steps', title: 'Executed steps', unit: 'steps', value: row => row.metrics.executed_steps }
-    : { id: 'success', label: 'Task success', title: 'Original task success', unit: 'Successes / episodes', value: row => 100 * row.metrics.successes / row.metrics.episodes },
+    ? { id: 'success', label: t("Executed steps"), title: t("Executed steps"), unit: t("steps"), value: row => row.metrics.executed_steps }
+    : { id: 'success', label: t("Task success"), title: t("Original task success"), unit: t("Successes / episodes"), value: row => 100 * row.metrics.successes / row.metrics.episodes },
 ])
 const metric = computed(() => metrics.value.find(item => item.id === metricId.value))
 const maximum = computed(() => metricId.value === 'success' && !matched.value ? 100 : Math.max(1, ...rows.value.map(row => metric.value.value(row) ?? 0)))
@@ -37,11 +40,11 @@ const valueLabel = row => metricId.value === 'success'
 </script>
 
 <template>
-  <section class="benchmark-panel" aria-label="Benchmark explorer">
-    <p v-if="matched" class="selection-note"><strong>{{ group.selection.retained.length }} commonly successful cases</strong><br>All {{ rows.length }} modes exclude task/episode {{ excluded }}. Recomputed from existing records.</p>
-    <p v-else class="selection-note">Current complete runs, aggregated across all episodes.</p>
+  <section class="benchmark-panel" :aria-label='t("Benchmark explorer")'>
+    <p v-if="matched" class="selection-note"><strong>{{ group.selection.retained.length }}{{ t(" commonly successful cases") }}</strong><br>{{ t("All ") }}{{ rows.length }}{{ t(" modes exclude task/episode ") }}{{ excluded }}{{ t(". Recomputed from existing records.") }}</p>
+    <p v-else class="selection-note">{{ t("Current complete runs, aggregated across all episodes.") }}</p>
 
-    <div class="metric-switch" role="group" aria-label="Choose comparison metric">
+    <div class="metric-switch" role="group" :aria-label='t("Choose comparison metric")'>
       <button v-for="item in metrics" :key="item.id" :aria-pressed="metricId === item.id" @click="metricId = item.id">{{ item.label }}</button>
     </div>
     <figure class="metric-chart" :aria-label="metric.title">
@@ -54,30 +57,30 @@ const valueLabel = row => metricId.value === 'success'
         </div>
       </div>
     </figure>
-    <p class="chart-caption">Response latency is measured per complete action chunk. See the methodology below for initial-call filtering.</p>
+    <p class="chart-caption">{{ t("Response latency is measured per complete action chunk. See the methodology below for initial-call filtering.") }}</p>
 
     <details class="benchmark-details">
-      <summary>Methodology</summary>
-      <p>Response latency includes preprocessing, computation, transport and action conversion. Mean and p95 exclude the first N calls in each episode; all raw calls are retained, with no additional evaluation warmup.</p>
-      <p v-if="matched">Timing, stage and action metrics use the same intersection of successful cases. Total duration includes initial inference waits; slow within-episode control intervals are retained. The selected case count is not the overall success rate.</p>
-      <ul><li v-for="run in rows.filter((row, index, list) => list.findIndex(other => other.run.id === row.run.id) === index)" :key="run.run.id">{{ run.run.hardware.device_name }} · {{ run.run.kind === 'local' ? 'Local' : 'Remote' }}: exclude {{ run.run.exclude_first_calls }} calls per episode.</li></ul>
-      <ul v-if="group.notes?.length"><li v-for="note in group.notes" :key="note">{{ note }}</li></ul>
-      <p>Async maps to replace. Missing metrics are shown as Not recorded. Duration differences across trajectories and action counts are not pure model speedups.</p>
+      <summary>{{ t("Methodology") }}</summary>
+      <p>{{ t("Response latency includes preprocessing, computation, transport and action conversion. Mean and p95 exclude the first N calls in each episode; all raw calls are retained, with no additional evaluation warmup.") }}</p>
+      <p v-if="matched">{{ t("Timing, stage and action metrics use the same intersection of successful cases. Total duration includes initial inference waits; slow within-episode control intervals are retained. The selected case count is not the overall success rate.") }}</p>
+      <ul><li v-for="run in rows.filter((row, index, list) => list.findIndex(other => other.run.id === row.run.id) === index)" :key="run.run.id">{{ run.run.hardware.device_name }} · {{ run.run.kind === 'local' ? t("Local") : t("Remote") }}{{ t(": exclude ") }}{{ run.run.exclude_first_calls }}{{ t(" calls per episode.") }}</li></ul>
+      <ul v-if="group.notes?.length"><li v-for="note in group.notes" :key="note">{{ t(note) }}</li></ul>
+      <p>{{ t("Async maps to replace. Missing metrics are shown as Not recorded. Duration differences across trajectories and action counts are not pure model speedups.") }}</p>
     </details>
 
     <figure v-if="hasStages" class="stage-chart">
-      <div class="benchmark-scroll" tabindex="0" aria-label="Latency breakdown; scroll horizontally">
-        <img :src="withBase(`/benchmarks/${group.id}-stages.svg`)" alt="Complete local calls and remote latency stages, with mean and p95 on the right" loading="lazy">
+      <div class="benchmark-scroll" tabindex="0" :aria-label='t("Latency breakdown; scroll horizontally")'>
+        <img :src="withBase(`/benchmarks/${group.id}-stages.svg`)" :alt='t("Complete local calls and remote latency stages, with mean and p95 on the right")' loading="lazy">
       </div>
-      <figcaption>Local bars show complete calls. Remote stage means sum to mean response latency. HTTP/transport includes receive waits and system overhead.</figcaption>
-      <p class="download-links"><a :href="withBase(`/benchmarks/${group.id}-stages.svg`)" download>Download SVG</a><a :href="withBase(`/benchmarks/${group.id}-stages.png`)" download>Download PNG</a></p>
+      <figcaption>{{ t("Local bars show complete calls. Remote stage means sum to mean response latency. HTTP/transport includes receive waits and system overhead.") }}</figcaption>
+      <p class="download-links"><a :href="withBase(`/benchmarks/${group.id}-stages.svg`)" download>{{ t("Download SVG") }}</a><a :href="withBase(`/benchmarks/${group.id}-stages.png`)" download>{{ t("Download PNG") }}</a></p>
     </figure>
 
     <details class="benchmark-details">
-      <summary>Full metrics and task records</summary>
-      <div class="benchmark-scroll" tabindex="0" aria-label="Complete results; scroll horizontally">
+      <summary>{{ t("Full metrics and task records") }}</summary>
+      <div class="benchmark-scroll" tabindex="0" :aria-label='t("Complete results; scroll horizontally")'>
         <table>
-          <thead><tr><th>Device / mode</th><th>{{ matched ? 'Matched cases' : 'Original success / total' }}</th><th>Total time / s</th><th>Mean response / ms</th><th>Response p95 / ms</th><th>Control p95 / ms</th><th>hold</th></tr></thead>
+          <thead><tr><th>{{ t("Device / mode") }}</th><th>{{ matched ? t("Matched cases") : t("Original success / total") }}</th><th>{{ t("Total time / s") }}</th><th>{{ t("Mean response / ms") }}</th><th>{{ t("Response p95 / ms") }}</th><th>{{ t("Control p95 / ms") }}</th><th>hold</th></tr></thead>
           <tbody><tr v-for="row in rows" :key="row.key">
             <th>{{ name(row) }}</th><td>{{ matched ? row.metrics.episodes : originalSuccess(row) }}</td>
             <td>{{ format(row.metrics.rollout_wall_time_s) }}</td><td>{{ format(row.metrics.filtered_calls.mean_ms) }}</td>
@@ -85,36 +88,36 @@ const valueLabel = row => metricId.value === 'success'
           </tr></tbody>
         </table>
       </div>
-      <label class="field-label" for="benchmark-record">Run details</label>
+      <label class="field-label" for="benchmark-record">{{ t("Run details") }}</label>
       <select id="benchmark-record" :value="active.key" @change="selected = $event.target.value">
         <option v-for="row in rows" :key="row.key" :value="row.key">{{ name(row) }}</option>
       </select>
       <dl class="benchmark-facts">
-        <div v-if="matched"><dt>Full-run success / total</dt><dd>{{ originalSuccess(active) }} (including excluded cases)</dd></div>
-        <div><dt>Configuration</dt><dd>{{ active.run.config.task_suite_name }} · {{ active.run.config.precision }} · seed {{ active.run.config.seed }} · chunk {{ active.run.config.chunk_size }}</dd></div>
-        <div><dt>Calls: all / filtered</dt><dd>{{ active.metrics.all_calls.count }} / {{ active.metrics.filtered_calls.count }}</dd></div>
-        <div><dt>Mean of all calls</dt><dd>{{ format(active.metrics.all_calls.mean_ms) }} ms (including initial calls)</dd></div>
-        <div><dt>Mean first call per episode</dt><dd>{{ format(active.metrics.first_call_per_episode.mean_ms) }} ms</dd></div>
-        <div><dt>Recorded board</dt><dd>{{ active.run.hardware.board || 'Not recorded' }}</dd></div>
-        <div><dt>Device / power mode</dt><dd>{{ active.run.hardware.gpu_name }} / {{ active.run.hardware.nvpmodel || 'Not recorded' }}</dd></div>
+        <div v-if="matched"><dt>{{ t("Full-run success / total") }}</dt><dd>{{ originalSuccess(active) }}{{ t(" (including excluded cases)") }}</dd></div>
+        <div><dt>{{ t("Configuration") }}</dt><dd>{{ active.run.config.task_suite_name }} · {{ active.run.config.precision }} · seed {{ active.run.config.seed }} · chunk {{ active.run.config.chunk_size }}</dd></div>
+        <div><dt>{{ t("Calls: all / filtered") }}</dt><dd>{{ active.metrics.all_calls.count }} / {{ active.metrics.filtered_calls.count }}</dd></div>
+        <div><dt>{{ t("Mean of all calls") }}</dt><dd>{{ format(active.metrics.all_calls.mean_ms) }} ms{{ t(" (including initial calls)") }}</dd></div>
+        <div><dt>{{ t("Mean first call per episode") }}</dt><dd>{{ format(active.metrics.first_call_per_episode.mean_ms) }} ms</dd></div>
+        <div><dt>{{ t("Recorded board") }}</dt><dd>{{ active.run.hardware.board || t("Not recorded") }}</dd></div>
+        <div><dt>{{ t("Device / power mode") }}</dt><dd>{{ active.run.hardware.gpu_name }} / {{ active.run.hardware.nvpmodel || t("Not recorded") }}</dd></div>
         <div><dt>PyTorch / CUDA</dt><dd>{{ active.run.hardware.torch }} / {{ active.run.hardware.cuda }}</dd></div>
-        <div><dt>Source revision</dt><dd>{{ active.run.git_commit }}{{ active.run.git_dirty ? ' (uncommitted changes at recording)' : '' }}</dd></div>
-        <div><dt>Checkpoint SHA-256</dt><dd>{{ active.run.server.checkpoint_sha256 || 'Not recorded' }}</dd></div>
+        <div><dt>{{ t("Source revision") }}</dt><dd>{{ active.run.git_commit }}{{ active.run.git_dirty ? t(" (uncommitted changes at recording)") : '' }}</dd></div>
+        <div><dt>{{ t("Checkpoint SHA-256") }}</dt><dd>{{ active.run.server.checkpoint_sha256 || t("Not recorded") }}</dd></div>
       </dl>
-      <div class="benchmark-scroll" tabindex="0" aria-label="Per-task results; scroll horizontally">
+      <div class="benchmark-scroll" tabindex="0" :aria-label='t("Per-task results; scroll horizontally")'>
         <table>
-          <thead><tr><th>task / episode</th><th>Result</th><th>Steps</th><th>Time / s</th><th>hold</th></tr></thead>
+          <thead><tr><th>task / episode</th><th>{{ t("Result") }}</th><th>{{ t("Steps") }}</th><th>{{ t("Time / s") }}</th><th>hold</th></tr></thead>
           <tbody><tr v-for="episode in active.episodes" :key="`${episode.task_id}/${episode.episode}`">
-            <td :title="episode.instruction">{{ episode.task_id }} / {{ episode.episode }}</td><td>{{ episode.success ? 'Success' : 'Failure' }}</td>
+            <td :title="episode.instruction">{{ episode.task_id }} / {{ episode.episode }}</td><td>{{ episode.success ? t("Success") : t("Failure") }}</td>
             <td>{{ episode.steps }}</td><td>{{ format(episode.wall_s) }}</td><td>{{ format(episode.hold_steps, 0) }}</td>
           </tr></tbody>
         </table>
       </div>
-      <details><summary>Sources and checksums</summary>
-        <p>Run IDs, original filenames and SHA-256 checksums are available in the JSON download.</p>
+      <details><summary>{{ t("Sources and checksums") }}</summary>
+        <p>{{ t("Run IDs, original filenames and SHA-256 checksums are available in the JSON download.") }}</p>
       </details>
     </details>
-    <p class="download-links"><a :href="withBase('/benchmarks/latest.json')" download>Download JSON</a><a :href="withBase('/benchmarks/summary.csv')" download>Download CSV</a></p>
+    <p class="download-links"><a :href="withBase('/benchmarks/latest.json')" download>{{ t("Download JSON") }}</a><a :href="withBase('/benchmarks/summary.csv')" download>{{ t("Download CSV") }}</a></p>
   </section>
 </template>
 

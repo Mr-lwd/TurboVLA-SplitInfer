@@ -1,6 +1,8 @@
 # TurboVLA documentation website
 
-English VitePress documentation with a white background, dark text and pale-blue accents. Features include sidebar navigation, local search, interactive scheduling, benchmark exploration and deployment media.
+English and Simplified Chinese VitePress documentation with a white background, dark text and pale-blue accents. Use the language menu to switch the current page: English remains at `/`, with Chinese at `/zh/`. Navigation, local search and interactive components follow the selected language.
+
+Maintain matching guide filenames in `guide/` and `zh/guide/`. Shared Vue components use `.vitepress/theme/i18n.ts` and `zh-CN.json`, and both languages read the same benchmark data. Figures, GIFs and editable PowerPoint use shared English scientific labels, avoiding duplicate media files. Generated benchmark tables remain on the English page; the Chinese page reads current metrics through the shared dashboard.
 
 ```bash
 cd docs-site

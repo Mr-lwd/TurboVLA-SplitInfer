@@ -4,6 +4,8 @@
 >
 > Architecture, collaborative inference, device deployment and measured results.
 
+**Documentation language:** [English](https://splitinfer.wendiann.cn/) · [简体中文](https://splitinfer.wendiann.cn/zh/). Use the website language menu to switch the current page.
+
 A two-device inference framework for embodied **vision-language-action (VLA)** models, built on pretrained TurboVLA and evaluated in LIBERO. **Orin handles simulation, observation preprocessing, compression and action execution; Thor runs the complete neural network.** The system supports local baselines and three remote modes: synchronous inference, asynchronous replacement and asynchronous blending.
 
 Target hardware: **Jetson Orin Nano 8GB + Jetson Thor 128GB**. The split lies between normalized tensors and neural inference. DINOv3, BERT, vision-language interaction and the action decoder all run on Thor. **Async maps to the CLI name `replace`.**

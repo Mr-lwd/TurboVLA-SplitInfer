@@ -7,7 +7,7 @@
     "dev": "npm run assets && vitepress dev . --host 127.0.0.1 --port 5173",
     "build": "npm run assets && vitepress build .",
     "preview": "vitepress preview . --host 127.0.0.1 --port 4173",
-    "check": "node scripts/check-docs.mjs"
+    "check": "node scripts/check-docs.mjs && node scripts/check-locales.mjs"
   },
   "devDependencies": {
     "vitepress": "1.6.4",

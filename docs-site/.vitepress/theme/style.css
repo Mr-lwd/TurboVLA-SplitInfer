@@ -23,12 +23,16 @@
 .vp-doc .capability-values td:first-child { width: 170px; white-space: nowrap; word-break: keep-all; }
 .vp-doc .capability-values th,
 .vp-doc .capability-values td { padding: 15px 18px; line-height: 1.8; vertical-align: top; }
+:lang(zh-CN) .vp-doc .capability-values th:first-child,
+:lang(zh-CN) .vp-doc .capability-values td:first-child { width: 108px; }
 @media (max-width: 600px) {
   .vp-doc .capability-values table { font-size: 14px; }
   .vp-doc .capability-values th:first-child,
   .vp-doc .capability-values td:first-child { width: 145px; }
   .vp-doc .capability-values th,
   .vp-doc .capability-values td { padding: 12px 10px; }
+  :lang(zh-CN) .vp-doc .capability-values th:first-child,
+  :lang(zh-CN) .vp-doc .capability-values td:first-child { width: 96px; }
 }
 .vp-doc img { border-radius: 0; }
 .vp-doc .custom-block { border-radius: 4px; }
