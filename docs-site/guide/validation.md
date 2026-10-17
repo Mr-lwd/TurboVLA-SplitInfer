@@ -19,7 +19,7 @@ $env:PYTHONPATH = 'third_party/vla_adapter;.'
 python -m unittest discover -s tests -v
 ```
 
-2026-10-17 在本地 `turbovla-libero` 环境运行：**41 项通过**。测试通过 mock / fake policy 与本机 HTTP 核验协议、调度和报告逻辑。
+2026-10-17 在本地 `turbovla-libero` 环境运行：**44 项通过**。测试通过 mock / fake policy 与本机 HTTP 核验协议、调度和报告逻辑。
 
 | 测试文件 | 核验内容 |
 | --- | --- |
@@ -29,7 +29,7 @@ python -m unittest discover -s tests -v
 | `test_local_benchmark.py` | 本机配置、调用/控制间隔统计、时间戳校验、逐步导出、路径优先级、结果命名 |
 | `test_legacy_split_reports.py` | 历史报告补算及缺失指标处理 |
 | `test_libero_video_timing.py` | 真实等待时长、终止帧与视频时间轴 |
-| `test_benchmark_report.py` | 实测导入、来源校验、控制间隔发布、历史保留与文档生成 |
+| `test_benchmark_report.py` | 实测导入、来源校验、控制间隔发布、历史保留、阶段均值分解与缺失样本处理 |
 
 ## 模型数值一致性
 

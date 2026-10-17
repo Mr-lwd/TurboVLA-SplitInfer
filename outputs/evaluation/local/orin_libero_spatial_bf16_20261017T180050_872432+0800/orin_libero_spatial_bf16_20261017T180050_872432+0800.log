@@ -1,0 +1,37 @@
+2026-10-17 18:00:50,883 [INFO] Loading TurboVLA policy from /home/nano1/Desktop/lwd/VLA/TurboVLA/pretrained/TurboVLA/checkpoints/libero/turbovla_libero.pth
+2026-10-17 18:01:04,581 [WARNING] No private macro file found!
+2026-10-17 18:01:04,582 [WARNING] It is recommended to use a private macro file
+2026-10-17 18:01:04,582 [WARNING] To setup, run: python /home/nano1/anaconda3/envs/turbovla-libero/lib/python3.10/site-packages/robosuite/scripts/setup_macros.py
+2026-10-17 18:01:05,033 [INFO] No OpenGL_accelerate module loaded: No module named 'OpenGL_accelerate'
+2026-10-17 18:01:28,934 [INFO] task=0 episode=0 success=True running=1/1 100.0%
+2026-10-17 18:01:30,813 [INFO] task=0 episode=0 wall_time=7.814s inference=2.786s calls=7
+2026-10-17 18:01:31,380 [INFO] task=0 success_rate=1.0000 (1/1)
+2026-10-17 18:01:52,969 [INFO] task=1 episode=0 success=True running=2/2 100.0%
+2026-10-17 18:01:54,682 [INFO] task=1 episode=0 wall_time=8.517s inference=1.281s calls=10
+2026-10-17 18:01:55,226 [INFO] task=1 success_rate=1.0000 (1/1)
+2026-10-17 18:02:14,348 [INFO] task=2 episode=0 success=True running=3/3 100.0%
+2026-10-17 18:02:15,848 [INFO] task=2 episode=0 wall_time=7.040s inference=1.006s calls=8
+2026-10-17 18:02:16,388 [INFO] task=2 success_rate=1.0000 (1/1)
+2026-10-17 18:02:34,638 [INFO] task=3 episode=0 success=True running=4/4 100.0%
+2026-10-17 18:02:36,082 [INFO] task=3 episode=0 wall_time=6.178s inference=0.884s calls=7
+2026-10-17 18:02:36,623 [INFO] task=3 success_rate=1.0000 (1/1)
+2026-10-17 18:02:59,182 [INFO] task=4 episode=0 success=True running=5/5 100.0%
+2026-10-17 18:03:01,140 [INFO] task=4 episode=0 wall_time=10.510s inference=1.486s calls=12
+2026-10-17 18:03:01,675 [INFO] task=4 success_rate=1.0000 (1/1)
+2026-10-17 18:03:21,363 [INFO] task=5 episode=0 success=True running=6/6 100.0%
+2026-10-17 18:03:22,974 [INFO] task=5 episode=0 wall_time=7.687s inference=1.004s calls=8
+2026-10-17 18:03:23,509 [INFO] task=5 success_rate=1.0000 (1/1)
+2026-10-17 18:03:43,746 [INFO] task=6 episode=0 success=True running=7/7 100.0%
+2026-10-17 18:03:45,394 [INFO] task=6 episode=0 wall_time=8.243s inference=1.126s calls=9
+2026-10-17 18:03:45,937 [INFO] task=6 success_rate=1.0000 (1/1)
+2026-10-17 18:04:07,652 [INFO] task=7 episode=0 success=True running=8/8 100.0%
+2026-10-17 18:04:09,354 [INFO] task=7 episode=0 wall_time=9.130s inference=1.120s calls=9
+2026-10-17 18:04:09,896 [INFO] task=7 success_rate=1.0000 (1/1)
+2026-10-17 18:04:29,175 [INFO] task=8 episode=0 success=True running=9/9 100.0%
+2026-10-17 18:04:30,768 [INFO] task=8 episode=0 wall_time=7.467s inference=1.020s calls=8
+2026-10-17 18:04:31,313 [INFO] task=8 success_rate=1.0000 (1/1)
+2026-10-17 18:04:52,826 [INFO] task=9 episode=0 success=True running=10/10 100.0%
+2026-10-17 18:04:54,619 [INFO] task=9 episode=0 wall_time=9.327s inference=1.250s calls=10
+2026-10-17 18:04:55,161 [INFO] task=9 success_rate=1.0000 (1/1)
+2026-10-17 18:04:55,217 [INFO] Final success rate: 1.0000 (10/10)
+2026-10-17 18:04:55,218 [INFO] Saved result json: /home/nano1/Desktop/lwd/VLA/TurboVLA/outputs/evaluation/local/orin_libero_spatial_bf16_20261017T180050_872432+0800/orin_libero_spatial_bf16_20261017T180050_872432+0800.json

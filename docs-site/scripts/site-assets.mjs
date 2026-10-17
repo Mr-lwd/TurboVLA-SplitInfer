@@ -6,6 +6,9 @@ export const siteAssets = [
   ['reports/evaluation/summary.csv', 'benchmarks/summary.csv'],
   ...catalog.groups.flatMap(group => ['svg', 'png'].map(ext =>
     [`assets/benchmarks/${group.id}.${ext}`, `benchmarks/${group.id}.${ext}`])),
+  ...catalog.groups.filter(group => group.run_ids.some(id => catalog.runs.find(run => run.id === id)
+    .records.some(record => record.metrics.remote_stage_timings))).flatMap(group => ['svg', 'png'].map(ext =>
+    [`assets/benchmarks/${group.id}-stages.${ext}`, `benchmarks/${group.id}-stages.${ext}`])),
   ['assets/figures/architecture-overview.png', 'figures/architecture-overview.png'],
   ...['framework-flat.png', 'pipeline-flat.png'].map(file => [`assets/diagrams/split-inference/${file}`, `figures/${file}`]),
   ['assets/diagrams/split-inference/turbovla-diagrams-editable.pptx', 'downloads/turbovla-diagrams-editable.pptx'],

@@ -2,6 +2,21 @@
   "schema_version": 1,
   "groups": [
     {
+      "id": "libero-spatial-20261017",
+      "title": "LIBERO Spatial · 2026-10-17 本机复测 / 2026-10-16 远程",
+      "run_ids": [
+        "orin_libero_spatial_bf16_20261017T180050_872432+0800",
+        "orin_to_thor_async_libero_spatial_20261016T224546_700348+0800"
+      ],
+      "notes": [
+        "Orin 本机为 2026-10-17 复测；远程 Sync / Async / Blend 沿用 2026-10-16 的运行，不是同日重新测量。原分组保留历史数据，不跨运行合并样本。",
+        "同为 LIBERO Spatial、10 个任务各 1 次、seed 7、BF16、chunk 12。本机无墙钟限频，远程为 20 Hz 上限；远程重规划间隔 4 步、融合窗口 3 步、额外延迟 0。",
+        "本机 10/10 成功、1002 步，记录 992 个控制间隔。远程 Sync 在 task 4 失败，各模式轨迹与执行步数不同，总耗时差不等于纯模型加速。",
+        "不同代码提交与运行时刻；本机没有 checkpoint SHA-256，不能仅凭文件名确认与远程权重一致。尚无 Thor 本机独立运行结果。",
+        "板卡 metadata 为 Orin NX Engineering Reference Developer Kit，与项目 Orin Nano 标注存在差异，结果保留 Orin 泛称。"
+      ]
+    },
+    {
       "id": "libero-spatial-20261016",
       "title": "LIBERO Spatial · 2026-10-16",
       "run_ids": [
@@ -1838,7 +1853,217 @@
           ]
         }
       ]
+    },
+    {
+      "id": "orin_libero_spatial_bf16_20261017T180050_872432+0800",
+      "kind": "local",
+      "source_directory": "outputs/evaluation/local/orin_libero_spatial_bf16_20261017T180050_872432+0800",
+      "source_files": [
+        {
+          "file": "orin_libero_spatial_bf16_20261017T180050_872432+0800_metadata.json",
+          "sha256": "427fd59b49e39ea63d1cbd029a366e3e8ff5a21ac05f928bf9bdc25e2ff23119"
+        },
+        {
+          "file": "orin_libero_spatial_bf16_20261017T180050_872432+0800.json",
+          "sha256": "9c49e7e3626d399801a7a3901e6af4ab8e938670a0cd449a771aa9f31619679b"
+        },
+        {
+          "file": "orin_libero_spatial_bf16_20261017T180050_872432+0800_summary.json",
+          "sha256": "264b887dcfc4c93e85e2ceb68d77b6b9ec9ef8005eb1202b97a5e3c02c578024"
+        }
+      ],
+      "config": {
+        "task_suite_name": "libero_spatial",
+        "precision": "bf16",
+        "seed": 7,
+        "chunk_size": 12,
+        "num_open_loop_steps": 12,
+        "stats_key": "libero_all4_no_noops",
+        "env_img_res": 256,
+        "num_steps_wait": 10,
+        "num_trials_per_task": 1,
+        "control_mode": "relative"
+      },
+      "experiment": {},
+      "exclude_first_calls": 1,
+      "hardware": {
+        "device_name": "orin",
+        "gpu_name": "Orin",
+        "board": "NVIDIA Jetson Orin NX Engineering Reference Developer Kit",
+        "nvpmodel": "NV Power Mode: 15W\n0",
+        "torch": "2.5.0a0+872d972e41.nv24.08",
+        "cuda": "12.6",
+        "packages": {
+          "transformers": "4.56.2",
+          "numpy": "1.26.4",
+          "mujoco": "2.3.7",
+          "robosuite": "1.4.1"
+        }
+      },
+      "server": {
+        "gpu_name": null,
+        "checkpoint_sha256": null,
+        "runtime": null
+      },
+      "checkpoint_name": "turbovla_libero.pth",
+      "git_commit": "59a3ddab23a37b26d7fd08442b57b2a7933de61e",
+      "git_dirty": true,
+      "compression": null,
+      "records": [
+        {
+          "mode": "local",
+          "label": "Orin local",
+          "metrics": {
+            "episodes": 10,
+            "successes": 10,
+            "executed_steps": 1002,
+            "rollout_wall_time_s": 81.91217260400117,
+            "all_calls": {
+              "count": 88,
+              "mean_ms": 147.32242556822877,
+              "median_ms": 124.53936499969132,
+              "p95_ms": 132.44824465064085,
+              "min_ms": 122.08943699988595,
+              "max_ms": 2026.9253719998233
+            },
+            "filtered_calls": {
+              "count": 78,
+              "mean_ms": 124.78192219234,
+              "median_ms": 124.37591849902674,
+              "p95_ms": 127.5409808492441,
+              "min_ms": 122.08943699988595,
+              "max_ms": 132.7942340012669
+            },
+            "first_call_per_episode": {
+              "count": 10,
+              "mean_ms": 323.13835190016107,
+              "median_ms": 130.9396349997769,
+              "p95_ms": 1184.7553184002188,
+              "min_ms": 128.6244759994588,
+              "max_ms": 2026.9253719998233
+            },
+            "control_intervals": {
+              "count": 992,
+              "mean_ms": 78.48198548991869,
+              "median_ms": 68.709391000084,
+              "p95_ms": 190.3411968995897,
+              "min_ms": 60.38279399945168,
+              "max_ms": 209.85812899925804
+            },
+            "hold_steps": 0,
+            "expired_chunks": null,
+            "bootstrap_wait_s": null,
+            "blocking_wait_after_bootstrap_s": null,
+            "worker_drain_after_episode_s": null,
+            "env_overlap_fraction_of_inference": null,
+            "arm_action_changes": null,
+            "remote_stage_timings": null
+          },
+          "episodes": [
+            {
+              "task_id": 0,
+              "episode": 0,
+              "instruction": "pick up the black bowl between the plate and the ramekin and place it on the plate",
+              "success": true,
+              "steps": 76,
+              "wall_s": 7.8144653199997265,
+              "calls": 7,
+              "hold_steps": 0
+            },
+            {
+              "task_id": 1,
+              "episode": 0,
+              "instruction": "pick up the black bowl next to the ramekin and place it on the plate",
+              "success": true,
+              "steps": 111,
+              "wall_s": 8.51738019000004,
+              "calls": 10,
+              "hold_steps": 0
+            },
+            {
+              "task_id": 2,
+              "episode": 0,
+              "instruction": "pick up the black bowl from table center and place it on the plate",
+              "success": true,
+              "steps": 90,
+              "wall_s": 7.0396815380008775,
+              "calls": 8,
+              "hold_steps": 0
+            },
+            {
+              "task_id": 3,
+              "episode": 0,
+              "instruction": "pick up the black bowl on the cookie box and place it on the plate",
+              "success": true,
+              "steps": 80,
+              "wall_s": 6.177602383999329,
+              "calls": 7,
+              "hold_steps": 0
+            },
+            {
+              "task_id": 4,
+              "episode": 0,
+              "instruction": "pick up the black bowl in the top drawer of the wooden cabinet and place it on the plate",
+              "success": true,
+              "steps": 134,
+              "wall_s": 10.510015500000009,
+              "calls": 12,
+              "hold_steps": 0
+            },
+            {
+              "task_id": 5,
+              "episode": 0,
+              "instruction": "pick up the black bowl on the ramekin and place it on the plate",
+              "success": true,
+              "steps": 95,
+              "wall_s": 7.686753773001328,
+              "calls": 8,
+              "hold_steps": 0
+            },
+            {
+              "task_id": 6,
+              "episode": 0,
+              "instruction": "pick up the black bowl next to the cookie box and place it on the plate",
+              "success": true,
+              "steps": 100,
+              "wall_s": 8.24264299099923,
+              "calls": 9,
+              "hold_steps": 0
+            },
+            {
+              "task_id": 7,
+              "episode": 0,
+              "instruction": "pick up the black bowl on the stove and place it on the plate",
+              "success": true,
+              "steps": 107,
+              "wall_s": 9.129864661001193,
+              "calls": 9,
+              "hold_steps": 0
+            },
+            {
+              "task_id": 8,
+              "episode": 0,
+              "instruction": "pick up the black bowl next to the plate and place it on the plate",
+              "success": true,
+              "steps": 96,
+              "wall_s": 7.4670029419994535,
+              "calls": 8,
+              "hold_steps": 0
+            },
+            {
+              "task_id": 9,
+              "episode": 0,
+              "instruction": "pick up the black bowl on the wooden cabinet and place it on the plate",
+              "success": true,
+              "steps": 113,
+              "wall_s": 9.326763304999986,
+              "calls": 10,
+              "hold_steps": 0
+            }
+          ]
+        }
+      ]
     }
   ],
-  "featured_group": "libero-spatial-20261016"
+  "featured_group": "libero-spatial-20261017"
 }

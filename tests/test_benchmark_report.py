@@ -6,6 +6,7 @@ import unittest
 
 from scripts.libero.benchmark_common import summarize
 from scripts.libero.build_benchmark_report import add_run, import_run, replace_block, table
+from scripts.libero.plot_stage_timings import latency_breakdown
 
 
 class BenchmarkReportTests(unittest.TestCase):
@@ -92,6 +93,44 @@ class BenchmarkReportTests(unittest.TestCase):
                          'before<S>\n\nnew\n\n<E>after')
         with self.assertRaises(ValueError):
             replace_block('no markers', '<S>', '<E>', 'new')
+
+
+class StageTimingTests(unittest.TestCase):
+    def record(self):
+        means = {'client_preprocess_s': 7, 'client_encode_s': 6, 'server_decode_s': 2,
+                 'server_queue_s': 1, 'server_inference_s': 30, 'server_total_s': 33,
+                 'round_trip_s': 100, 'transport_overhead_s': 67}
+        return {'label': 'Sync', 'metrics': {
+            'filtered_calls': {'count': 5, 'mean_ms': 114, 'p95_ms': 250},
+            'remote_stage_timings': {key: {'filtered_calls': {'count': 5, 'mean_ms': value,
+                                                            'p95_ms': 999, 'missing_count': 0}}
+                                     for key, value in means.items()}}}
+
+    def test_mean_stages_reconcile_without_double_counting_round_trip(self):
+        result = latency_breakdown(self.record())
+        self.assertEqual(result['values'], [7, 6, 3, 30, 67, 1])
+        self.assertEqual(sum(result['values']), result['total'])
+        self.assertEqual(result['p95'], 250)  # Never sum stage percentiles.
+
+    def test_incomplete_samples_are_not_drawn_as_zero(self):
+        record = self.record()
+        stage = record['metrics']['remote_stage_timings']['server_decode_s']['filtered_calls']
+        stage.update(count=4, missing_count=1)
+        self.assertIsNone(latency_breakdown(record))
+        stage.update(count=5, missing_count=0, mean_ms=None)
+        self.assertIsNone(latency_breakdown(record))
+        record['metrics']['remote_stage_timings'] = None
+        self.assertIsNone(latency_breakdown(record))
+
+    def test_inconsistent_decomposition_is_rejected(self):
+        record = self.record()
+        record['metrics']['remote_stage_timings']['round_trip_s']['filtered_calls']['mean_ms'] = 120
+        with self.assertRaisesRegex(ValueError, 'Round trip'):
+            latency_breakdown(record)
+        record = self.record()
+        record['metrics']['filtered_calls']['mean_ms'] = 100
+        with self.assertRaisesRegex(ValueError, 'exceed'):
+            latency_breakdown(record)
 
 
 if __name__ == '__main__':

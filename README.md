@@ -151,18 +151,28 @@ bash scripts/libero/run_local_benchmark.sh
 
 <!-- BENCHMARK_RESULTS_START -->
 
+**LIBERO Spatial · 2026-10-17 本机复测 / 2026-10-16 远程**
+
 | 设备 / 模式 | 成功 | 执行步数 | 任务总耗时 / s | 平均推理响应时间¹ / ms | 推理响应时间 p95¹ / ms | 控制间隔 p95 / ms | hold 步 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Orin local | 10/10 | 1002 | 94.34 | 148.51 | 189.49 | — | — |
+| Orin local | 10/10 | 1002 | 81.91 | 124.78 | 127.54 | 190.34 | 0 |
 | Sync | 9/10 | 1122 | 92.44 | 130.97 | 284.81 | 165.58 | 0 |
 | Async / replace | 10/10 | 1026 | 74.78 | 115.03 | 241.70 | 82.45 | 3 |
 | Blend | 10/10 | 1021 | 75.08 | 117.63 | 230.05 | 81.64 | 0 |
 
 ¹ 每个 episode 的首次调用筛选数见数据页；`—` 表示未记录。推理响应时间按整块动作统计，远程模式包含预处理、传输和服务端推理。
 
-![实测指标对比](assets/benchmarks/libero-spatial-20261016.svg)
+![实测指标对比](assets/benchmarks/libero-spatial-20261017.svg)
 
 [详细数据、口径与后续追加方式](docs-site/guide/benchmark-results.md) · [JSON 数据](reports/evaluation/catalog.json) · [CSV 汇总](reports/evaluation/summary.csv)
+
+**协同推理耗时构成**
+
+![协同推理分阶段耗时](assets/benchmarks/libero-spatial-20261017-stages.svg)
+
+每段为相同过滤样本的平均耗时，合计为完整推理响应时间；往返已拆分，不重复计入。HTTP / 传输等开销包含接收等待与系统开销，并非纯网络延迟。
+
+[下载 SVG](assets/benchmarks/libero-spatial-20261017-stages.svg) · [下载 PNG](assets/benchmarks/libero-spatial-20261017-stages.png)
 
 <!-- BENCHMARK_RESULTS_END -->
 
@@ -187,7 +197,7 @@ python scripts/libero/build_benchmark_report.py build
 PYTHONPATH=third_party/vla_adapter:. python -m unittest discover -s tests -v
 ```
 
-[benchmark_transport.py](scripts/libero/benchmark_transport.py) 用于固定观测的传输测速；[check_split_parity.py](scripts/libero/check_split_parity.py) 验证直接推理与 HTTP 返回动作一致；[summarize_split.py](scripts/libero/summarize_split.py) 可补算历史同步结果。权重、数据集、输出和视频均不提交 Git。
+[benchmark_transport.py](scripts/libero/benchmark_transport.py) 用于固定观测的传输测速；[check_split_parity.py](scripts/libero/check_split_parity.py) 验证直接推理与 HTTP 返回动作一致；[summarize_split.py](scripts/libero/summarize_split.py) 可补算历史同步结果。`outputs/` 内的评测数据、视频、日志和观测文件可以提交 Git；权重、数据集目录和缓存继续忽略。
 
 ## 系统能力
 

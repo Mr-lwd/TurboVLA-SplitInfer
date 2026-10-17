@@ -1,0 +1,516 @@
+{
+  "episodes": 10,
+  "successes": 10,
+  "success_rate": 1.0,
+  "executed_steps": 1026,
+  "rollout_wall_time_s": 74.77636744099436,
+  "executed_steps_per_wall_second": 13.720912570533882,
+  "all_calls": {
+    "count": 255,
+    "mean_ms": 115.2531962117292,
+    "median_ms": 95.29680400009966,
+    "p95_ms": 235.41569530061656,
+    "min_ms": 83.01285200286657,
+    "max_ms": 515.9600139995746
+  },
+  "filtered_calls": {
+    "count": 245,
+    "mean_ms": 115.02844109382583,
+    "median_ms": 94.7894909986644,
+    "p95_ms": 241.70190580116446,
+    "min_ms": 83.01285200286657,
+    "max_ms": 515.9600139995746
+  },
+  "first_call_per_episode": {
+    "count": 10,
+    "mean_ms": 120.75969660036208,
+    "median_ms": 122.86519350163871,
+    "p95_ms": 153.65384129945593,
+    "min_ms": 94.62623600120423,
+    "max_ms": 156.54412200092338
+  },
+  "filter": "exclude first 1 calls per episode from filtered_calls only",
+  "policy_calls_without_injected_delay": {
+    "count": 255,
+    "mean_ms": 115.25088817653858,
+    "median_ms": 95.29414799908409,
+    "p95_ms": 235.41310649961795,
+    "min_ms": 83.01105999998981,
+    "max_ms": 515.957741998136
+  },
+  "control_intervals": {
+    "count": 1016,
+    "mean_ms": 71.58389158365843,
+    "median_ms": 70.97594949846098,
+    "p95_ms": 82.45103425088018,
+    "min_ms": 61.52593200022238,
+    "max_ms": 119.89785300102085
+  },
+  "env_steps": {
+    "count": 1026,
+    "mean_ms": 69.97092473887068,
+    "median_ms": 69.32035550016735,
+    "p95_ms": 81.07132049917709,
+    "min_ms": 59.90981599825318,
+    "max_ms": 118.03175599925453
+  },
+  "control_lateness": {
+    "count": 1026,
+    "mean_ms": 21.373522270698043,
+    "median_ms": 20.869622499958496,
+    "p95_ms": 32.41139900183043,
+    "min_ms": 0.0,
+    "max_ms": 69.89785300174844
+  },
+  "bootstrap_wait_s": 1.1413774900065619,
+  "blocking_wait_after_bootstrap_s": 0,
+  "hold_steps": 3,
+  "expired_chunks": 0,
+  "applied_chunks": 251,
+  "unused_at_episode_end": 4,
+  "discarded_prefix_actions": 546,
+  "blended_action_slots": 0,
+  "inference_inside_rollout_s": 29.377675429986994,
+  "inference_overlapped_with_env_step_s": 27.67187280901635,
+  "env_overlap_fraction_of_inference": 0.9419354119751264,
+  "worker_drain_after_episode_s": 0.012532139000541065,
+  "oldest_observation_age": {
+    "count": 1023,
+    "mean_steps": 3.752688172043011,
+    "median_steps": 4,
+    "p95_steps": 6.0,
+    "min_steps": 0,
+    "max_steps": 11
+  },
+  "arm_action_changes": {
+    "count": 1016,
+    "mean_action_l2": 0.09059802761327064,
+    "median_action_l2": 0.07349322363734245,
+    "p95_action_l2": 0.2069009430706501,
+    "min_action_l2": 0.0,
+    "max_action_l2": 0.9715254902839661
+  },
+  "gripper_switches": 11,
+  "remote_stage_timings": {
+    "client_preprocess_s": {
+      "all_calls": {
+        "count": 255,
+        "mean_ms": 11.813930764693913,
+        "median_ms": 10.712770003010519,
+        "p95_ms": 14.753588402163581,
+        "min_ms": 7.705469000939047,
+        "max_ms": 56.939382000564365,
+        "missing_count": 0
+      },
+      "filtered_calls": {
+        "count": 245,
+        "mean_ms": 11.138285734697853,
+        "median_ms": 10.681538999051554,
+        "p95_ms": 14.489007599331668,
+        "min_ms": 7.743551999737974,
+        "max_ms": 37.00896300142631,
+        "missing_count": 0
+      },
+      "first_call_per_episode": {
+        "count": 10,
+        "mean_ms": 28.367233999597374,
+        "median_ms": 30.139660997519968,
+        "p95_ms": 56.62992059988028,
+        "min_ms": 7.705469000939047,
+        "max_ms": 56.939382000564365,
+        "missing_count": 0
+      }
+    },
+    "client_encode_s": {
+      "all_calls": {
+        "count": 255,
+        "mean_ms": 7.615846647155087,
+        "median_ms": 7.511611998779699,
+        "p95_ms": 10.7672381986049,
+        "min_ms": 5.325248999724863,
+        "max_ms": 19.203047999326373,
+        "missing_count": 0
+      },
+      "filtered_calls": {
+        "count": 245,
+        "mean_ms": 7.542004179710175,
+        "median_ms": 7.511771997087635,
+        "p95_ms": 10.725592199742096,
+        "min_ms": 5.325248999724863,
+        "max_ms": 14.746004999324214,
+        "missing_count": 0
+      },
+      "first_call_per_episode": {
+        "count": 10,
+        "mean_ms": 9.424987099555437,
+        "median_ms": 7.290994499271619,
+        "p95_ms": 18.061772848705,
+        "min_ms": 6.651048999628983,
+        "max_ms": 19.203047999326373,
+        "missing_count": 0
+      }
+    },
+    "round_trip_s": {
+      "all_calls": {
+        "count": 255,
+        "mean_ms": 95.50651947833032,
+        "median_ms": 75.8614430014859,
+        "p95_ms": 216.26398359985595,
+        "min_ms": 64.92975899891462,
+        "max_ms": 496.4027280002483,
+        "missing_count": 0
+      },
+      "filtered_calls": {
+        "count": 245,
+        "mean_ms": 96.02986865701293,
+        "median_ms": 75.28748700133292,
+        "p95_ms": 222.6052895995961,
+        "min_ms": 64.92975899891462,
+        "max_ms": 496.4027280002483,
+        "missing_count": 0
+      },
+      "first_call_per_episode": {
+        "count": 10,
+        "mean_ms": 82.68446460060659,
+        "median_ms": 81.88771000095585,
+        "p95_ms": 90.3515377509393,
+        "min_ms": 74.42531899869209,
+        "max_ms": 92.98498499993002,
+        "missing_count": 0
+      }
+    },
+    "server_decode_s": {
+      "all_calls": {
+        "count": 255,
+        "mean_ms": 2.679850388342268,
+        "median_ms": 2.670226000191178,
+        "p95_ms": 2.7882618029252626,
+        "min_ms": 2.5560830035828985,
+        "max_ms": 2.894121003919281,
+        "missing_count": 0
+      },
+      "filtered_calls": {
+        "count": 245,
+        "mean_ms": 2.6749066531548884,
+        "median_ms": 2.66702999942936,
+        "p95_ms": 2.7700953985913657,
+        "min_ms": 2.5560830035828985,
+        "max_ms": 2.894121003919281,
+        "missing_count": 0
+      },
+      "first_call_per_episode": {
+        "count": 10,
+        "mean_ms": 2.800971900433069,
+        "median_ms": 2.8021974976581987,
+        "p95_ms": 2.8649046525970334,
+        "min_ms": 2.7494499954627827,
+        "max_ms": 2.867246003006585,
+        "missing_count": 0
+      }
+    },
+    "server_queue_s": {
+      "all_calls": {
+        "count": 255,
+        "mean_ms": 0.003331886432087962,
+        "median_ms": 0.0032410025596618652,
+        "p95_ms": 0.004640399129129945,
+        "min_ms": 0.001981999957934022,
+        "max_ms": 0.006017995474394411,
+        "missing_count": 0
+      },
+      "filtered_calls": {
+        "count": 245,
+        "mean_ms": 0.003256473710465872,
+        "median_ms": 0.0031949966796673834,
+        "p95_ms": 0.004323800385463982,
+        "min_ms": 0.001981999957934022,
+        "max_ms": 0.00583400105824694,
+        "missing_count": 0
+      },
+      "first_call_per_episode": {
+        "count": 10,
+        "mean_ms": 0.005179498111829162,
+        "median_ms": 0.005078996764495969,
+        "p95_ms": 0.00596849640714936,
+        "min_ms": 0.004333000106271356,
+        "max_ms": 0.006017995474394411,
+        "missing_count": 0
+      }
+    },
+    "server_inference_s": {
+      "all_calls": {
+        "count": 255,
+        "mean_ms": 28.037732246750735,
+        "median_ms": 27.877498003363144,
+        "p95_ms": 30.190657495404594,
+        "min_ms": 26.40066100138938,
+        "max_ms": 31.405347006511874,
+        "missing_count": 0
+      },
+      "filtered_calls": {
+        "count": 245,
+        "mean_ms": 27.943475934295506,
+        "median_ms": 27.855530999659095,
+        "p95_ms": 29.704680599388663,
+        "min_ms": 26.40066100138938,
+        "max_ms": 31.050997000420466,
+        "missing_count": 0
+      },
+      "first_call_per_episode": {
+        "count": 10,
+        "mean_ms": 30.347011901903898,
+        "median_ms": 31.00908150372561,
+        "p95_ms": 31.294131753747934,
+        "min_ms": 28.86669600411551,
+        "max_ms": 31.405347006511874,
+        "missing_count": 0
+      }
+    },
+    "server_total_s": {
+      "all_calls": {
+        "count": 255,
+        "mean_ms": 30.720914521525092,
+        "median_ms": 30.55561899964232,
+        "p95_ms": 32.91733989681234,
+        "min_ms": 29.024340001342352,
+        "max_ms": 34.27265900245402,
+        "missing_count": 0
+      },
+      "filtered_calls": {
+        "count": 245,
+        "mean_ms": 30.62163906116086,
+        "median_ms": 30.534871002600994,
+        "p95_ms": 32.47296040062792,
+        "min_ms": 29.024340001342352,
+        "max_ms": 33.94978500000434,
+        "missing_count": 0
+      },
+      "first_call_per_episode": {
+        "count": 10,
+        "mean_ms": 33.153163300448796,
+        "median_ms": 33.829681498900754,
+        "p95_ms": 34.14939095273439,
+        "min_ms": 31.621867005014792,
+        "max_ms": 34.27265900245402,
+        "missing_count": 0
+      }
+    },
+    "transport_overhead_s": {
+      "all_calls": {
+        "count": 255,
+        "mean_ms": 64.78560495680523,
+        "median_ms": 45.068660998367704,
+        "p95_ms": 185.57223650022914,
+        "min_ms": 34.826592996978434,
+        "max_ms": 465.28303300146945,
+        "missing_count": 0
+      },
+      "filtered_calls": {
+        "count": 245,
+        "mean_ms": 65.40822959585206,
+        "median_ms": 44.85284599286388,
+        "p95_ms": 191.55397900103688,
+        "min_ms": 34.826592996978434,
+        "max_ms": 465.28303300146945,
+        "missing_count": 0
+      },
+      "first_call_per_episode": {
+        "count": 10,
+        "mean_ms": 49.53130130015779,
+        "median_ms": 48.78901350093656,
+        "p95_ms": 57.382765603142616,
+        "min_ms": 42.8034519936773,
+        "max_ms": 59.14017400209559,
+        "missing_count": 0
+      }
+    },
+    "client_request_send_s": {
+      "all_calls": {
+        "count": 255,
+        "mean_ms": 1.436282094315781,
+        "median_ms": 1.4325270021799952,
+        "p95_ms": 2.008447900152532,
+        "min_ms": 0.5613809989881702,
+        "max_ms": 9.37016099851462,
+        "missing_count": 0
+      },
+      "filtered_calls": {
+        "count": 245,
+        "mean_ms": 1.46328597570109,
+        "median_ms": 1.4405290021386463,
+        "p95_ms": 2.0151844000793058,
+        "min_ms": 0.891175997821847,
+        "max_ms": 9.37016099851462,
+        "missing_count": 0
+      },
+      "first_call_per_episode": {
+        "count": 10,
+        "mean_ms": 0.7746870003757067,
+        "median_ms": 0.6561674999829847,
+        "p95_ms": 1.3122600985298045,
+        "min_ms": 0.5613809989881702,
+        "max_ms": 1.4882739997119643,
+        "missing_count": 0
+      }
+    },
+    "client_response_wait_s": {
+      "all_calls": {
+        "count": 255,
+        "mean_ms": 93.68747209006744,
+        "median_ms": 73.78716799939866,
+        "p95_ms": 214.1390853012124,
+        "min_ms": 62.99792800200521,
+        "max_ms": 494.29268699896056,
+        "missing_count": 0
+      },
+      "filtered_calls": {
+        "count": 245,
+        "mean_ms": 94.19038593458731,
+        "median_ms": 73.0374140002823,
+        "p95_ms": 220.68614080126258,
+        "min_ms": 62.99792800200521,
+        "max_ms": 494.29268699896056,
+        "missing_count": 0
+      },
+      "first_call_per_episode": {
+        "count": 10,
+        "mean_ms": 81.36608289933065,
+        "median_ms": 80.31924349961628,
+        "p95_ms": 89.4213501487684,
+        "min_ms": 73.0871930027206,
+        "max_ms": 92.0272789990122,
+        "missing_count": 0
+      }
+    },
+    "client_response_read_s": {
+      "all_calls": {
+        "count": 255,
+        "mean_ms": 0.36668957259012935,
+        "median_ms": 0.2264340000692755,
+        "p95_ms": 0.8407588011323232,
+        "min_ms": 0.15766599972266704,
+        "max_ms": 4.795835000550142,
+        "missing_count": 0
+      },
+      "filtered_calls": {
+        "count": 245,
+        "mean_ms": 0.3601564694319529,
+        "median_ms": 0.22233799973037094,
+        "p95_ms": 0.81241300140391,
+        "min_ms": 0.15766599972266704,
+        "max_ms": 4.795835000550142,
+        "missing_count": 0
+      },
+      "first_call_per_episode": {
+        "count": 10,
+        "mean_ms": 0.5267505999654531,
+        "median_ms": 0.26549100221018307,
+        "p95_ms": 1.7501089003417265,
+        "min_ms": 0.1977299980353564,
+        "max_ms": 2.886969999963185,
+        "missing_count": 0
+      }
+    },
+    "server_receive_s": {
+      "all_calls": {
+        "count": 255,
+        "mean_ms": 46.16300348676376,
+        "median_ms": 38.0342910066247,
+        "p95_ms": 95.24087499958075,
+        "min_ms": 16.713778000848833,
+        "max_ms": 345.8786289993441,
+        "missing_count": 0
+      },
+      "filtered_calls": {
+        "count": 245,
+        "mean_ms": 46.24729033928407,
+        "median_ms": 37.625138997100294,
+        "p95_ms": 106.63686500047295,
+        "min_ms": 16.713778000848833,
+        "max_ms": 345.8786289993441,
+        "missing_count": 0
+      },
+      "first_call_per_episode": {
+        "count": 10,
+        "mean_ms": 44.09797560001607,
+        "median_ms": 43.70134000055259,
+        "p95_ms": 51.922342000034405,
+        "min_ms": 38.162459000886884,
+        "max_ms": 52.47331300051883,
+        "missing_count": 0
+      }
+    }
+  },
+  "remote_payload": {
+    "request_bytes": {
+      "all_calls": {
+        "count": 255,
+        "mean_bytes": 250205.56470588237,
+        "median_bytes": 248498,
+        "p95_bytes": 277712.5,
+        "min_bytes": 219587,
+        "max_bytes": 292259,
+        "missing_count": 0
+      },
+      "filtered_calls": {
+        "count": 245,
+        "mean_bytes": 250465.77959183673,
+        "median_bytes": 249042,
+        "p95_bytes": 277740.0,
+        "min_bytes": 219587,
+        "max_bytes": 292259,
+        "missing_count": 0
+      },
+      "first_call_per_episode": {
+        "count": 10,
+        "mean_bytes": 243830.3,
+        "median_bytes": 244153.5,
+        "p95_bytes": 246834.8,
+        "min_bytes": 240065,
+        "max_bytes": 248003,
+        "missing_count": 0
+      }
+    },
+    "uncompressed_tensor_bytes": {
+      "all_calls": {
+        "count": 255,
+        "mean_bytes": 786448,
+        "median_bytes": 786448,
+        "p95_bytes": 786448.0,
+        "min_bytes": 786448,
+        "max_bytes": 786448,
+        "missing_count": 0
+      },
+      "filtered_calls": {
+        "count": 245,
+        "mean_bytes": 786448,
+        "median_bytes": 786448,
+        "p95_bytes": 786448.0,
+        "min_bytes": 786448,
+        "max_bytes": 786448,
+        "missing_count": 0
+      },
+      "first_call_per_episode": {
+        "count": 10,
+        "mean_bytes": 786448,
+        "median_bytes": 786448.0,
+        "p95_bytes": 786448.0,
+        "min_bytes": 786448,
+        "max_bytes": 786448,
+        "missing_count": 0
+      }
+    }
+  },
+  "remote_memory": {
+    "server_cuda_peak_allocated_bytes": {
+      "max_bytes": 525123072
+    },
+    "server_cuda_peak_reserved_bytes": {
+      "max_bytes": 545259520
+    }
+  },
+  "remote_memory_scope": "server process lifetime PyTorch allocator peak; not this episode alone or total shared RAM",
+  "remote_stage_note": "stages are nested, not additive; transport_overhead includes HTTP/response overhead, not pure wire latency",
+  "timing_note": "inference overlaps control; do not subtract summed inference from wall time. Pending calls drained after episode are recorded separately.",
+  "action_change_note": "L2 of consecutive six-dimensional relative arm commands in mixed action units; not physical acceleration/jerk"
+}

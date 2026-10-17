@@ -1,0 +1,396 @@
+{
+  "device_name": "orin",
+  "hostname": "node1",
+  "board": "NVIDIA Jetson Orin NX Engineering Reference Developer Kit",
+  "gpu_name": "Orin",
+  "compute_capability": [
+    8,
+    7
+  ],
+  "bf16_supported": true,
+  "cuda_visible_devices": null,
+  "python": "3.10.22 (main, Oct  1 2026, 20:08:31) [GCC 14.3.0]",
+  "python_executable": "/home/nano1/anaconda3/envs/turbovla-libero/bin/python",
+  "torch": "2.5.0a0+872d972e41.nv24.08",
+  "cuda": "12.6",
+  "packages": {
+    "transformers": "4.56.2",
+    "numpy": "1.26.4",
+    "mujoco": "2.3.7",
+    "robosuite": "1.4.1"
+  },
+  "platform": "Linux-5.15.148-tegra-aarch64-with-glibc2.35",
+  "nvpmodel": "NV Power Mode: 15W\n0",
+  "git_commit": "596ba9ebbafd71736efa83ce2c7c3031a58d67ef",
+  "git_status": "M experiments/libero/configs/async_benchmark.yaml",
+  "config": {
+    "ckpt_path": "",
+    "libero_root": "/home/nano1/Desktop/lwd/VLA/LIBERO",
+    "dinov3_path": "",
+    "bert_path": "",
+    "stats_path": "experiments/libero/configs/libero_all4_stats.json",
+    "stats_key": "libero_all4_no_noops",
+    "normalize_binary_gripper": "auto",
+    "allow_hf_download": false,
+    "remote_policy_url": "http://192.168.123.38:8765",
+    "remote_timeout_s": 120.0,
+    "remote_compression": "auto",
+    "remote_keepalive": true,
+    "task_suite_name": "libero_spatial",
+    "task_ids": "",
+    "num_trials_per_task": 1,
+    "max_tasks": -1,
+    "num_steps_wait": 10,
+    "num_open_loop_steps": 12,
+    "env_img_res": 256,
+    "seed": 7,
+    "control_mode": "relative",
+    "mujoco_gl": "egl",
+    "pyopengl_platform": "egl",
+    "osmesa_library": "",
+    "save_video": true,
+    "save_realtime_video": true,
+    "video_out_path": "outputs/evaluation",
+    "result_json_path": "",
+    "log_path": "/home/nano1/Desktop/lwd/VLA/TurboVLA/outputs/evaluation/async/orin_to_thor_async_libero_spatial_20261016T224546_700348+0800/orin_to_thor_async_libero_spatial_20261016T224546_700348+0800.log",
+    "dry_run_model_load": false,
+    "hidden_dim": 256,
+    "nheads": 8,
+    "dim_feedforward": 2048,
+    "max_text_len": 256,
+    "text_padding_length": 21,
+    "vla_feature_enhancer_layers": 6,
+    "enhancer_inner_dim": 1024,
+    "action_dim": 7,
+    "chunk_size": 12,
+    "state_dim": 8,
+    "num_state_tokens": 2,
+    "text_dropout": 0.0,
+    "fusion_dropout": 0.0,
+    "fusion_droppath": 0.1,
+    "sub_sentence_present": true,
+    "precision": "bf16",
+    "dinov3_output_hidden_states": true
+  },
+  "experiment": {
+    "modes": [
+      "sync",
+      "replace",
+      "blend"
+    ],
+    "replan_every_steps": 4,
+    "blend_steps": 3,
+    "control_hz": 20.0,
+    "extra_delay_s": 0.0,
+    "output_root": "outputs/evaluation/async"
+  },
+  "source_config": {
+    "base_config": "experiments/libero/configs/split_benchmark.yaml",
+    "evaluation": {
+      "task_ids": "",
+      "num_trials_per_task": 1,
+      "save_video": true,
+      "save_realtime_video": true
+    },
+    "experiment": {
+      "modes": [
+        "sync",
+        "replace",
+        "blend"
+      ],
+      "replan_every_steps": 4,
+      "blend_steps": 3,
+      "control_hz": 20.0,
+      "extra_delay_s": 0.0,
+      "output_root": "outputs/evaluation/async"
+    }
+  },
+  "base_config": {
+    "paths": {
+      "libero_root": "../LIBERO"
+    },
+    "libero_paths": {
+      "benchmark_root": "${libero_root}/libero/libero",
+      "bddl_files": "${libero_root}/libero/libero/bddl_files",
+      "init_states": "${libero_root}/libero/libero/init_files",
+      "assets": "${libero_root}/libero/libero/assets",
+      "datasets": "${libero_root}/data"
+    },
+    "benchmark": {
+      "output_root": "outputs/evaluation/split",
+      "exclude_first_calls": 1
+    },
+    "evaluation": {
+      "remote_policy_url": "http://192.168.123.38:8765",
+      "remote_timeout_s": 120.0,
+      "remote_keepalive": true,
+      "remote_compression": "auto",
+      "stats_key": "libero_all4_no_noops",
+      "task_suite_name": "libero_spatial",
+      "task_ids": "",
+      "max_tasks": -1,
+      "num_trials_per_task": 1,
+      "num_steps_wait": 10,
+      "chunk_size": 12,
+      "num_open_loop_steps": 12,
+      "env_img_res": 256,
+      "seed": 7,
+      "precision": "bf16",
+      "control_mode": "relative",
+      "mujoco_gl": "egl",
+      "pyopengl_platform": "egl",
+      "save_video": true,
+      "save_realtime_video": true
+    }
+  },
+  "resolved_libero_paths": {
+    "benchmark_root": "/home/nano1/Desktop/lwd/VLA/LIBERO/libero/libero",
+    "bddl_files": "/home/nano1/Desktop/lwd/VLA/LIBERO/libero/libero/bddl_files",
+    "init_states": "/home/nano1/Desktop/lwd/VLA/LIBERO/libero/libero/init_files",
+    "assets": "/home/nano1/Desktop/lwd/VLA/LIBERO/libero/libero/assets",
+    "datasets": "/home/nano1/Desktop/lwd/VLA/LIBERO/data"
+  },
+  "remote_server": {
+    "ready": true,
+    "version": 1,
+    "server_id": "60f77993ca1b4faa83b6e5fff901316e",
+    "hostname": "ubuntu",
+    "device": "cuda",
+    "gpu_name": "NVIDIA Thor",
+    "checkpoint_name": "turbovla_libero.pth",
+    "checkpoint_sha256": "d031ad7be05a2f5d04afb3194ed26b0cb46083685edee7a5e145078a37d26bab",
+    "precision": "bf16",
+    "chunk_size": 12,
+    "action_dim": 7,
+    "state_dim": 8,
+    "image_processor": {
+      "image_mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "image_std": [
+        0.229,
+        0.224,
+        0.225
+      ],
+      "rescale_factor": 0.00392156862745098
+    },
+    "proprio_mean": [
+      -0.04651878401637077,
+      0.034409064799547195,
+      0.7645525336265564,
+      2.9722094535827637,
+      -0.22046978771686554,
+      -0.12557940185070038,
+      0.02691425196826458,
+      -0.027190783992409706
+    ],
+    "proprio_std": [
+      0.10494395345449448,
+      0.15176619589328766,
+      0.37851670384407043,
+      0.3442734181880951,
+      0.9069468379020691,
+      0.32539188861846924,
+      0.014175903983414173,
+      0.014058894477784634
+    ],
+    "stats_key": "libero_all4_no_noops",
+    "split_boundary": "normalized image and state tensors; all neural layers execute on server",
+    "runtime": {
+      "python": "3.10.21 (main, Aug 27 2026, 14:36:29) [GCC 14.3.0]",
+      "python_executable": "/home/jetson/anaconda3/envs/turbovla/bin/python",
+      "torch": "2.14.0+cu130",
+      "cuda": "13.0",
+      "packages": {
+        "transformers": "4.57.6",
+        "numpy": "1.26.4"
+      },
+      "platform": "Linux-6.8.12-tegra-aarch64-with-glibc2.39",
+      "nvpmodel": "NV Power Mode: MAXN\n0"
+    },
+    "memory_scope": "PyTorch allocator peak since server process start, including load/warmup and earlier requests; not per rollout or total shared RAM",
+    "warmup_steps": 3,
+    "transport": {
+      "codecs": [
+        "zlib",
+        "zlib_shuffle",
+        "lz4",
+        "lz4_shuffle",
+        "zstd",
+        "zstd_shuffle"
+      ],
+      "keepalive": true
+    }
+  },
+  "compression": "zstd_shuffle",
+  "alignment": "executed LIBERO control steps since observation; never elapsed network wall-time / period",
+  "experiment_type": "inference-only scheduling heuristic; no retraining, no delay-conditioned model",
+  "status": "completed",
+  "requested_task_ids": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "evaluation_order": [
+    {
+      "task_id": 0,
+      "episode": 0,
+      "mode": "blend"
+    },
+    {
+      "task_id": 0,
+      "episode": 0,
+      "mode": "sync"
+    },
+    {
+      "task_id": 0,
+      "episode": 0,
+      "mode": "replace"
+    },
+    {
+      "task_id": 1,
+      "episode": 0,
+      "mode": "blend"
+    },
+    {
+      "task_id": 1,
+      "episode": 0,
+      "mode": "sync"
+    },
+    {
+      "task_id": 1,
+      "episode": 0,
+      "mode": "replace"
+    },
+    {
+      "task_id": 2,
+      "episode": 0,
+      "mode": "replace"
+    },
+    {
+      "task_id": 2,
+      "episode": 0,
+      "mode": "blend"
+    },
+    {
+      "task_id": 2,
+      "episode": 0,
+      "mode": "sync"
+    },
+    {
+      "task_id": 3,
+      "episode": 0,
+      "mode": "blend"
+    },
+    {
+      "task_id": 3,
+      "episode": 0,
+      "mode": "sync"
+    },
+    {
+      "task_id": 3,
+      "episode": 0,
+      "mode": "replace"
+    },
+    {
+      "task_id": 4,
+      "episode": 0,
+      "mode": "replace"
+    },
+    {
+      "task_id": 4,
+      "episode": 0,
+      "mode": "sync"
+    },
+    {
+      "task_id": 4,
+      "episode": 0,
+      "mode": "blend"
+    },
+    {
+      "task_id": 5,
+      "episode": 0,
+      "mode": "replace"
+    },
+    {
+      "task_id": 5,
+      "episode": 0,
+      "mode": "blend"
+    },
+    {
+      "task_id": 5,
+      "episode": 0,
+      "mode": "sync"
+    },
+    {
+      "task_id": 6,
+      "episode": 0,
+      "mode": "sync"
+    },
+    {
+      "task_id": 6,
+      "episode": 0,
+      "mode": "blend"
+    },
+    {
+      "task_id": 6,
+      "episode": 0,
+      "mode": "replace"
+    },
+    {
+      "task_id": 7,
+      "episode": 0,
+      "mode": "replace"
+    },
+    {
+      "task_id": 7,
+      "episode": 0,
+      "mode": "blend"
+    },
+    {
+      "task_id": 7,
+      "episode": 0,
+      "mode": "sync"
+    },
+    {
+      "task_id": 8,
+      "episode": 0,
+      "mode": "blend"
+    },
+    {
+      "task_id": 8,
+      "episode": 0,
+      "mode": "replace"
+    },
+    {
+      "task_id": 8,
+      "episode": 0,
+      "mode": "sync"
+    },
+    {
+      "task_id": 9,
+      "episode": 0,
+      "mode": "replace"
+    },
+    {
+      "task_id": 9,
+      "episode": 0,
+      "mode": "blend"
+    },
+    {
+      "task_id": 9,
+      "episode": 0,
+      "mode": "sync"
+    }
+  ],
+  "experiment_wall_time_s": 717.4649137449996
+}

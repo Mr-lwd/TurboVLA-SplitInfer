@@ -16,7 +16,6 @@ dist/
 /pretrained/
 /models/
 playground/
-outputs/
 checkpoints/
 weights/
 logs/
@@ -53,6 +52,18 @@ tmp/
 *.npy
 *.npz
 *.parquet
+
+# Track evaluation artifacts under outputs; keep weights and caches ignored.
+!/outputs/**/*.mp4
+!/outputs/**/*.avi
+!/outputs/**/*.mov
+!/outputs/**/*.webm
+!/outputs/**/*.log
+!/outputs/**/*.out
+!/outputs/**/*.npy
+!/outputs/**/*.npz
+!/outputs/**/*.parquet
+
 .hf_token
 .wandb_api_key
 .*_token

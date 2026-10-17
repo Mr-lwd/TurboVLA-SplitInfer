@@ -11,6 +11,7 @@ const rows = computed(() => group.value.run_ids.flatMap(id => {
   return run.records.map(record => ({ ...record, run, key: `${run.id}/${record.mode}` }))
 }))
 const active = computed(() => rows.value.find(row => row.key === selected.value) || rows.value[0])
+const hasStages = computed(() => rows.value.some(row => row.metrics.remote_stage_timings))
 const format = (value, digits = 2) => value == null ? '未记录' : Number(value).toFixed(digits)
 const show = (row, key, stat = null) => stat ? row.metrics[key]?.[stat] : row.metrics[key]
 </script>
@@ -22,6 +23,9 @@ const show = (row, key, stat = null) => stat ? row.metrics[key]?.[stat] : row.me
       <option v-for="item in catalog.groups" :key="item.id" :value="item.id">{{ item.title }}</option>
     </select>
     <p class="benchmark-hint">各项为独立运行的观测值；Async = replace。未记录的数据不补零，完整口径见下方静态表。</p>
+    <ul v-if="group.notes?.length" class="benchmark-hint">
+      <li v-for="note in group.notes" :key="note">{{ note }}</li>
+    </ul>
     <div class="benchmark-scroll" tabindex="0" aria-label="结果对比表，可横向滚动">
       <table>
         <thead><tr><th>模式</th><th>成功</th><th>任务总耗时 / s</th><th>平均推理响应时间¹ / ms</th><th>控制间隔 p95 / ms</th><th>hold 步</th></tr></thead>
@@ -36,6 +40,13 @@ const show = (row, key, stat = null) => stat ? row.metrics[key]?.[stat] : row.me
     </div>
     <p class="benchmark-hint">¹ 每 episode 排除前 N 次调用，N 在该运行详情中显示；推理响应时间按整块动作统计，远程模式包含预处理、传输和服务端推理。</p>
     <img :src="withBase(`/benchmarks/${group.id}.svg`)" :alt="`${group.title} 成功率、用时、调用延迟与控制间隔对比`" loading="lazy">
+    <figure v-if="hasStages" class="stage-chart">
+      <div class="benchmark-scroll" tabindex="0" aria-label="协同推理耗时图，可横向滚动">
+        <img :src="withBase(`/benchmarks/${group.id}-stages.svg`)" alt="协同推理响应时间构成：Orin 预处理、编码压缩、Thor 解码排队、推理、HTTP 传输等开销与其他调用开销" loading="lazy">
+      </div>
+      <figcaption>颜色表示平均耗时构成；往返已分解，不重复叠加。HTTP / 传输等开销包含接收等待与系统开销，并非纯网络延迟。窄屏可横向滚动查看。</figcaption>
+      <p><a :href="withBase(`/benchmarks/${group.id}-stages.svg`)" download>下载 SVG</a> · <a :href="withBase(`/benchmarks/${group.id}-stages.png`)" download>下载 PNG</a></p>
+    </figure>
     <label for="benchmark-record">查看运行与逐任务明细</label>
     <select id="benchmark-record" :value="active.key" @change="selected = $event.target.value">
       <option v-for="row in rows" :key="row.key" :value="row.key">{{ row.label }} · {{ row.run.id }}</option>
@@ -81,6 +92,9 @@ const show = (row, key, stat = null) => stat ? row.metrics[key]?.[stat] : row.me
 .benchmark-facts dt { font-weight: 600; }
 .benchmark-facts dd, .benchmark-panel code { overflow-wrap: anywhere; }
 .benchmark-panel summary { cursor: pointer; font-weight: 600; }
+.stage-chart { margin: 26px 0; padding: 14px; background: white; border: 1px solid #dce8f1; border-radius: 10px; }
+.stage-chart img { width: 100%; min-width: 720px; max-width: none; }
+.stage-chart figcaption, .stage-chart p { font-size: 13px; line-height: 1.7; color: #4e6070; }
 .benchmark-panel select:focus-visible, .benchmark-scroll:focus-visible { outline: 3px solid #658eb5; outline-offset: 3px; }
 @media (max-width: 600px) { .benchmark-panel { padding: 12px; } .benchmark-facts div { grid-template-columns: 1fr; gap: 3px; } }
 </style>

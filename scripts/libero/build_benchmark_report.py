@@ -1,7 +1,7 @@
 """Import measured runs into a portable catalog; build README/site tables and figures.
 
-Raw outputs stay private/ignored. Only validated aggregate/episode records and
-source hashes are published. Building an existing catalog needs no raw outputs.
+The catalog contains validated aggregate/episode records and source hashes.
+Raw outputs can be versioned separately; building the catalog needs no raw outputs.
 """
 
 import argparse
@@ -16,6 +16,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from scripts.libero.benchmark_common import summarize
+from scripts.libero.plot_stage_timings import plot_stage_timings
 
 REPORTS = ROOT / "reports/evaluation"
 CATALOG = REPORTS / "catalog.json"
@@ -223,6 +224,7 @@ def build(catalog):
         rows = group_rows(catalog, group)
         image_name = group['id']
         plot_group(rows, ROOT / f"assets/benchmarks/{image_name}", group['id'])
+        stage_chart = plot_stage_timings(rows, ROOT / f"assets/benchmarks/{image_name}-stages")
         page += [f"## {group['title']}", "", table(rows), "",
                  f"![{group['title']} 四项指标](../../assets/benchmarks/{image_name}.svg)", ""]
         page += [f"- {note}" for note in group.get('notes', [])] + [""]
@@ -240,8 +242,12 @@ def build(catalog):
                      f"{number(100*overlap if overlap is not None else None)} | {number(m['worker_drain_after_episode_s'],3)} | "
                      f"{number((m['arm_action_changes'] or {}).get('p95_action_l2'),3)} |"]
         page += ["", "重叠比例单位为 %；L2 是相邻六维相对指令差值，混合了平移/旋转单位，不是物理 jerk。", "",
-                 "### 远程调用分阶段均值（过滤后，ms）", "",
-                 "| 模式 | Orin 预处理 | 编码/压缩 | 往返 | Thor 推理与动作转换 | HTTP/传输残差 |",
+                 "### 远程调用分阶段均值（过滤后，ms）", ""]
+        if stage_chart:
+            page += [f"![三种协同模式的推理响应时间构成](../../assets/benchmarks/{image_name}-stages.svg)", "",
+                     f"[下载 SVG](../../assets/benchmarks/{image_name}-stages.svg) · [下载 PNG](../../assets/benchmarks/{image_name}-stages.png)", "",
+                     "堆叠图仅相加互不重叠阶段的均值；往返时间已分解为 Thor 处理与 HTTP/传输等开销，不重复叠加。响应 p95 单独列出。缺少阶段或样本数不一致时不绘制该模式的分解。", ""]
+        page += ["| 模式 | Orin 预处理 | 编码/压缩 | 往返 | Thor 推理与动作转换 | HTTP/传输残差 |",
                  "| --- | ---: | ---: | ---: | ---: | ---: |"]
         for _, record in rows:
             stages=record['metrics']['remote_stage_timings']
@@ -272,15 +278,20 @@ def build(catalog):
                 page += [f"| {record['label']} | {e['task_id']} | {e['episode']} | {'是' if e['success'] else '否'} | {e['steps']} | {number(e['wall_s'])} | {number(e['hold_steps'],0)} |"]
         page += [""]
         if group['id'] == catalog['featured_group']:
-            featured = (table(rows) + "\n\n¹ 每个 episode 的首次调用筛选数见数据页；`—` 表示未记录。推理响应时间按整块动作统计，远程模式包含预处理、传输和服务端推理。\n\n"
+            featured = (f"**{group['title']}**\n\n" + table(rows) + "\n\n¹ 每个 episode 的首次调用筛选数见数据页；`—` 表示未记录。推理响应时间按整块动作统计，远程模式包含预处理、传输和服务端推理。\n\n"
                         +f"![实测指标对比](assets/benchmarks/{image_name}.svg)\n\n"
                         +"[详细数据、口径与后续追加方式](docs-site/guide/benchmark-results.md) · [JSON 数据](reports/evaluation/catalog.json) · [CSV 汇总](reports/evaluation/summary.csv)")
+            if stage_chart:
+                featured += ("\n\n**协同推理耗时构成**\n\n"
+                             + f"![协同推理分阶段耗时](assets/benchmarks/{image_name}-stages.svg)\n\n"
+                             + "每段为相同过滤样本的平均耗时，合计为完整推理响应时间；往返已拆分，不重复计入。HTTP / 传输等开销包含接收等待与系统开销，并非纯网络延迟。\n\n"
+                             + f"[下载 SVG](assets/benchmarks/{image_name}-stages.svg) · [下载 PNG](assets/benchmarks/{image_name}-stages.png)")
     if featured is None:
         raise ValueError("featured_group does not exist")
-    page += ["## 口径与追加方法", "", "见[数据维护说明](./benchmark-data.md)。每组保留独立运行和逐任务结果，不自动合并不同 seed、任务集、设备或延迟设置。原始文件仍位于忽略提交的 `outputs/`，公开目录记录来源文件名及 SHA-256，重建网页无需访问设备上的原始文件。", ""]
+    page += ["## 口径与追加方法", "", "见[数据维护说明](./benchmark-data.md)。每组保留独立运行和逐任务结果，不自动合并不同 seed、任务集、设备或延迟设置。原始评测文件位于可提交的 `outputs/`，精简数据目录记录来源文件名及 SHA-256，重建网页无需访问原始文件。", ""]
     (ROOT/'docs-site/guide/benchmark-results.md').write_text('\n'.join(page))
     with (REPORTS/'summary.csv').open('w',newline='') as stream:
-        writer=csv.DictWriter(stream,fieldnames=list(all_rows[0])); writer.writeheader(); writer.writerows(all_rows)
+        writer=csv.DictWriter(stream,fieldnames=list(all_rows[0]),lineterminator='\n'); writer.writeheader(); writer.writerows(all_rows)
     readme=ROOT/'README.md'
     readme.write_text(replace_block(readme.read_text(), '<!-- BENCHMARK_RESULTS_START -->', '<!-- BENCHMARK_RESULTS_END -->', featured))
 
