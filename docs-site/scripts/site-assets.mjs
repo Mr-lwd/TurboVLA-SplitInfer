@@ -10,6 +10,7 @@ export const siteAssets = [
     .records.some(record => record.metrics.remote_stage_timings))).flatMap(group => ['svg', 'png'].map(ext =>
     [`assets/benchmarks/${group.id}-stages.${ext}`, `benchmarks/${group.id}-stages.${ext}`])),
   ['assets/figures/architecture-overview.png', 'figures/architecture-overview.png'],
+  ['assets/simulation/libero-four-mode-realtime.gif', 'simulation/libero-four-mode-realtime.gif'],
   ...['framework-flat.png', 'pipeline-flat.png'].map(file => [`assets/diagrams/split-inference/${file}`, `figures/${file}`]),
   ['assets/diagrams/split-inference/turbovla-diagrams-editable.pptx', 'downloads/turbovla-diagrams-editable.pptx'],
   ...['orin', 'thor'].map(name => [`assets/realpics/cleaned/${name}-clean.jpg`, `realpics/${name}-clean.jpg`]),

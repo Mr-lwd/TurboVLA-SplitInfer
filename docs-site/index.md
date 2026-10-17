@@ -39,6 +39,12 @@ title: 项目概览
 
 部署步骤见[设备部署](./guide/deployment.md)，三种模式的运行结果按[验证与结果](./guide/validation.md)记录。
 
+## 仿真实测演示
+
+**Local Orin / Sync / Async / Blend** 在“木柜取碗放盘”任务中的 2×2 对比，保留环境与腕部双视角。各次运行按起点对齐，以墙钟 **1× 实时**回放，动态显示执行、等待推理、执行＋后台推理及任务成功状态。
+
+[![Local Orin、Sync、Async、Blend 四模式实时仿真对比](../assets/simulation/libero-four-mode-realtime.gif)](../assets/simulation/libero-four-mode-realtime.gif)
+
 ## 先理解拆分边界
 
 跨设备传输的是**归一化图像、8 维状态和语言指令**。DINOv3、BERT、视觉语言交互、状态投影和 ACT 动作解码器全部在 Thor；Orin 不加载模型权重。返回值是可直接供 LIBERO 执行的 **12 × 7 动作块**。

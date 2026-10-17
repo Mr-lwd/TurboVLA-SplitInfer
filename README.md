@@ -53,6 +53,12 @@ Orin 执行已有动作时，Thor 在后台预测下一动作块；返回后按�
 
 图片经 DDS 图像接口清理背景杂物与表面污点；原始实拍保留：[Orin](assets/realpics/orin.jpg) · [Thor](assets/realpics/Thor.jpg)。照片展示实际设备，成功率、延迟与稳定性以运行记录为准。
 
+## 仿真实测演示
+
+**Local Orin / Sync / Async / Blend** 在“木柜取碗放盘”任务中的 2×2 对比，保留环境与腕部双视角。各次运行按起点对齐，以墙钟 **1× 实时**回放，动态显示执行、等待推理、执行＋后台推理及任务成功状态。
+
+[![Local Orin、Sync、Async、Blend 四模式实时仿真对比](assets/simulation/libero-four-mode-realtime.gif)](assets/simulation/libero-four-mode-realtime.gif)
+
 ## 环境与资源
 
 推荐 Python 3.10。原始 LIBERO 参考环境为 PyTorch 2.3.1、torchvision 0.18.1、Transformers 4.56、TensorFlow 2.20、TFDS 4.9.3；当前依赖范围以 [pyproject.toml](pyproject.toml) 为准：

@@ -1,0 +1,63 @@
+{
+  "fps": 20,
+  "size": [
+    1060,
+    756
+  ],
+  "speed": 1,
+  "alignment": "independent rollout starts",
+  "task_id": 9,
+  "episode": 0,
+  "sources": [
+    {
+      "mode": "Local Orin · 本机推理",
+      "report": "outputs/evaluation/local/orin_libero_spatial_bf16_20261017T180050_872432+0800/orin_libero_spatial_bf16_20261017T180050_872432+0800.json",
+      "video": "outputs/evaluation/local/orin_libero_spatial_bf16_20261017T180050_872432+0800/orin_videos/turbovla_libero/libero_spatial/task09_ep000_success_realtime.mp4",
+      "wall_time_s": 9.326763304999986,
+      "states": [
+        "任务成功",
+        "准备",
+        "执行",
+        "等待推理"
+      ]
+    },
+    {
+      "mode": "Sync · 同步",
+      "report": "outputs/evaluation/async/orin_to_thor_async_libero_spatial_20261016T224546_700348+0800/orin_to_thor_async_libero_spatial_20261016T224546_700348+0800_sync.json",
+      "video": "outputs/evaluation/async/orin_to_thor_async_libero_spatial_20261016T224546_700348+0800/sync/videos/task09_ep000_success_realtime.mp4",
+      "wall_time_s": 10.368006982000225,
+      "states": [
+        "任务成功",
+        "准备",
+        "执行",
+        "等待推理"
+      ]
+    },
+    {
+      "mode": "Async · 异步替换",
+      "report": "outputs/evaluation/async/orin_to_thor_async_libero_spatial_20261016T224546_700348+0800/orin_to_thor_async_libero_spatial_20261016T224546_700348+0800_replace.json",
+      "video": "outputs/evaluation/async/orin_to_thor_async_libero_spatial_20261016T224546_700348+0800/replace/videos/task09_ep000_success_realtime.mp4",
+      "wall_time_s": 8.208531023999967,
+      "states": [
+        "任务成功",
+        "准备",
+        "执行",
+        "执行 + 后台推理",
+        "等待推理"
+      ]
+    },
+    {
+      "mode": "Blend · 异步融合",
+      "report": "outputs/evaluation/async/orin_to_thor_async_libero_spatial_20261016T224546_700348+0800/orin_to_thor_async_libero_spatial_20261016T224546_700348+0800_blend.json",
+      "video": "outputs/evaluation/async/orin_to_thor_async_libero_spatial_20261016T224546_700348+0800/blend/videos/task09_ep000_success_realtime.mp4",
+      "wall_time_s": 8.567364533999353,
+      "states": [
+        "任务成功",
+        "准备",
+        "执行",
+        "执行 + 后台推理",
+        "等待推理"
+      ]
+    }
+  ]
+}
