@@ -1,0 +1,22 @@
+{
+  "name": "turbovla-splitinfer-docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "assets": "node scripts/sync-assets.mjs",
+    "dev": "npm run assets && vitepress dev . --host 127.0.0.1 --port 5173",
+    "build": "npm run assets && vitepress build .",
+    "preview": "vitepress preview . --host 127.0.0.1 --port 4173",
+    "check": "node scripts/check-docs.mjs"
+  },
+  "devDependencies": {
+    "vitepress": "1.6.4",
+    "vue": "3.5.44"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "overrides": {
+    "vite": "6.4.4"
+  }
+}

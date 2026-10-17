@@ -1,0 +1,10 @@
+node_modules/
+.vitepress/cache/
+.vitepress/dist/
+.taste-skill/
+public/figures/
+public/downloads/
+public/realpics/
+public/animations/
+qa/
+release/

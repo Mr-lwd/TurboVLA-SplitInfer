@@ -2,6 +2,51 @@
 
 基于预训练 TurboVLA 的 LIBERO 双设备推理：**Orin 负责仿真、图像/状态预处理和压缩，Thor 负责全部神经网络推理**，动作返回 Orin 执行。支持本机基准，以及同步、异步替换、异步融合三种远程模式。
 
+目标设备为 **Jetson Orin Nano 8GB + Jetson Thor 128GB**。拆分边界在归一化张量与神经网络之间，DINOv3、BERT、视觉语言交互和动作解码器均在 Thor。文档与图稿中的 **Async 对应 CLI 的 `replace`**。
+
+**文档网站**：[源码与本地启动](docs-site/README.md) · [代码完整性](docs-site/guide/completeness.md) · [设备部署](docs-site/guide/deployment.md) · [验证口径](docs-site/guide/validation.md)。在 `docs-site/` 执行 `npm ci && npm run dev`；`npm run build` 生成可自行部署的静态网站。
+
+## 拆分推理框架
+
+![TurboVLA 双设备拆分推理框架：Orin Nano 8GB 负责观测与控制，Thor 128GB 负责完整神经网络推理](assets/diagrams/split-inference/framework-flat.png)
+
+[查看框架原图](assets/diagrams/split-inference/framework-flat.png) · [流水线静态总览](assets/diagrams/split-inference/pipeline-flat.png) · [两页可编辑 PPT](assets/diagrams/split-inference/turbovla-diagrams-editable.pptx)
+
+## 三种协同推理模式
+
+以下动图使用统一示意时间轴，展示 Thor 推理与 Orin 执行的协同过程。动作块长度为 12，异步重规划间隔为 4 个控制步，融合窗口为 3 步。详细规则见[调度说明](docs-site/guide/scheduling.md)。
+
+### Async · 异步替换（CLI：`replace`）
+
+Orin 执行已有动作时，Thor 在后台预测下一动作块；返回后按已执行控制步裁掉过期前缀，替换未来动作。
+
+![Async 异步替换流水线：后台推理、过期前缀裁剪与未来动作替换](assets/diagrams/split-inference/animations/pipeline-async.gif)
+
+### Blend · 异步融合
+
+沿用异步推理与时间对齐，在新旧动作重叠窗口内逐步增加新动作权重，使动作衔接更平滑。
+
+![Blend 异步融合流水线：后台推理与三步新旧动作融合](assets/diagrams/split-inference/animations/pipeline-blend.gif)
+
+### Sync · 同步推理
+
+执行完当前动作块后，阻塞请求下一动作块；等待期间暂停推进控制步，收到结果后继续执行。
+
+![Sync 同步推理流水线：动作块执行、阻塞等待与下一动作块执行](assets/diagrams/split-inference/animations/pipeline-sync.gif)
+
+[三模式对照动图](assets/diagrams/split-inference/animations/pipeline-comparison.gif) · 静态帧：[Async](assets/diagrams/split-inference/animations/pipeline-async-poster.png) / [Blend](assets/diagrams/split-inference/animations/pipeline-blend-poster.png) / [Sync](assets/diagrams/split-inference/animations/pipeline-sync-poster.png)
+
+## 实物部署
+
+项目已在 **Jetson Orin Nano 8GB + Jetson Thor 128GB** 两台实体设备上部署，分别承担观测与控制、完整模型推理。
+
+| Jetson Orin Nano · 8GB | Jetson Thor · 128GB |
+| --- | --- |
+| ![Orin Nano 实物部署，实拍整理版](assets/realpics/cleaned/orin-clean.jpg) | ![Thor 实物部署，实拍整理版](assets/realpics/cleaned/thor-clean.jpg) |
+| 观测预处理、请求调度、LIBERO 动作执行 | DINOv3、BERT、V–L 交互、ACT 与动作反归一化 |
+
+图片经 DDS 图像接口清理背景杂物与表面污点；原始实拍保留：[Orin](assets/realpics/orin.jpg) · [Thor](assets/realpics/Thor.jpg)。照片展示实际设备，成功率、延迟与稳定性以运行记录为准。
+
 ## 环境与资源
 
 推荐 Python 3.10。原始 LIBERO 参考环境为 PyTorch 2.3.1、torchvision 0.18.1、Transformers 4.56、TensorFlow 2.20、TFDS 4.9.3；当前依赖范围以 [pyproject.toml](pyproject.toml) 为准：
@@ -113,6 +158,27 @@ PYTHONPATH=third_party/vla_adapter:. python -m unittest discover -s tests -v
 ```
 
 [benchmark_transport.py](scripts/libero/benchmark_transport.py) 用于固定观测的传输测速；[check_split_parity.py](scripts/libero/check_split_parity.py) 验证直接推理与 HTTP 返回动作一致；[summarize_split.py](scripts/libero/summarize_split.py) 可补算历史同步结果。权重、数据集、输出和视频均不提交 Git。
+
+## 系统能力
+
+下表汇总系统实现机制及对应验证方式，覆盖功能、性能和工程质量。
+
+| 维度 | 实现机制 | 验证方式 / 关键指标 |
+| --- | --- | --- |
+| 功能性 | 本机基线、远程 sync / replace / blend；LIBERO 12×7 动作闭环 | 成功率、三模式报告、动作数值一致性 |
+| 实时性 | 单请求后台预测、连接复用、无损压缩、控制节拍 | 控制间隔 p95、往返耗时、`hold_steps`、过期块 |
+| 实用性 | Orin 不载模型；统一脚本、YAML、preflight、独立输出 | 新环境完成预检与单任务闭环 |
+| 稳定性 | 观测快照、控制步对齐、过期裁剪、缓冲耗尽 hold、异常传播 | 延迟注入、掉线、长时运行；hold 与失败记录 |
+| 安全性 | 报文限长、有界解压、形状/有限值校验、请求与实例匹配；网络载荷无 pickle | 非法载荷、服务重启、错误请求测试 |
+| 一致性 | 精度/块长检查、无损 codec、严格权重加载、checkpoint SHA-256 | 位保真测试、同一 checkpoint 的 `check_split_parity.py` 对比 |
+| 可复现性 | seed、同初始状态、模式顺序随机化、配置与环境元数据 | 原始 JSON/CSV、模型哈希、完整配置与设备环境 |
+| 可观测性 | 分阶段计时、调用/控制步记录、墙钟视频、allocator 峰值 | metadata、summary、comparison、realtime 视频 |
+| 可维护性 | 模型/协议/调度分层、六个测试模块、文档网站 | 单元回归、入口和文档一致性 |
+| 可扩展性 | 共用模型、独立 RoboTwin 训练评测入口、可选压缩 codec | 新适配器与独立回归 |
+
+本地验证（2026-10-17）：**33 项单元测试通过**，通过 mock / fake policy 与本机 HTTP 核验协议、调度和报告逻辑。设备端按“相同 checkpoint 数值一致性 → 三模式任务对比 → 长时运行与资源监控”组织评测并保存结果。
+
+推理 HTTP 服务部署于受控实验网络，静态文档网站独立部署。跨网络访问与设备安全要求见[系统能力说明](docs-site/guide/capabilities.md)。
 
 ## 论文引用
 
