@@ -109,7 +109,7 @@ class BenchmarkReportTests(unittest.TestCase):
         self.assertEqual([group['id'] for group in published['groups']], ['current-round'])
         self.assertEqual([item['id'] for item in published['runs']], ['current-run'])
         self.assertEqual(published['runs'][0]['records'], current['records'])
-        self.assertEqual(published['groups'][0]['notes'], ['BF16、seed 7。'])
+        self.assertEqual(published['groups'][0]['notes'], ['BF16, seed 7.'])
         self.assertNotIn('2026', published['groups'][0]['title'])
         published['runs'][0]['records'][0]['metrics']['successes'] = 999
         self.assertEqual(catalog, original)
@@ -166,7 +166,7 @@ class CommonSuccessTests(unittest.TestCase):
             self.assertEqual(metrics['first_call_per_episode']['count'], 2)
             self.assertEqual(run['records'][0]['metrics']['episodes'], 4)
         rendered = table(group_rows(self.catalog, group), matched=True)
-        self.assertIn('共同成功案例数', rendered)
+        self.assertIn('Matched cases', rendered)
         self.assertNotIn('2/2', rendered)
         # Publication needs only portable catalog data, not raw output directories.
         self.catalog['groups'].append(group)

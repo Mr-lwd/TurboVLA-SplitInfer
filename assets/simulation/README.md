@@ -1,15 +1,15 @@
-# LIBERO 四模式实时仿真对比
+# Four-mode real-time LIBERO comparison
 
-[查看 2×2 GIF](libero-four-mode-realtime.gif)：左上 Local Orin，右上 Sync，左下 Async，右下 Blend。四段独立运行均为 LIBERO Spatial 任务 9、episode 0，成功完成“从木柜上取黑碗并放到盘中”。
+[View the 2×2 GIF](libero-four-mode-realtime.gif): Local Orin at top left, Sync at top right, Async at bottom left and Blend at bottom right. All four independent runs successfully complete LIBERO Spatial task 9, episode 0: pick up the black bowl on the wooden cabinet and place it on the plate.
 
-排除任务 0 的首次调用长等待及未共同成功的任务后，选用完成时间差异更清楚的任务 9：Local Orin 9.33 s、Sync 10.37 s、Async 8.21 s、Blend 8.57 s。
+Task 0 is excluded because of its long initial call. Among commonly successful remaining tasks, task 9 offers a clear timing contrast: Local Orin 9.33 s, Sync 10.37 s, Async 8.21 s and Blend 8.57 s.
 
-- 统一按各次 rollout 起点对齐，以墙钟 1×、20 FPS 回放，包含首次推理等待；各模式完成后保持终帧至本轮结束。
-- 每格保留原始 512×256 环境与腕部双视角；合成画面为 1060×756。原录像顶部已有状态条替换为视角标签，中文状态另置于画面上方。
-- 状态由原始 JSON 的推理区间、阻塞等待与控制步记录生成；颜色分别表示执行、等待推理、执行＋后台推理和任务成功。“执行”指控制执行阶段，包含控制节拍间隔。
-- [来源与时间清单](libero-four-mode-realtime.json)记录四段实时录像、原始 JSON 路径及任务耗时。该 GIF 为单任务演示，整体性能见[实测数据](../../docs-site/guide/benchmark-results.md)。
+- Runs are aligned at rollout start and replayed at 1× wall-clock speed, 20 FPS, retaining all inference waits. Completed modes hold their terminal frame until the shared loop ends.
+- Each panel preserves the original 512×256 environment/wrist views; the composite is 1060×756. The existing video status strip is replaced by view labels, with English state labels above each panel.
+- States follow recorded inference intervals, blocking waits and control steps: executing, waiting for inference, executing with background inference, hold, and success. Execution includes control pacing intervals.
+- [Source and timing manifest](libero-four-mode-realtime.json) records video/JSON paths and durations. This is a single-task demonstration; aggregate performance is reported in the [benchmarks](../../docs-site/guide/benchmark-results.md).
 
-复现导出（需要 Pillow 与 imageio-ffmpeg；Linux 下通过 `--font` 指定中文字体）：
+Rebuild with Pillow, imageio-ffmpeg and Matplotlib; English fonts are bundled with Matplotlib:
 
 ```bash
 python scripts/libero/build_simulation_gif.py --task-id 9

@@ -1,34 +1,34 @@
-# 系统能力
+# System capabilities
 
-系统面向资源受限设备上的视觉语言动作模型部署，通过 Orin 控制执行与 Thor 模型推理的协同分工，支持闭环任务运行、推理调度优化与统一性能评估。
+The system deploys a vision-language-action model across resource-constrained hardware: Orin handles control and Thor performs model inference, supporting closed-loop tasks, scheduling experiments and consistent performance evaluation.
 
 <div class="capability-values">
 
-| 维度 | 能力描述 |
+| Dimension | Capability |
 | --- | --- |
-| **功能性** | 支持观测采集、远程推理与动作执行的完整闭环，提供同步、异步替换和异步融合三种协同模式。 |
-| **实时性** | 通过异步推理与动作执行重叠，减少推理等待对控制节拍的影响，提高计算与执行的并行程度。 |
-| **实用性** | 将完整模型部署于 Thor，降低 Orin 控制端的模型内存与计算需求，支持异构设备协同部署。 |
-| **稳定性** | 通过动作时序对齐、过期动作剔除及缓冲耗尽处理，减轻响应延迟对动作执行连续性的影响。 |
-| **安全性** | 校验通信报文、动作数值与响应归属，降低异常数据和错配响应进入控制链路的风险。 |
-| **一致性** | 统一模型调用接口与动作语义，为本机推理与远程推理的输出核对、协同模式对比提供共同基准。 |
-| **可复现性** | 记录实验配置、随机种子与原始运行数据，支持任务复现、结果复核及跨模式比较。 |
-| **可观测性** | 记录推理、通信与控制环节的耗时及缓冲状态，支持性能瓶颈定位与调度效果分析。 |
-| **可维护性** | 按模型、传输与调度划分模块职责，降低功能耦合，便于独立调试、故障定位与持续迭代。 |
-| **可扩展性** | 通过统一模型接口与任务适配入口，支持压缩策略、调度配置及任务场景的进一步扩展。 |
+| **Functionality** | Closes the observation–inference–execution loop with synchronous, asynchronous replacement and asynchronous blending modes. |
+| **Responsiveness** | Overlaps inference with action execution to reduce the impact of prediction waits on control updates. |
+| **Practicality** | Places the complete model on Thor, reducing the model memory and compute required on the Orin control device. |
+| **Stability** | Aligns action timestamps, discards stale actions and handles empty buffers to limit disruptions caused by response latency. |
+| **Safety** | Validates messages, action values and response identity to reduce the risk of invalid or mismatched data entering the control loop. |
+| **Consistency** | Uses a common model interface and action semantics for checking local/remote outputs and comparing scheduling modes. |
+| **Reproducibility** | Preserves configurations, random seeds and raw records for repeatable tasks and verifiable comparisons. |
+| **Observability** | Records inference, communication, control timings and buffer state to locate bottlenecks and assess scheduling. |
+| **Maintainability** | Separates model, transport and scheduling responsibilities for independent debugging and iteration. |
+| **Extensibility** | Provides model and task interfaces for extending compression strategies, scheduling configurations and task scenarios. |
 
 </div>
 
-## 运行条件
+## Operating conditions
 
-split v1 使用 LIBERO 相对动作控制；控制频率配置为 20 Hz 上限，按实际时间戳统计运行节拍。请求超时或异常会结束当前实验并记录状态。依赖与模型资源见[设备部署](./deployment.md)，内存与计时口径见[验证与结果](./validation.md)。
+split v1 uses LIBERO relative-action control. The configured 20 Hz rate is an upper bound; actual cadence is measured from timestamps. A timeout or request error ends the experiment and records its status. See [deployment](./deployment.md) for dependencies and [validation](./validation.md) for memory and timing definitions.
 
-当前客户端只支持 HTTP。服务适合受控实验网络，不应直接暴露到公网。若未来跨网络部署，应先增加 TLS、身份校验和访问控制，或使用明确配置的受保护隧道；现有 CLI 不能仅把 URL 改成 `https://` 就获得支持。
+The current client supports HTTP only. Use a controlled experimental network. Cross-network inference requires TLS, authentication and access controls, or an explicitly configured protected tunnel; changing the URL to `https://` alone is not supported by the current CLI.
 
-`request_id` 和 `server_id` 用于一致性匹配，不是鉴权。无损张量协议避免 pickle 网络反序列化，但模型文件仍应来自可信来源。
+`request_id` and `server_id` check consistency, not authorization. The tensor protocol avoids network pickle deserialization; model files must still come from trusted sources.
 
-真机部署还需要独立于推理线程的失联看门狗、速度/工作空间限制、碰撞防护与急停；零增量 hold 不能替代这些措施。
+Physical robot operation requires an independent communication watchdog, velocity/workspace limits, collision protection and emergency stop. Zero-increment hold commands do not replace these controls.
 
-## 验证顺序
+## Validation sequence
 
-按任务成功与动作一致性、延迟与缓冲状态、长时运行与资源监控的顺序验证。各阶段保存配置、设备环境和原始结果，便于复现与比较。
+Check task success and output consistency first, then latency and buffer behavior, followed by sustained operation and resource monitoring. Preserve configurations, device environments and raw results at each stage.

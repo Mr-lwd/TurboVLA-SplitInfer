@@ -1,7 +1,7 @@
-# 实物部署照片
+# Hardware deployment photographs
 
-原图为用户提供的实际部署设备照片：`orin.jpg` 与 `Thor.jpg`。设备型号、内存容量和部署角色按用户提供的项目信息标注，不从照片推断性能。
+`orin.jpg` and `Thor.jpg` are the supplied photographs of the deployed devices. Model names, capacities and roles follow the project deployment information; performance is not inferred from appearance.
 
-`cleaned/` 为使用 DDS API、`gpt-image-2.5-sunburst` 生成的展示整理版。修改范围是背景杂物和表面污点清理，保留设备外形、天线、功能性接线与原有标识。它们用于说明设备部署，不作为运行成功率或时延的测量证据。
+`cleaned/` contains presentation versions made with the DDS API and gpt-image-2.5-sunburst. Editing removed background clutter and surface marks while preserving device outlines, antennas, functional cables and markings. The photographs show hardware deployment; success and latency come from evaluation records.
 
-PNG 为整理后的高清图，JPG 为同内容的网页压缩版本。原始实拍始终保留，网站和 README 均有原图入口。
+PNG files are high-resolution cleaned images; JPG files are web-compressed versions of the same content. Original photographs remain available from both the README and website.

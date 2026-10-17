@@ -1,96 +1,98 @@
 # Sync / Blend / Async
 
-网站与图稿使用 **Async** 表示异步直接替换；实际命令行名称为 **`replace`**。`blend` 同样使用异步调度，只改变动作块合并策略。
+**Async** denotes asynchronous replacement in the website and figures. Its CLI name is **`replace`**. Blend uses the same asynchronous scheduler with a different action-merging rule.
 
-## 三模式流水线总览
+## Pipeline overview
 
-![Async、Blend、Sync 三种协同推理流水线，含 Thor 推理与 Orin 执行、动作裁剪和融合权重](../../assets/diagrams/split-inference/pipeline-flat.png)
+![Async, Blend and Sync: inference, execution, stale-prefix trimming and blending](../../assets/diagrams/split-inference/pipeline-flat.png)
 
-[下载两页可编辑 PPT](../../assets/diagrams/split-inference/turbovla-diagrams-editable.pptx)
+[Download the editable two-slide PowerPoint](../../assets/diagrams/split-inference/turbovla-diagrams-editable.pptx)
 
-上述流水线图由 DDS 图稿重建为原生纯色对象。下面的动图按同一调度序列绘制，逐步展示控制推进与请求重叠。所有时间单位均为示意。
+The diagram uses editable native objects. The animations follow the same deterministic scheduling sequence. Their time units are illustrative, not measured latency.
 
 <TimelineDemo />
 
-## 流水线动图
+## Pipeline animations
 
 <PipelineAnimation />
 
 <div class="github-only">
 
-**Async · 异步替换**
+**Async: replacement**
 
-![Async：后台推理、过期前缀裁剪与未来动作替换](../../assets/diagrams/split-inference/animations/pipeline-async.gif)
+![Async: background inference, stale-prefix trimming and replacement](../../assets/diagrams/split-inference/animations/pipeline-async.gif)
 
-**Blend · 异步融合**
+**Blend: overlapping actions**
 
-![Blend：后台推理与三步新旧动作融合](../../assets/diagrams/split-inference/animations/pipeline-blend.gif)
+![Blend: background inference and three-step blending](../../assets/diagrams/split-inference/animations/pipeline-blend.gif)
 
-**Sync · 同步推理**
+**Sync: blocking inference**
 
-![Sync：执行动作块、阻塞等待与继续执行](../../assets/diagrams/split-inference/animations/pipeline-sync.gif)
+![Sync: execute a chunk, wait, then resume](../../assets/diagrams/split-inference/animations/pipeline-sync.gif)
 
-[三模式对照动图](../../assets/diagrams/split-inference/animations/pipeline-comparison.gif)
+[Three-mode animation](../../assets/diagrams/split-inference/animations/pipeline-comparison.gif)
 
 </div>
 
-蓝色推理块在 Thor，动作序列在 Orin。三行使用同一示意墙钟时间轴；sync 的等待段保持实际控制步不变，async 与 blend 则继续执行已有动作。默认 `H=12 / R=4 / B=3`；动画显示重复重规划，而不是只展示一次请求。
+Blue inference blocks run on Thor; actions execute on Orin. All rows share an illustrative wall-clock axis. Sync does not advance control steps while waiting; Async and Blend continue using available actions. The default is `H=12 / R=4 / B=3`; the animation includes repeated replanning.
 
-## 共同规则
+## Shared rules
 
-- 第一次预测阻塞等待，建立初始动作块。
-- 默认块长 `H=12`，异步每 `R=4` 个实际控制步尝试重规划，融合窗 `B=3`。
-- 最多一个请求在途；后台输入使用观测副本，避免环境复用图像缓冲区。
-- 新动作依据**已执行控制步**对齐，不用 HTTP 耗时除以 50 ms 推算。
-- 控制上限为 20 Hz；仿真慢时不跳步、不追赶。
+- Block on the first prediction to initialize the action buffer.
+- Use chunks of `H=12`, attempt asynchronous replanning every `R=4` executed control steps, and blend over up to `B=3` steps.
+- Allow at most one request in flight. Snapshot observations to avoid reused image buffers.
+- Align actions by **executed control steps**, not by dividing HTTP latency by 50 ms.
+- Limit control to 20 Hz without skipping steps or catching up when simulation is slow.
 
-## Sync：阻塞基线
+## Sync: blocking baseline
 
-当前动作块执行完毕后，获取新的观测并请求下一块。等待期间不推进 `env.step()`。它的阻塞等待应在墙钟视频中保留，不能用固定 FPS 的回放掩盖。
+After exhausting a chunk, capture a new observation and request the next chunk. No `env.step()` is executed during the wait. Use wall-clock videos to retain these pauses.
 
 ```bash
 bash scripts/libero/run_async_benchmark.sh --modes sync
 ```
 
-## Async：对齐后替换
+## Async: trim and replace
 
-后台预测时继续执行旧块。设采样步为 `s`、返回时实际控制步为 `t`，裁掉新块的前 `min(t-s, H)` 项，再将剩余动作写入未来时间线；旧未来动作（含旧尾部）整体被替换。
+Continue executing the old chunk during prediction. If observation step `s` produces a response merged at control step `t`, discard the first `min(t-s, H)` actions. Replace the entire old future timeline, including its tail, with the remaining new actions.
 
-例如在步 4 采样、步 6 合并，新块 B 的 `B0、B1` 过期，从 `B2` 开始应用。若 `t-s ≥ H`，整块丢弃，不破坏仍有效的旧未来动作。
+For a request sampled at step 4 and merged at step 6, `B0` and `B1` are stale; execution starts at `B2`. If `t-s >= H`, discard the whole new chunk while retaining any valid old actions.
 
 ```bash
 bash scripts/libero/run_async_benchmark.sh --modes replace
 ```
 
-## Blend：重叠区渐变
+## Blend: transition over the overlap
 
-先执行同样的过期裁剪，再求新旧时间线的连续重叠长度 `O`，最大为 `blend_steps`。重叠区第 `i` 项的权重为 `α=(i+1)/O`：
+Apply the same stale-prefix trimming, then find the contiguous overlap `O`, capped by `blend_steps`. At overlapping position `i`, use `alpha=(i+1)/O`:
 
 ```text
-arm = (1 − α) × old_arm + α × new_arm
-gripper = new_gripper if α ≥ 0.5 else old_gripper
+arm = (1 - alpha) * old_arm + alpha * new_arm
+gripper = new_gripper if alpha >= 0.5 else old_gripper
 ```
 
-完整三步重叠时，权重为 `1/3 → 2/3 → 1`。只有两步重叠时是 `1/2 → 1`；无重叠时直接采用新动作。前六维为相对位姿指令，夹爪不生成中间值。
+A three-step overlap uses weights `1/3 → 2/3 → 1`; two steps use `1/2 → 1`. With no overlap, use the new action directly. Only the six relative-pose dimensions are blended; gripper commands remain discrete.
 
 ```bash
 bash scripts/libero/run_async_benchmark.sh --modes blend --blend_steps 3
 ```
 
-## 缓冲耗尽与错误
+## Empty buffers and errors
 
-异步等待期间若当前步没有动作，输出零手臂增量，保持上一夹爪命令，并计入 `hold_steps`。若请求最终失败，异常向上抛出；不会静默切到本地模型，也不会无限使用旧动作。
+If no action is available while a request is pending, send zero arm increments and retain the previous gripper command. Count these as `hold_steps`. Request failures propagate to the caller; the system does not silently switch to a local model or reuse old actions indefinitely.
 
-这一策略是 LIBERO 仿真的缓冲退化行为，不包含真机限位、碰撞检测、独立急停和通信失联看门狗。长时延可通过 `--extra_delay_s` 实验观察。
+This is a LIBERO fallback behavior, not physical-robot collision protection, motion limits, emergency stop or a communication watchdog. Explore longer delays with `--extra_delay_s`.
 
-## 比较时看什么
+## What to compare
 
-| 问题 | 观察量 |
+| Question | Metric |
 | --- | --- |
-| 是否完成任务 | `success_rate` |
-| 控制节奏是否稳定 | `control_intervals.p95_ms`、`control_lateness` |
-| 是否经常用尽缓冲 | `hold_steps`、`expired_chunks` |
-| 指令变化是否变小 | `arm_action_changes`；这是混合单位指令 L2，不是 jerk |
-| 是否缩短任务总时间 | `rollout_wall_time_s`，同时保留成功率 |
+| Does the task complete? | `success_rate` |
+| Is control cadence consistent? | `control_intervals.p95_ms`, `control_lateness` |
+| Does the buffer run out? | `hold_steps`, `expired_chunks` |
+| Do commands change less abruptly? | `arm_action_changes`: mixed-unit command L2, not jerk |
+| Is the task faster? | `rollout_wall_time_s`, reported alongside success |
 
-Blend 是推理阶段的启发式融合，没有重新训练、延迟条件模型或 RTC 机制。它可能改善指令切换，也可能影响任务成功率，需要实测判断。
+A lower control-interval p95 indicates fewer long gaps between action updates; it does not by itself prove smoother motion. Check hold steps, interval variability and action changes together.
+
+Blend is an inference-time heuristic, without retraining, a latency-conditioned model or RTC. Its effect on transitions and task success must be measured.

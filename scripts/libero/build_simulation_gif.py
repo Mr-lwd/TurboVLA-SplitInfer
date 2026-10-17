@@ -7,6 +7,7 @@ import subprocess
 from pathlib import Path
 
 import imageio_ffmpeg
+from matplotlib import get_data_path
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -16,31 +17,31 @@ FPS = 20
 WIDTH, HEIGHT = 1060, 756
 PANEL_WIDTH, PANEL_HEIGHT = 512, 326
 COLORS = {
-    "准备": ("#eef2f6", "#455569"),
-    "执行": ("#e8f5ed", "#246345"),
-    "等待推理": ("#fff1d8", "#875400"),
-    "执行 + 后台推理": ("#e4f0ff", "#205c9c"),
-    "保持 / 缓冲为空": ("#fff1d8", "#875400"),
-    "任务成功": ("#e8f5ed", "#246345"),
-    "任务结束": ("#eef2f6", "#455569"),
+    "Initializing": ("#eef2f6", "#455569"),
+    "Executing": ("#e8f5ed", "#246345"),
+    "Waiting for inference": ("#fff1d8", "#875400"),
+    "Executing + inference": ("#e4f0ff", "#205c9c"),
+    "Hold / empty buffer": ("#fff1d8", "#875400"),
+    "Success": ("#e8f5ed", "#246345"),
+    "Finished": ("#eef2f6", "#455569"),
 }
 
 
 def phase(episode, elapsed, local=False):
     if elapsed >= episode["rollout_wall_time_s"]:
-        return "任务成功" if episode["success"] else "任务结束"
+        return "Success" if episode["success"] else "Finished"
     calls = episode["inference_timings"]
     steps = episode["step_timings"]
     if elapsed < min(calls[0]["start_s"], steps[0]["action_start_s"]):
-        return "准备"
+        return "Initializing"
     waits = calls if local else episode["blocking_waits"]
     if any(w["start_s"] <= elapsed < w["end_s"] for w in waits):
-        return "等待推理"
+        return "Waiting for inference"
     if any(s["hold"] and s["action_start_s"] <= elapsed < s["action_end_s"] for s in steps):
-        return "保持 / 缓冲为空"
+        return "Hold / empty buffer"
     if not local and any(c["start_s"] <= elapsed < c["end_s"] for c in calls):
-        return "执行 + 后台推理"
-    return "执行"
+        return "Executing + inference"
+    return "Executing"
 
 
 def sources(task_id):
@@ -49,12 +50,12 @@ def sources(task_id):
     task = next(t for t in report["tasks"] if t["task_id"] == task_id)
     episode = next(e for e in task["episode_results"] if e["episode"] == 0)
     result = [{
-        "label": "Local Orin · 本机推理", "local": True, "episode": episode,
+        "label": "Local Orin · On-device", "local": True, "episode": episode,
         "report": local_dir / f"{LOCAL}.json",
         "video": local_dir / f"orin_videos/turbovla_libero/libero_spatial/task{task_id:02d}_ep000_success_realtime.mp4",
     }]
     remote_dir = ROOT / "outputs/evaluation/async" / REMOTE
-    for mode, label in [("sync", "Sync · 同步"), ("replace", "Async · 异步替换"), ("blend", "Blend · 异步融合")]:
+    for mode, label in [("sync", "Sync · Blocking"), ("replace", "Async · Replacement"), ("blend", "Blend · Blending")]:
         report_path = remote_dir / f"{REMOTE}_{mode}.json"
         data = json.loads(report_path.read_text(encoding="utf-8"))
         episode = next(e for e in data["episodes"] if e["task_id"] == task_id and e["episode"] == 0)
@@ -75,8 +76,8 @@ def render(records, elapsed, font_path, task_id):
     fonts = {size: ImageFont.truetype(str(font_path), size) for size in (14, 16, 20, 22)}
     image = Image.new("RGB", (WIDTH, HEIGHT), "#f3f7fb")
     draw = ImageDraw.Draw(image)
-    draw.text((16, 12), f"LIBERO Spatial · Task {task_id:02d} · 四模式实测", font=fonts[22], fill="#182433")
-    draw.text((WIDTH - 16, 16), f"t = {elapsed:05.2f} s  |  1× 实时", anchor="ra", font=fonts[20], fill="#205c9c")
+    draw.text((16, 12), f"LIBERO Spatial · Task {task_id:02d} · Four-mode comparison", font=fonts[22], fill="#182433")
+    draw.text((WIDTH - 16, 16), f"t = {elapsed:05.2f} s  |  1× real time", anchor="ra", font=fonts[20], fill="#205c9c")
     for index, source in enumerate(records):
         x, y = 12 + (index % 2) * 524, 54 + (index // 2) * 340
         episode = source["episode"]
@@ -94,17 +95,17 @@ def render(records, elapsed, font_path, task_id):
         label = ImageDraw.Draw(frame)
         # Replace the existing 21 px English status strip, never cover additional scene pixels.
         label.rectangle((0, 0, 511, 20), fill="#edf3f9")
-        label.text((8, 1), "环境视角", font=fonts[14], fill="#455569")
-        label.text((264, 1), "腕部视角", font=fonts[14], fill="#455569")
+        label.text((8, 1), "Environment view", font=fonts[14], fill="#455569")
+        label.text((264, 1), "Wrist view", font=fonts[14], fill="#455569")
         image.paste(frame, (x, y + 70))
-    draw.text((16, 738), "各次独立运行按起点对齐 · 保留全部推理等待 · 完成后保持终帧", font=fonts[14], fill="#455569")
+    draw.text((16, 738), "Independent runs aligned at start · All inference waits retained · Hold final frame after completion", font=fonts[14], fill="#455569")
     return image
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--task-id", type=int, choices=range(10), default=9, help="LIBERO Spatial task; default: cabinet-to-plate task 9")
-    parser.add_argument("--font", type=Path, default=Path("C:/Windows/Fonts/msyh.ttc"), help="Chinese-capable TrueType/OpenType font")
+    parser.add_argument("--font", type=Path, default=Path(get_data_path()) / "fonts/ttf/DejaVuSans.ttf", help="TrueType/OpenType font for English labels")
     parser.add_argument("--output", type=Path, default=ROOT / "assets/simulation/libero-four-mode-realtime.gif")
     args = parser.parse_args()
     records = sources(args.task_id)

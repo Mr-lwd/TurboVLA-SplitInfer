@@ -1,59 +1,59 @@
-# 代码完整性
+# Code coverage
 
-项目覆盖“配置 → 服务 → 客户端 → 调度 → 执行 → 报告 → 测试”的完整实验链路，各模块提供对应入口、配置与验证方法。
+The repository covers configuration, serving, client requests, scheduling, execution, reporting and tests, with entry points and validation methods for each stage.
 
-## 代码地图
+## Code map
 
 ```text
 turbovla/
-  models/       共用 TurboVLA：DINOv3、BERT、双向交互、ACT
-  split/        Orin 客户端、Thor HTTP 服务、版本化张量协议
-  evaluation/   策略适配、动作反归一化、三模式调度
-  data/         LIBERO RLDS、混合套件、统计归一化
-  training/     训练入口、优化器与 EMA
-scripts/libero/ 基准入口、预检、通信测量、数值一致性、汇总
-experiments/    LIBERO / RoboTwin 入口与配置
-tests/          六个测试模块
-third_party/    兼容运行时及保留许可证
-docs-site/      本站源码与静态构建配置
-assets/         原始架构图与图稿
+  models/       TurboVLA: DINOv3, BERT, bidirectional interaction, ACT
+  split/        Orin client, Thor HTTP service, versioned tensor protocol
+  evaluation/   Policy adapters, action conversion, three-mode scheduling
+  data/         LIBERO RLDS, mixed suites, normalization statistics
+  training/     Training entry points, optimizers and EMA
+scripts/libero/ Benchmarks, preflight, transport tests, parity and reporting
+experiments/    LIBERO / RoboTwin entry points and configuration
+tests/          Protocol, scheduling, evaluation and reporting tests
+third_party/    Compatibility runtimes and retained licenses
+docs-site/      Documentation source and static build configuration
+assets/         Architecture diagrams, animations and deployment photographs
 ```
 
-## 从入口追到证据
+## From implementation to evidence
 
-| 能力 | 入口 / 实现 | 配置或资源 | 验证证据 |
+| Capability | Entry point / implementation | Configuration or resources | Evidence |
 | --- | --- | --- | --- |
-| Thor 推理服务 | `serve_thor.sh` → `split/server.py` | checkpoint、DINOv3、BERT、stats | `/health`、服务日志、split 测试 |
-| Orin 远程调用 | `split/client.py` | URL、精度、codec | HTTP fake-policy 往返测试 |
-| 传输编码 | `split/protocol.py` | 固定形状与协议版本 | 位保真、截断、附加数据、非有限值测试 |
-| 三模式实验 | `benchmark_async.py` → `async_rollout.py` | `async_benchmark.yaml` | 对齐 / 融合 / 失败传播测试及 comparison |
-| 本机对照 | `benchmark_local.py` | `local_benchmark.yaml` | 本机入口与统计测试 |
-| 模型输出一致性 | `check_split_parity.py` | 同一 checkpoint 与 stats | 在 Thor 比较两条推理路径，生成 parity JSON |
-| 通信选型 | `benchmark_transport.py` | 固定观测 NPZ | 相同动作约束下比较各 codec |
-| 训练与数据 | `training/`、`data/` | RLDS/TFDS、统计、初始化资源 | 数据处理、训练配方与训练入口 |
-| RoboTwin 扩展 | `experiments/robotwin/` | 独立 all50 配置与外部 RoboTwin | 独立训练与评测流程 |
+| Thor service | `serve_thor.sh` → `split/server.py` | Checkpoint, DINOv3, BERT, statistics | `/health`, service logs, split tests |
+| Orin requests | `split/client.py` | URL, precision, codec | HTTP fake-policy round trips |
+| Transport | `split/protocol.py` | Fixed shapes, protocol version | Bit fidelity, truncation, trailing data and non-finite-value tests |
+| Three-mode evaluation | `benchmark_async.py` → `async_rollout.py` | `async_benchmark.yaml` | Alignment, blending, failure propagation and comparisons |
+| Local baseline | `benchmark_local.py` | `local_benchmark.yaml` | Entry-point and statistics tests |
+| Output parity | `check_split_parity.py` | Matching checkpoint and statistics | Direct/HTTP comparison on Thor and parity JSON |
+| Transport selection | `benchmark_transport.py` | Fixed observations in NPZ | Codec comparison with identical returned actions |
+| Training and data | `training/`, `data/` | RLDS/TFDS, statistics, initialization | Processing tools, recipes and training entry points |
+| RoboTwin extension | `experiments/robotwin/` | Separate all50 configuration and external RoboTwin | Independent training/evaluation workflow |
 
-## 外部资源清单
+## Resource checklist
 
-| 仓库内提供 | 需要另行准备 |
+| Provided in the repository | Prepared separately |
 | --- | --- |
-| 模型实现、适配、服务、客户端、调度 | 模型权重及本地模型目录 |
-| YAML/JSON 配置、LIBERO 统计 | LIBERO 代码、BDDL、初始状态和 assets |
-| 单元测试与报告脚本 | JetPack、GPU 驱动、对应 PyTorch |
-| 数据处理与训练入口 | 训练数据和训练硬件 |
-| 第三方许可说明 | 外部资源的获取及访问资格 |
+| Model, adapter, server, client and scheduler code | Model weights and local model directories |
+| YAML/JSON configuration and LIBERO statistics | LIBERO code, BDDL, initial states and assets |
+| Tests and report generators | JetPack, GPU drivers and compatible PyTorch |
+| Training and data-processing entry points | Training data and compute |
+| Third-party license notices | Access permissions for external resources |
 
-权重、数据、输出、视频与机器专用 `*.local.yaml` 按本地路径管理。发布项目时保留 `LICENSE` 和 `third_party/licenses/`，注明上游代码来源。
+Keep machine-specific settings in ignored `*.local.yaml` files. Preserve `LICENSE`, `third_party/licenses/` and upstream attribution when redistributing the project. Published evaluation artifacts remain under `outputs/` with their source records.
 
-## 阅读顺序
+## Reading order
 
-1. `README.md`：安装、入口与约束。
-2. `async_benchmark.yaml`：实验参数。
-3. `split/client.py` → `protocol.py` → `server.py`：跨设备数据链路。
-4. `models/turbovla.py` → `action_head.py`：模型结构。
-5. `async_rollout.py::ActionTimeline.merge()`、`run_episode()`：时序行为。
-6. `benchmark_async.py::summarize_episodes()`：指标口径。
+1. `README.md`: installation, entry points and operating constraints.
+2. `async_benchmark.yaml`: experiment settings.
+3. `split/client.py` → `protocol.py` → `server.py`: cross-device data flow.
+4. `models/turbovla.py` → `action_head.py`: model architecture.
+5. `async_rollout.py::ActionTimeline.merge()` and `run_episode()`: scheduling behavior.
+6. `benchmark_async.py::summarize_episodes()`: metric definitions.
 
-## 工程验证流程
+## Engineering validation
 
-按“环境预检 → 模型输出一致性 → 三模式任务对比 → 长时运行”组织验证，保存配置、设备环境与结果文件。具体命令和指标见[验证与结果](./validation.md)，网络及设备运行条件见[系统能力](./capabilities.md)。
+Proceed from preflight to model parity, three-mode task comparisons and sustained operation. Save configuration, device environment and results. See [validation](./validation.md) for commands and [system capabilities](./capabilities.md) for operating conditions.

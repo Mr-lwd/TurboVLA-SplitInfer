@@ -18,19 +18,12 @@ def mode_color(run, record):
 
 
 def mode_label(record):
-    return {"Orin local": "Orin 本机", "Thor local": "Thor 本机",
+    return {"Orin local": "Orin local", "Thor local": "Thor local",
             "Async / replace": "Async"}.get(record["label"], record["label"])
 
 
 def chart_style():
-    from matplotlib import font_manager
-
-    names = ("Noto Sans CJK SC", "Noto Sans CJK JP", "Microsoft YaHei", "SimHei", "PingFang SC")
-    fonts = [font for font in font_manager.fontManager.ttflist if font.name in names]
-    if not fonts:
-        raise RuntimeError("Chinese charts require a CJK font; on Ubuntu install fonts-noto-cjk")
-    font = min(fonts, key=lambda item: names.index(item.name))
-    return {"font.family": font.name, "font.size": 14, "text.color": INK,
+    return {"font.family": "DejaVu Sans", "font.size": 14, "text.color": INK,
             "axes.labelcolor": MUTED, "xtick.color": MUTED, "ytick.color": INK,
             "svg.fonttype": "path", "svg.hashsalt": "turbovla-benchmark",
             "axes.unicode_minus": False, "figure.facecolor": "white", "axes.facecolor": "white"}

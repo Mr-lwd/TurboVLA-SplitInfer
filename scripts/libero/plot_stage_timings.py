@@ -6,12 +6,12 @@ from scripts.libero.benchmark_style import INK, MUTED, GRID, chart_style, mode_c
 
 
 STAGES = (
-    ("Orin 预处理", "#557CAF"),
-    ("编码压缩", "#AEC3DB"),
-    ("Thor 解码 / 排队", "#8DB9AC"),
-    ("Thor 推理", "#247F78"),
-    ("HTTP / 传输", "#C59D69"),
-    ("其他开销", "#BFC7CF"),
+    ("Orin preprocessing", "#557CAF"),
+    ("Encoding", "#AEC3DB"),
+    ("Thor decode/queue", "#8DB9AC"),
+    ("Thor inference", "#247F78"),
+    ("HTTP/transport", "#C59D69"),
+    ("Other overhead", "#BFC7CF"),
 )
 
 
@@ -63,8 +63,8 @@ def plot_stage_timings(rows, path, caption=None):
     with plt.rc_context(chart_style()):
         count = len(rows)
         fig = plt.figure(figsize=(13, max(7, 3.6 + count * .72)))
-        fig.text(.055, .93, "推理响应 · 耗时构成", fontsize=25, weight="bold")
-        fig.text(.055, .865, "本机显示完整调用；协同模式展开各阶段。单位：ms / 动作块", fontsize=14, color=MUTED)
+        fig.text(.055, .93, "Inference response · Latency breakdown", fontsize=25, weight="bold")
+        fig.text(.055, .865, "Complete local calls and remote stage breakdowns. Units: ms / action chunk", fontsize=14, color=MUTED)
         if caption:
             fig.text(.055, .81, caption, fontsize=14, color=MUTED)
         ax = fig.add_axes([.17, .27, .57, .47])
@@ -74,7 +74,7 @@ def plot_stage_timings(rows, path, caption=None):
             if record['mode'] == 'local' and total is not None:
                 ax.barh(index, total, height=.48, color=mode_color(run, record), zorder=3)
             elif item is None:
-                ax.text(0, index, "阶段数据未记录", va="center", color=MUTED, fontsize=13)
+                ax.text(0, index, "Stage data not recorded", va="center", color=MUTED, fontsize=13)
             else:
                 left = 0.
                 for stage_index, (value, (_, color)) in enumerate(zip(item['values'], STAGES)):
@@ -91,7 +91,7 @@ def plot_stage_timings(rows, path, caption=None):
         ax.set_axisbelow(True)
         ax.grid(axis='x', color=GRID, linewidth=.8)
         ax.spines[:].set_visible(False)
-        for xpos, label in ((1.14, "平均"), (1.36, "p95")):
+        for xpos, label in ((1.14, "Mean"), (1.36, "p95")):
             ax.text(xpos, 1.1, label, transform=ax.transAxes, ha="center", fontsize=14, color=MUTED)
         for index, (_, record) in enumerate(rows):
             for xpos, key in ((1.14, 'mean_ms'), (1.36, 'p95_ms')):

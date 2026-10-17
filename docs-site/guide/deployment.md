@@ -1,43 +1,43 @@
-# 设备部署
+# Device deployment
 
-先跑通“Thor 服务 → Orin preflight → 单任务 → 多任务”。下列推理命令在 Jetson 的 Linux 终端、仓库根目录执行。
+Validate in this order: Thor service → Orin preflight → one task → multiple tasks. Run inference commands from the repository root in a Jetson Linux terminal.
 
-## 准备环境
+## Environment
 
-使用 Python 3.10 环境；分别安装匹配各自 JetPack / CUDA 的 NVIDIA PyTorch 与 torchvision，参考 [NVIDIA 官方安装说明](https://docs.nvidia.com/deeplearning/frameworks/install-pytorch-jetson-platform/index.html)。不要直接套用 x86_64 的 CUDA wheel。
+Use Python 3.10 and NVIDIA PyTorch/torchvision builds matching each device's JetPack and CUDA versions. Follow [NVIDIA's installation instructions](https://docs.nvidia.com/deeplearning/frameworks/install-pytorch-jetson-platform/index.html); x86_64 CUDA wheels are not interchangeable with Jetson builds.
 
 ```bash
 conda create -n turbovla-libero python=3.10 -y
 conda activate turbovla-libero
-# 先安装当前设备适用的 torch / torchvision，再安装项目
+# Install the device-compatible torch / torchvision builds first.
 python -m pip install -e '.[libero,split]' PyYAML
 python -m pip check
 ```
 
-Orin 远程模式不加载权重，但当前客户端仍依赖 PyTorch 做 CPU 张量处理，并非纯 NumPy 客户端。当前 `libero` extra 包含训练数据依赖，尚未单独拆出轻量运行安装项。
+Remote Orin does not load model weights, but still uses PyTorch for CPU tensor processing. The current `libero` extra also includes training-data dependencies.
 
-## 放置资源
+## Resources
 
-| 位置 | 必需资源 |
+| Device | Required resources |
 | --- | --- |
-| Thor | TurboVLA LIBERO checkpoint、DINOv3 ViT-B、BERT base uncased、统计 JSON |
-| Orin | LIBERO 代码、BDDL、初始状态、assets；远程模式不需要模型权重 |
-| 两端 | 项目代码、依赖、可互访网络、相同精度与 chunk_size |
+| Thor | TurboVLA LIBERO checkpoint, DINOv3 ViT-B, BERT base uncased and statistics JSON |
+| Orin | LIBERO code, BDDL, initial states and assets; no model weights in remote mode |
+| Both | Project code, dependencies, network connectivity, matching precision and chunk_size |
 
-模型入口：[TurboVLA](https://huggingface.co/H-EmbodVis/TurboVLA)、[DINOv3](https://huggingface.co/facebook/dinov3-vitb16-pretrain-lvd1689m)、[BERT](https://huggingface.co/google-bert/bert-base-uncased)。完整 checkpoint 评测无需另配 GroundingDINO 初始化权重。
+Models: [TurboVLA](https://huggingface.co/H-EmbodVis/TurboVLA), [DINOv3](https://huggingface.co/facebook/dinov3-vitb16-pretrain-lvd1689m), [BERT](https://huggingface.co/google-bert/bert-base-uncased). Evaluation with a complete checkpoint does not need separate GroundingDINO initialization weights.
 
-Orin 安装 LIBERO（已有目录则跳过 clone）：
+Install LIBERO on Orin; skip cloning if it already exists:
 
 ```bash
 git clone https://github.com/Lifelong-Robot-Learning/LIBERO.git ../LIBERO
 python -m pip install -e ../LIBERO
 ```
 
-LIBERO 旧 requirements 的 NumPy / Transformers 固定版本与本项目不一致，遵循根目录 `pyproject.toml` 及配套环境约束。
+LIBERO's older NumPy/Transformers pins differ from this project's requirements. Follow the root `pyproject.toml` and the compatible device environment.
 
-## 启动 Thor
+## Start Thor
 
-替换以下 IP 和模型路径；默认脚本中的 `192.168.123.38` 只是现有配置。
+Replace the IP address and model paths. The supplied `192.168.123.38` is a configuration example.
 
 ```bash
 export TURBOVLA_PYTHON="$(command -v python)"
@@ -48,9 +48,9 @@ bash scripts/libero/serve_thor.sh \
   --ckpt_path /path/to/turbovla_libero.pth
 ```
 
-看到 `READY` 后再连接。服务启动会加载权重并预热；默认监听由脚本的 `THOR_HOST` 决定。直接运行 Python 模块时默认只监听 `127.0.0.1`。
+Wait for `READY`; startup loads and warms up the model. The wrapper uses `THOR_HOST` for binding. Invoking the Python module directly defaults to `127.0.0.1`.
 
-## 检查 Orin
+## Check Orin
 
 ```bash
 export THOR_URL=http://192.168.123.38:8765
@@ -59,25 +59,25 @@ curl "$THOR_URL/health"
 bash scripts/libero/run_async_benchmark.sh --preflight
 ```
 
-`--preflight` 验证配置、资源路径和服务元数据，不创建仿真、不执行模型预测；因此通过后仍须运行单任务。
+Preflight validates configuration, paths and service metadata. It does not create a simulation or run predictions, so follow it with a single-task trial.
 
-## 运行对比
+## Compare scheduling modes
 
 ```bash
-# 同一任务、初始状态和 seed；各模式顺序随机化
+# Same task, initial state and seed; mode order is randomized.
 bash scripts/libero/run_async_benchmark.sh --task_ids 0 --modes sync replace blend
 
-# 扩大试验次数和任务集合
+# Extend the task set and repeat each task.
 bash scripts/libero/run_async_benchmark.sh --task_ids 0,1,2 --num_trials_per_task 5
 ```
 
-输出在 `outputs/evaluation/async/`。先核对 metadata 中的 `status` 和 comparison，再查看每个模式的原始记录及视频。
+Results are written under `outputs/evaluation/async/`. Check metadata `status` and the comparison first, then inspect per-mode records and videos.
 
-## 本机基线
+## Local baseline
 
 ```bash
 bash scripts/libero/run_local_benchmark.sh --print_command
 bash scripts/libero/run_local_benchmark.sh --task_ids 0
 ```
 
-本机基线将全部模型放到当前设备，需配置 `local_benchmark.yaml` 的模型和资源路径。Orin 8GB 上能否在指定负载下运行，应由实际资源与运行结果决定。
+The local baseline runs the complete model on the current device. Set model and resource paths in `local_benchmark.yaml`; assess memory feasibility against the actual workload and device measurements.

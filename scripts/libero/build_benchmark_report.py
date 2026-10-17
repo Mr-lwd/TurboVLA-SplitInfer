@@ -213,27 +213,27 @@ def common_success_group(catalog, source_id, group_id, root=ROOT):
     reasons = [{"run_id": run["id"], "mode": record["mode"],
                 "failed": keys({episode_key(e) for e in record["episodes"] if not e["success"]}),
                 "missing": keys(all_keys - {episode_key(e) for e in record["episodes"]})} for run, record in rows]
-    excluded_text = "、".join(f"task {t} / episode {e}" for t, e in sorted(excluded)) or "无"
+    excluded_text = ", ".join(f"task {t} / episode {e}" for t, e in sorted(excluded)) or "none"
     suite = rows[0][0]['config']['task_suite_name'].replace('libero_', 'LIBERO ').title().replace('Libero', 'LIBERO')
-    return {"id": group_id, "title": f"{suite} · 共同成功 {len(retained)} 个案例",
+    return {"id": group_id, "title": f"{suite} · {len(retained)} commonly successful cases",
             "run_ids": list(source["run_ids"]),
             "selection": {"kind": "common_success", "source_group": source_id,
                           "keys": ["task_id", "episode"], "retained": keys(retained),
                           "excluded": keys(excluded), "exclusions_by_mode": reasons},
             "derived_records": derived,
-            "notes": [f"仅统计全部 {len(rows)} 种模式共同成功的 {len(retained)} 个案例；统一排除：{excluded_text}。",
-                      "使用现有原始记录重算，未重新评测。按 task ID / episode 匹配；均值与 p95 从保留调用和控制步重新汇总。",
-                      "共同成功样本数不代表整体成功率；完整运行的失败记录和成功比例保留在原始全案例分组。",
-                      "推理均值与 p95 仍按每回合排除首次调用；任务总耗时包含首次推理等待，控制间隔不额外剔除回合内的慢间隔。",
-                      *[f"原始组说明：{note}" for note in source.get("notes", [])]]}
+            "notes": [f"Only {len(retained)} cases successful in all {len(rows)} modes are included; excluded: {excluded_text}.",
+                      "Recomputed from existing records, without a new evaluation. Cases match by task ID / episode; means and p95 use retained calls and control steps.",
+                      "Matched case counts are not overall success rates; complete successes and failures remain in the source records.",
+                      "Response mean and p95 exclude the first call per episode. Total time retains initial inference waits, and slow within-episode control intervals are not removed.",
+                      *[f"Source note: {note}" for note in source.get("notes", [])]]}
 
 
 def selection_caption(group):
     selection = group.get("selection")
     if not selection:
-        return "全案例记录 · 包含失败回合"
-    excluded = "、".join(f"{e['task_id']}/{e['episode']}" for e in selection["excluded"]) or "无"
-    return f"共同成功 {len(selection['retained'])} 个案例 · 排除 task/episode：{excluded}"
+        return "All recorded episodes, including failures"
+    excluded = ", ".join(f"{e['task_id']}/{e['episode']}" for e in selection["excluded"]) or "none"
+    return f"{len(selection['retained'])} matched successful cases · Excluded task/episode: {excluded}"
 
 
 def number(value, digits=2):
@@ -241,8 +241,8 @@ def number(value, digits=2):
 
 
 def table(rows, matched=False):
-    heading = "共同成功案例数" if matched else "原始成功 / 总数"
-    lines = [f"| 设备 / 模式 | {heading} | 执行步数 | 任务总耗时 / s | 平均推理响应时间¹ / ms | 推理响应时间 p95¹ / ms | 控制间隔 p95 / ms | hold 步 |",
+    heading = "Matched cases" if matched else "Original success / total"
+    lines = [f"| Device / mode | {heading} | Executed steps | Total time / s | Mean response¹ / ms | Response p95¹ / ms | Control interval p95 / ms | Hold steps |",
              "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |"]
     for _, record in rows:
         s = record["metrics"]
@@ -262,17 +262,17 @@ def plot_group(rows, path, title, matched=False):
 
     labels = [mode_label(record) for _, record in rows]
     colors = [mode_color(run, record) for run, record in rows]
-    specs = [("平均推理响应", "ms / 动作块", lambda m: m['filtered_calls']['mean_ms']),
-             ("控制间隔 p95", "ms", lambda m: (m['control_intervals'] or {}).get('p95_ms')),
-             ("任务总耗时", "s", lambda m: m['rollout_wall_time_s']),
-             ("任务成功", "成功次数 / 总次数", lambda m: 100*m['successes']/m['episodes'])]
+    specs = [("Mean response latency", "ms / chunk", lambda m: m['filtered_calls']['mean_ms']),
+             ("Control interval p95", "ms", lambda m: (m['control_intervals'] or {}).get('p95_ms')),
+             ("Total task time", "s", lambda m: m['rollout_wall_time_s']),
+             ("Task success", "Successes / episodes", lambda m: 100*m['successes']/m['episodes'])]
     if matched:
-        specs[-1] = ("执行步数", "步", lambda m: m['executed_steps'])
+        specs[-1] = ("Executed steps", "steps", lambda m: m['executed_steps'])
     with plt.rc_context(chart_style()):
         fig, axes = plt.subplots(2, 2, figsize=(13, max(8.8, len(rows)*.8+5)))
         fig.subplots_adjust(left=.12, right=.96, top=.79, bottom=.07, wspace=.47, hspace=.55)
         suite = rows[0][0]["config"]["task_suite_name"].replace("libero_", "LIBERO ").replace("spatial", "Spatial")
-        fig.text(.045, .95, f"{suite} · 实测对照", fontsize=25, weight="bold")
+        fig.text(.045, .95, f"{suite} · Measured comparison", fontsize=25, weight="bold")
         fig.text(.045, .895, title, fontsize=14, color=MUTED)
         for ax, (heading, unit, get) in zip(axes.flat, specs):
             values = [get(record['metrics']) for _, record in rows]
@@ -281,10 +281,10 @@ def plot_group(rows, path, title, matched=False):
             ax.text(0, 1.065, unit, transform=ax.transAxes, fontsize=13, color=MUTED)
             ax.barh(range(len(rows)), [value or 0 for value in values], color=colors, height=.5, zorder=3)
             for index, value in enumerate(values):
-                label = "未记录" if value is None else f"{value:.2f}"
-                if heading == "执行步数":
+                label = "Not recorded" if value is None else f"{value:.2f}"
+                if heading == "Executed steps":
                     label = str(value)
-                if heading == "任务成功":
+                if heading == "Task success":
                     metrics = rows[index][1]['metrics']
                     label = f"{metrics['successes']}/{metrics['episodes']}"
                 ax.text((value or 0)+maximum*.035, index, label, va="center",
@@ -297,7 +297,7 @@ def plot_group(rows, path, title, matched=False):
             ax.spines[:].set_visible(False)
             ax.set_axisbelow(True)
             ax.grid(axis='x', color=GRID, linewidth=.8)
-            if heading == "任务成功":
+            if heading == "Task success":
                 ax.set_xticks([0, 50, 100], ["0%", "50%", "100%"])
         save_chart(fig, path)
         plt.close(fig)
@@ -319,8 +319,9 @@ def latest_catalog(catalog):
     group = copy.deepcopy(selected)
     runs = [copy.deepcopy(run) for run in catalog['runs'] if run['id'] in group['run_ids']]
     suite = runs[0]['config']['task_suite_name'].replace('libero_', 'LIBERO ').replace('spatial', 'Spatial')
-    group['title'] = f'{suite} · 实测对照'
-    group['notes'] = [note.removeprefix('原始组说明：').replace('原始全案例分组', '来源数据')
+    group['title'] = f'{suite} · Measured comparison'
+    from scripts.libero.benchmark_text import english_note
+    group['notes'] = [english_note(note)
                       for note in group.get('notes', [])
                       if not re.search(r'\d{4}-\d{2}-\d{2}|历史分组', note)]
     return {'schema_version': catalog['schema_version'], 'featured_group': group['id'],
@@ -331,10 +332,10 @@ def build(catalog):
     catalog = latest_catalog(catalog)
     (REPORTS/'latest.json').write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     all_rows = []
-    page = ["# 实测数据", "", "数据来自已完成的运行记录；下表与图由同一份可追加的数据目录生成。Async 对应 CLI 的 `replace`。", "",
-            "<BenchmarkDashboard />", "", "## 静态对照与下载", "",
-            "¹ 推理响应时间的均值和 p95 均按每个 episode 排除前 N 次调用后汇总；N 见来源表。推理响应时间是从发起策略调用到收到整块动作的耗时；远程模式包含预处理、传输和服务端推理，不是每步耗时。`—` 表示原记录缺失。", "",
-            "[下载当前数据](../../reports/evaluation/latest.json) · [下载汇总 CSV](../../reports/evaluation/summary.csv)", ""]
+    page = ["# Measured results", "", "Results come from completed runs. Tables and figures share one appendable data catalog. Async maps to the CLI name `replace`.", "",
+            "<BenchmarkDashboard />", "", "## Static comparison and downloads", "",
+            "¹ Mean and p95 exclude the first N calls per episode; N is listed in the source table. Response latency spans a policy call through receipt of a complete action chunk. Remote calls include preprocessing, transport and server inference; values are not per-action latency. `—` means not recorded.", "",
+            "[Download current JSON](../../reports/evaluation/latest.json) · [Download summary CSV](../../reports/evaluation/summary.csv)", ""]
     featured = None
     for group in catalog['groups']:
         rows = group_rows(catalog, group)
@@ -343,15 +344,15 @@ def build(catalog):
         image_name = group['id']
         plot_group(rows, ROOT / f"assets/benchmarks/{image_name}", caption, matched)
         stage_chart = plot_stage_timings(rows, ROOT / f"assets/benchmarks/{image_name}-stages", caption)
-        page += ['<details class="benchmark-details"><summary>完整图表与明细</summary>', "", f"## {group['title']}", "", caption, "", table(rows, matched), "",
-                 f"![{group['title']} 四项指标](../../assets/benchmarks/{image_name}.svg)", ""]
+        page += ['<details class="benchmark-details"><summary>Full figures and records</summary>', "", f"## {group['title']}", "", caption, "", table(rows, matched), "",
+                 f"![{group['title']} four metrics](../../assets/benchmarks/{image_name}.svg)", ""]
         page += [f"- {note}" for note in group.get('notes', [])] + [""]
         runs = [r for r in catalog['runs'] if r['id'] in group['run_ids']]
         mismatches = [key for key in CONFIG_KEYS if len({json.dumps(r['config'][key]) for r in runs}) > 1]
         if mismatches:
-            page += ["**本组配置存在差异：" + ", ".join(mismatches) + "。仅并列展示，不视为受控对照。**", ""]
-        page += ["### 调度与调用明细", "",
-                 "| 模式 | 调用总数 / 过滤后 | 首次推理平均响应时间 / ms | 首段后阻塞 / s | 推理与 env.step 重叠比例 | drain / s | 指令变化 L2 p95 |",
+            page += ["**Configuration differences: " + ", ".join(mismatches) + ". Shown side by side, not as a controlled comparison.**", ""]
+        page += ["### Scheduling and calls", "",
+                 "| Mode | Calls: all / filtered | Mean first response / ms | Post-bootstrap blocking / s | Inference / env.step overlap | drain / s | Command-change L2 p95 |",
                  "| --- | ---: | ---: | ---: | ---: | ---: | ---: |"]
         for _, record in rows:
             m=record['metrics']; overlap=m['env_overlap_fraction_of_inference']
@@ -359,26 +360,26 @@ def build(catalog):
                      f"{number(m['first_call_per_episode']['mean_ms'])} | {number(m['blocking_wait_after_bootstrap_s'],3)} | "
                      f"{number(100*overlap if overlap is not None else None)} | {number(m['worker_drain_after_episode_s'],3)} | "
                      f"{number((m['arm_action_changes'] or {}).get('p95_action_l2'),3)} |"]
-        page += ["", "重叠比例单位为 %；L2 是相邻六维相对指令差值，混合了平移/旋转单位，不是物理 jerk。", "",
-                 "### 推理耗时构成", ""]
+        page += ["", "Overlap is a percentage. L2 measures adjacent six-dimensional relative commands with mixed translation/rotation units; it is not physical jerk.", "",
+                 "### Latency breakdown", ""]
         if stage_chart:
-            page += [f"![本机完整调用与协同推理各阶段耗时](../../assets/benchmarks/{image_name}-stages.svg)", "",
-                     f"[下载 SVG](../../assets/benchmarks/{image_name}-stages.svg) · [下载 PNG](../../assets/benchmarks/{image_name}-stages.png)", "",
-                     "本机显示完整调用；协同模式按同一过滤样本分解，各阶段均值之和等于平均响应。p95 独立统计。完整口径见[数据维护说明](./benchmark-data.md)。", ""]
-        page += ["| 协同模式 | Orin 预处理 | 编码压缩 | Thor 解码/排队 | Thor 推理 | HTTP/传输 | 其他开销 |",
+            page += [f"![Complete local calls and remote latency stages](../../assets/benchmarks/{image_name}-stages.svg)", "",
+                     f"[Download SVG](../../assets/benchmarks/{image_name}-stages.svg) · [Download PNG](../../assets/benchmarks/{image_name}-stages.png)", "",
+                     "Local bars show complete calls. Remote stages use the same filtered samples and their means sum to mean response latency. p95 is computed separately. See [Data maintenance](./benchmark-data.md)。", ""]
+        page += ["| Remote mode | Orin preprocessing | Encoding | Thor decode/queue | Thor inference | HTTP/transport | Other overhead |",
                  "| --- | ---: | ---: | ---: | ---: | ---: | ---: |"]
         for _, record in rows:
             breakdown = latency_breakdown(record)
             if breakdown:
                 page += [f"| {record['label']} | " + ' | '.join(number(value) for value in breakdown['values']) + ' |']
-        page += ["", "单位：ms。HTTP/传输包含接收等待与系统开销；阶段不足或样本不齐时不推测分解。", "", "### 数据来源", ""]
-        page += ["| 来源运行 | 配置 | 每回合排除调用数 |", "| --- | --- | ---: |"]
+        page += ["", "Units: ms. HTTP/transport includes receive waits and system overhead. No breakdown is inferred from incomplete or mismatched samples.", "", "### Source runs", ""]
+        page += ["| Source run | Configuration | Initial calls excluded / episode |", "| --- | --- | ---: |"]
         for run in [r for r in catalog['runs'] if r['id'] in group['run_ids']]:
             c=run['config']
-            source_label = f"{run['hardware']['device_name'].title()} " + ('本机' if run['kind'] == 'local' else '协同推理')
+            source_label = f"{run['hardware']['device_name'].title()} " + ('local' if run['kind'] == 'local' else 'Remote inference')
             page += [f"| {source_label} | {c['task_suite_name']} / {c['precision']} / seed {c['seed']} / chunk {c['chunk_size']} | {run['exclude_first_calls']} |"]
-        page += ["", "### 逐任务结果", "",
-                 "| 模式 | task ID | episode | 成功 | 步数 | 任务耗时 / s | hold 步 |",
+        page += ["", "### Per-task results", "",
+                 "| Mode | task ID | episode | Success | Steps | Task time / s | Hold steps |",
                  "| --- | ---: | ---: | --- | ---: | ---: | ---: |"]
         for run, record in rows:
             s=record['metrics']
@@ -394,32 +395,22 @@ def build(catalog):
                 'blocking_wait_after_bootstrap_s':s['blocking_wait_after_bootstrap_s'],
                 'worker_drain_s':s['worker_drain_after_episode_s']})
             for e in record['episodes']:
-                page += [f"| {record['label']} | {e['task_id']} | {e['episode']} | {'是' if e['success'] else '否'} | {e['steps']} | {number(e['wall_s'])} | {number(e['hold_steps'],0)} |"]
+                page += [f"| {record['label']} | {e['task_id']} | {e['episode']} | {'Yes' if e['success'] else 'No'} | {e['steps']} | {number(e['wall_s'])} | {number(e['hold_steps'],0)} |"]
         page += ["", "</details>", ""]
         if group['id'] == catalog['featured_group']:
-            selection_note = (caption + "。使用现有记录重算，未重新评测。共同成功案例数不代表整体成功率。\n\n"
+            selection_note = (caption + ". Recomputed from existing records, without rerunning evaluation. Matched case counts are not overall success rates.\n\n"
                               if matched else caption + "。\n\n")
-            featured = (f"**{group['title']}**\n\n" + selection_note + table(rows, matched) + "\n\n¹ 每个 episode 的首次调用筛选数见数据页；`—` 表示未记录。推理响应时间按整块动作统计，远程模式包含预处理、传输和服务端推理。任务总耗时仍包含保留回合的首次推理等待。\n\n"
-                        +f"![实测指标对比](assets/benchmarks/{image_name}.svg)\n\n"
-                        +"[详细数据与统计口径](docs-site/guide/benchmark-results.md) · [JSON 数据](reports/evaluation/latest.json) · [CSV 汇总](reports/evaluation/summary.csv)")
-            thor = next((record for run, record in rows
-                         if record['mode'] == 'local' and run['hardware']['device_name'] == 'thor'), None)
-            if thor:
-                m = thor['metrics']
-                highlight = (f"**Thor 本机：平均推理 {number(m['filtered_calls']['mean_ms'])} ms/块 · "
-                             f"控制间隔 p95 {number((m['control_intervals'] or {}).get('p95_ms'))} ms · "
-                             f"任务总耗时 {number(m['rollout_wall_time_s'])} s · "
-                             + (f"共同成功案例 {m['episodes']} 个。**" if matched else f"成功 {m['successes']}/{m['episodes']}。**"))
-                featured = featured.replace("\n\n| 设备", "\n\n" + highlight + "\n\n| 设备", 1)
-                featured += "\n\n控制频率及配置见数据页；总耗时包含任务轨迹差异。"
+            featured = (f"**{group['title']}**\n\n" + selection_note + table(rows, matched) + "\n\n¹ See the data page for initial-call filtering. `—` means not recorded. Response latency is per action chunk and includes preprocessing, transport and server inference in remote mode. Total time retains initial inference waits.\n\n"
+                        +f"![Measured metric comparison](assets/benchmarks/{image_name}.svg)\n\n"
+                        +"[Detailed results and methodology](docs-site/guide/benchmark-results.md) · [JSON data](reports/evaluation/latest.json) · [CSV summary](reports/evaluation/summary.csv)")
             if stage_chart:
-                featured += ("\n\n**推理耗时构成**\n\n"
-                             + f"![本机完整调用与协同推理耗时构成](assets/benchmarks/{image_name}-stages.svg)\n\n"
-                             + "本机显示完整调用，协同模式显示各阶段均值；各段之和等于响应均值。HTTP / 传输包含接收等待与系统开销。\n\n"
-                             + f"[下载 SVG](assets/benchmarks/{image_name}-stages.svg) · [下载 PNG](assets/benchmarks/{image_name}-stages.png)")
+                featured += ("\n\n**Latency breakdown**\n\n"
+                             + f"![Local and remote inference latency breakdown](assets/benchmarks/{image_name}-stages.svg)\n\n"
+                             + "Local bars show complete calls; remote bars show stage means that sum to mean response latency. HTTP/transport includes receive waits and system overhead.\n\n"
+                             + f"[Download SVG](assets/benchmarks/{image_name}-stages.svg) · [Download PNG](assets/benchmarks/{image_name}-stages.png)")
     if featured is None:
         raise ValueError("featured_group does not exist")
-    page += ["## 口径与更新方法", "", "见[数据维护说明](./benchmark-data.md)。页面与下载只展示当前对照，保留逐任务结果。来源运行 ID 和 SHA-256 记录在 JSON 中，重建网页无需访问原始文件。", ""]
+    page += ["## Methodology and updates", "", "See [data maintenance](./benchmark-data.md). Pages and downloads publish only the current comparison, including per-task results. JSON retains source run IDs and checksums; rebuilding the website does not require raw files.", ""]
     (ROOT/'docs-site/guide/benchmark-results.md').write_text('\n'.join(page))
     with (REPORTS/'summary.csv').open('w',newline='') as stream:
         writer=csv.DictWriter(stream,fieldnames=list(all_rows[0]),lineterminator='\n'); writer.writeheader(); writer.writerows(all_rows)

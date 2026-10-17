@@ -4,7 +4,7 @@
   --vp-c-brand-1: #285b8e; --vp-c-brand-2: #356fa6; --vp-c-brand-3: #e6f1fb;
   --vp-c-brand-soft: #eef6fc; --vp-c-text-1: #17212b; --vp-c-text-2: #4e6070;
   --vp-c-bg: #fff; --vp-c-bg-alt: #f3f7fb; --vp-c-bg-soft: #f1f6fb;
-  --vp-sidebar-width: 262px; --vp-layout-max-width: 1600px;
+  --vp-sidebar-width: 262px; --vp-layout-max-width: 1440px;
   --vp-code-block-bg: #f3f7fb; --vp-code-color: #244a70;
 }
 .VPNavBarTitle .title { font-size: 17px; letter-spacing: -.4px; }
@@ -20,13 +20,13 @@
 .vp-doc tr:nth-child(2n) { background: #f7f9fc; }
 .vp-doc .capability-values table { display: table; table-layout: fixed; width: 100%; font-size: 15px; }
 .vp-doc .capability-values th:first-child,
-.vp-doc .capability-values td:first-child { width: 108px; white-space: nowrap; word-break: keep-all; }
+.vp-doc .capability-values td:first-child { width: 170px; white-space: nowrap; word-break: keep-all; }
 .vp-doc .capability-values th,
 .vp-doc .capability-values td { padding: 15px 18px; line-height: 1.8; vertical-align: top; }
 @media (max-width: 600px) {
   .vp-doc .capability-values table { font-size: 14px; }
   .vp-doc .capability-values th:first-child,
-  .vp-doc .capability-values td:first-child { width: 88px; }
+  .vp-doc .capability-values td:first-child { width: 145px; }
   .vp-doc .capability-values th,
   .vp-doc .capability-values td { padding: 12px 10px; }
 }

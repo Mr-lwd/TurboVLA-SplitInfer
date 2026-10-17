@@ -1,0 +1,394 @@
+{
+  "description": "Illustrative fixed-latency scheduling; not measured performance",
+  "H": 12,
+  "R": 4,
+  "B": 3,
+  "inference_time_units": 2,
+  "modes": {
+    "async": {
+      "mode": "async",
+      "calls": [
+        [
+          "A",
+          0,
+          2,
+          0,
+          0
+        ],
+        [
+          "B",
+          6,
+          8,
+          4,
+          6
+        ],
+        [
+          "C",
+          10,
+          12,
+          8,
+          10
+        ],
+        [
+          "D",
+          14,
+          16,
+          12,
+          14
+        ]
+      ],
+      "slots": [
+        {
+          "label": "Wait",
+          "kind": "wait",
+          "step": 0
+        },
+        {
+          "label": "Wait",
+          "kind": "wait",
+          "step": 0
+        },
+        {
+          "label": "A0",
+          "kind": "old",
+          "step": 0
+        },
+        {
+          "label": "A1",
+          "kind": "old",
+          "step": 1
+        },
+        {
+          "label": "A2",
+          "kind": "old",
+          "step": 2
+        },
+        {
+          "label": "A3",
+          "kind": "old",
+          "step": 3
+        },
+        {
+          "label": "A4",
+          "kind": "old",
+          "step": 4
+        },
+        {
+          "label": "A5",
+          "kind": "old",
+          "step": 5
+        },
+        {
+          "label": "B2",
+          "kind": "new",
+          "step": 6
+        },
+        {
+          "label": "B3",
+          "kind": "new",
+          "step": 7
+        },
+        {
+          "label": "B4",
+          "kind": "new",
+          "step": 8
+        },
+        {
+          "label": "B5",
+          "kind": "new",
+          "step": 9
+        },
+        {
+          "label": "C2",
+          "kind": "new",
+          "step": 10
+        },
+        {
+          "label": "C3",
+          "kind": "new",
+          "step": 11
+        },
+        {
+          "label": "C4",
+          "kind": "new",
+          "step": 12
+        },
+        {
+          "label": "C5",
+          "kind": "new",
+          "step": 13
+        },
+        {
+          "label": "D2",
+          "kind": "new",
+          "step": 14
+        },
+        {
+          "label": "D3",
+          "kind": "new",
+          "step": 15
+        }
+      ]
+    },
+    "blend": {
+      "mode": "blend",
+      "calls": [
+        [
+          "A",
+          0,
+          2,
+          0,
+          0
+        ],
+        [
+          "B",
+          6,
+          8,
+          4,
+          6
+        ],
+        [
+          "C",
+          10,
+          12,
+          8,
+          10
+        ],
+        [
+          "D",
+          14,
+          16,
+          12,
+          14
+        ]
+      ],
+      "slots": [
+        {
+          "label": "Wait",
+          "kind": "wait",
+          "step": 0
+        },
+        {
+          "label": "Wait",
+          "kind": "wait",
+          "step": 0
+        },
+        {
+          "label": "A0",
+          "kind": "old",
+          "step": 0
+        },
+        {
+          "label": "A1",
+          "kind": "old",
+          "step": 1
+        },
+        {
+          "label": "A2",
+          "kind": "old",
+          "step": 2
+        },
+        {
+          "label": "A3",
+          "kind": "old",
+          "step": 3
+        },
+        {
+          "label": "A4",
+          "kind": "old",
+          "step": 4
+        },
+        {
+          "label": "A5",
+          "kind": "old",
+          "step": 5
+        },
+        {
+          "label": "B2",
+          "kind": "mix",
+          "step": 6,
+          "alpha": 0.3333333333333333,
+          "weight": "1/3",
+          "old": "A6"
+        },
+        {
+          "label": "B3",
+          "kind": "mix",
+          "step": 7,
+          "alpha": 0.6666666666666666,
+          "weight": "2/3",
+          "old": "A7"
+        },
+        {
+          "label": "B4",
+          "kind": "mix",
+          "step": 8,
+          "alpha": 1.0,
+          "weight": "1",
+          "old": "A8"
+        },
+        {
+          "label": "B5",
+          "kind": "new",
+          "step": 9
+        },
+        {
+          "label": "C2",
+          "kind": "mix",
+          "step": 10,
+          "alpha": 0.3333333333333333,
+          "weight": "1/3",
+          "old": "B6"
+        },
+        {
+          "label": "C3",
+          "kind": "mix",
+          "step": 11,
+          "alpha": 0.6666666666666666,
+          "weight": "2/3",
+          "old": "B7"
+        },
+        {
+          "label": "C4",
+          "kind": "mix",
+          "step": 12,
+          "alpha": 1.0,
+          "weight": "1",
+          "old": "B8"
+        },
+        {
+          "label": "C5",
+          "kind": "new",
+          "step": 13
+        },
+        {
+          "label": "D2",
+          "kind": "mix",
+          "step": 14,
+          "alpha": 0.3333333333333333,
+          "weight": "1/3",
+          "old": "C6"
+        },
+        {
+          "label": "D3",
+          "kind": "mix",
+          "step": 15,
+          "alpha": 0.6666666666666666,
+          "weight": "2/3",
+          "old": "C7"
+        }
+      ]
+    },
+    "sync": {
+      "mode": "sync",
+      "calls": [
+        [
+          "A",
+          0,
+          2,
+          0,
+          0
+        ],
+        [
+          "B",
+          14,
+          16,
+          12,
+          12
+        ]
+      ],
+      "slots": [
+        {
+          "label": "Wait",
+          "kind": "wait",
+          "step": 0
+        },
+        {
+          "label": "Wait",
+          "kind": "wait",
+          "step": 0
+        },
+        {
+          "label": "A0",
+          "kind": "old",
+          "step": 0
+        },
+        {
+          "label": "A1",
+          "kind": "old",
+          "step": 1
+        },
+        {
+          "label": "A2",
+          "kind": "old",
+          "step": 2
+        },
+        {
+          "label": "A3",
+          "kind": "old",
+          "step": 3
+        },
+        {
+          "label": "A4",
+          "kind": "old",
+          "step": 4
+        },
+        {
+          "label": "A5",
+          "kind": "old",
+          "step": 5
+        },
+        {
+          "label": "A6",
+          "kind": "old",
+          "step": 6
+        },
+        {
+          "label": "A7",
+          "kind": "old",
+          "step": 7
+        },
+        {
+          "label": "A8",
+          "kind": "old",
+          "step": 8
+        },
+        {
+          "label": "A9",
+          "kind": "old",
+          "step": 9
+        },
+        {
+          "label": "A10",
+          "kind": "old",
+          "step": 10
+        },
+        {
+          "label": "A11",
+          "kind": "old",
+          "step": 11
+        },
+        {
+          "label": "Wait",
+          "kind": "wait",
+          "step": 12
+        },
+        {
+          "label": "Wait",
+          "kind": "wait",
+          "step": 12
+        },
+        {
+          "label": "B0",
+          "kind": "new",
+          "step": 12
+        },
+        {
+          "label": "B1",
+          "kind": "new",
+          "step": 13
+        }
+      ]
+    }
+  }
+}

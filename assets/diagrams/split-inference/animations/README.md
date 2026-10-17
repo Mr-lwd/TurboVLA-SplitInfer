@@ -1,15 +1,22 @@
-# 三种协同推理方式：静态帧与动图
+# Scheduling animations
 
-| 文件 | 用途 |
+| File | Purpose |
 | --- | --- |
-| `pipeline-comparison.gif` | 三种模式在相同示意墙钟时间轴上的对照 |
-| `pipeline-async.gif` | Async（CLI `replace`）的后台推理与直接替换 |
-| `pipeline-blend.gif` | 对齐后的三步融合；格内为旧/新动作索引 |
-| `pipeline-sync.gif` | 用尽动作块后阻塞请求，等待时控制步不推进 |
-| `*-poster.png` | 对应静态帧，网站停止动画及减少动态效果时显示 |
+| `pipeline-comparison.gif` | All modes on a common illustrative wall-clock timeline |
+| `pipeline-async.gif` | Background inference and direct replacement (`replace`) |
+| `pipeline-blend.gif` | Aligned three-step blending, with old/new action indices |
+| `pipeline-sync.gif` | Blocking requests after chunk exhaustion |
+| `*-poster.png` | Still frames for previews and stopped playback |
+| `schedule.json` | Deterministic event sequence |
 
-本例 `H=12 / R=4 / B=3`，单次推理耗时假设为两个示意时间单位，均非硬件测量值。每次异步请求从采样到返回跨过两个实际控制步，因此裁掉新块前两项。同步等待不执行环境步，所以返回后从新块第零项开始。
+The example uses H=12, R=4 and B=3, with an assumed two-unit inference delay. These are illustrative units, not device measurements. An asynchronous response arrives after two executed control steps, so its first two actions are stale. Sync does not advance the environment while waiting and starts at the new chunk's zeroth action.
 
-所有模式均先阻塞初始化。Async 与 Blend 的 B、C、D 请求分别在实际控制步 4、8、12 发出；各次推理期间继续执行已有动作。Blend 前六维权重为 `1/3 → 2/3 → 1`，夹爪按 `α≥0.5` 选择新命令。动画没有模拟训练、网络故障或硬件安全链。
+All modes block for initialization. Async/Blend requests B, C and D are issued at control steps 4, 8 and 12. The first six action dimensions use new-action weights 1/3 → 2/3 → 1; the gripper switches to the new command at alpha ≥ 0.5.
 
-每个 GIF 为 91 帧，循环播放；最后一帧停留 2 秒。动画采用确定性调度序列绘制，与 `../pipeline-flat.png` 中的静态流水线保持一致。
+Each GIF contains 91 frames and loops, with a two-second final hold. Rebuild the English illustrations with:
+
+```bash
+python scripts/docs/render_pipeline_animations.py
+```
+
+The generator requires Pillow and Matplotlib, using bundled DejaVu fonts. It draws the scheduling illustration directly; it does not modify deployment photographs or reconstruct slide artwork.

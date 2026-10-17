@@ -1,19 +1,18 @@
-# 图稿交付 · 2026-10-17
+# English diagram delivery
 
-| 文件 | 来源与用途 |
+| File | Purpose |
 | --- | --- |
-| `framework-flat.png` | 框架纯色版；DDS 图稿经对象级可编辑重建后的导出 |
-| `pipeline-flat.png` | Async / Blend / Sync 流水线纯色版；原生文本与形状 |
-| `turbovla-diagrams-editable.pptx` | 两页可编辑 PPT，运行时最终校验通过 |
-| `animations/*.gif` | 三模式总览及各模式独立动图；确定性调度示意 |
-| `animations/*-poster.png` | 对应静态帧 |
+| `framework-flat.png` | Two-device framework, exported from native editable objects |
+| `pipeline-flat.png` | Async / Blend / Sync pipeline overview |
+| `turbovla-diagrams-editable.pptx` | Two editable slides with English text |
+| `animations/*.gif` | Deterministic scheduling illustrations |
+| `animations/*-poster.png` | Corresponding still frames |
+| `animations/schedule.json` | Illustrative scheduling sequence used by the animation generator |
 
-框架页：46 个原生文本对象、57 个原生形状和 3 个独立图标。流水线页：108 个原生文本对象、92 个形状，无整页栅格覆盖。上传和返回路径分别为单个连续原生箭头；色块改为原生统一填充。图标是独立可移动图片，非逐笔画矢量。
+The original diagrams were generated through codex-ppt with DDS / gpt-image-2.5-sunburst, then reconstructed through image-to-editable-ppt. As authorized for this edition, the existing native PowerPoint objects were copied and translated into English; no new image-generation call was needed.
 
-图稿先通过 DDS / gpt-image-2.5-sunburst 生成，再重建为原生文本、纯色形状和连续箭头。PNG 尺寸为 3839×2160。两张实拍清理均使用 DDS。
+The architecture slide contains 46 text objects, 57 shapes and three independently movable icons. The pipeline slide contains 108 text objects and 92 shapes. No full-slide raster is used as an editable-text background. The request and return paths remain continuous native arrows. English text uses Arial; both PNG exports are 3840×2160.
 
-原始模型图只作为结构语义参考：全部神经层在 Thor，Orin 做观测处理、调度与执行。图中 8GB / 128GB 为设备容量；20Hz 是控制频率上限，动画时间单位不是实测时延。实际参数和性能以 checkpoint、配置和评测记录为准。
+All neural layers run on Thor. Orin handles observations, scheduling and execution. Capacity labels are device memory capacities, not measured model consumption. The 20 Hz setting is a control-rate cap. Pipeline units are illustrative, not measured latency.
 
-验证：两页 PPT 已通过页面及整份文件的结构校验。素材嵌入 PPT，可独立打开与编辑，无需重建工作目录。字体使用 Microsoft YaHei。
-
-本目录仅保留当前交付图稿、动画和使用说明。
+The PPTX is self-contained and opens in PowerPoint. Its package, English text, slide/object counts and full-resolution slide exports were checked. Original Chinese deliverables are backed up outside the repository; this directory contains the current English publication files only.
