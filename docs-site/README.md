@@ -18,7 +18,7 @@ Node.js ≥22。构建目录 `.vitepress/dist/`，可部署至任意静态服务
 
 本地依赖、构建缓存与 QA 截图不提交 Git；`package-lock.json` 保留以便复现。架构图、流水线图与动图、可编辑 PPT、实拍整理图和原图均通过 `scripts/sync-assets.mjs` 从仓库复制，避免手工维护两份。实拍整理图保留 AI 清理说明与原图入口。
 
-[实测数据页](guide/benchmark-results.md) 从 [catalog.json](../reports/evaluation/catalog.json) 读取数据，支持分组和逐任务浏览。追加完整运行后执行报告生成脚本即可同步 README、图表和数据页；流程见 [数据维护说明](guide/benchmark-data.md)。网站构建只读取已提交的数据与图表，无需原始 `outputs/` 或 GPU。
+[实测数据页](guide/benchmark-results.md) 从 [latest.json](../reports/evaluation/latest.json) 读取当前对照，支持指标切换和逐任务浏览。更新最新对照后执行报告生成脚本即可同步 README、图表和数据页；流程见 [数据维护说明](guide/benchmark-data.md)。网站构建只读取已提交的数据与图表，无需原始 `outputs/` 或 GPU。
 
 Markdown 的图片与下载链接统一指向仓库 `assets/` 的相对路径，可在 GitHub 直接查看。网站构建通过 `scripts/site-assets.mjs` 的资源清单映射到部署路径，并支持 `DOCS_BASE` 子目录。交互组件配有 GitHub 可见的图片、GIF 或表格内容。`npm run check` 扫描整个仓库的 Markdown，检查本地引用、文件名大小写与资源是否被 Git 忽略；无需预先生成 `public/`。
 

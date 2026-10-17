@@ -1,12 +1,11 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { withBase } from 'vitepress'
-import catalog from '../../../reports/evaluation/catalog.json'
+import catalog from '../../../reports/evaluation/latest.json'
 
-const groupId = ref(catalog.featured_group)
 const selected = ref('')
 const metricId = ref('inference')
-const group = computed(() => catalog.groups.find(g => g.id === groupId.value))
+const group = computed(() => catalog.groups[0])
 const matched = computed(() => group.value.selection?.kind === 'common_success')
 const excluded = computed(() => group.value.selection?.excluded.map(e => `${e.task_id}/${e.episode}`).join('、') || '无')
 const rows = computed(() => group.value.run_ids.flatMap(id => {
@@ -19,7 +18,6 @@ const originalSuccess = row => {
   return `${metrics.successes}/${metrics.episodes}`
 }
 const active = computed(() => rows.value.find(row => row.key === selected.value) || rows.value[0])
-const thor = computed(() => rows.value.find(row => row.mode === 'local' && row.run.hardware.device_name === 'thor'))
 const hasStages = computed(() => rows.value.some(row => row.metrics.remote_stage_timings))
 const format = (value, digits = 2) => value == null ? '未记录' : Number(value).toFixed(digits)
 const name = row => ({ 'Orin local': 'Orin 本机', 'Thor local': 'Thor 本机', 'Async / replace': 'Async' }[row.label] || row.label)
@@ -40,21 +38,8 @@ const valueLabel = row => metricId.value === 'success'
 
 <template>
   <section class="benchmark-panel" aria-label="实测数据浏览">
-    <label class="field-label" for="benchmark-group">实验分组</label>
-    <select id="benchmark-group" v-model="groupId" @change="selected = ''">
-      <option v-for="item in catalog.groups" :key="item.id" :value="item.id">{{ item.title }}</option>
-    </select>
     <p v-if="matched" class="selection-note"><strong>共同成功 {{ group.selection.retained.length }} 个案例</strong><br>{{ rows.length }} 种模式统一排除 task/episode：{{ excluded }}。从现有记录重算，无需重新评测。</p>
-    <p v-else class="selection-note">原始全案例记录，包含失败回合；时间比较请切换至共同成功分组。</p>
-
-    <div v-if="thor" class="thor-summary">
-      <div class="summary-heading"><strong>Thor 本机</strong><span>{{ matched ? `共同成功 ${thor.metrics.episodes} 个案例` : `${originalSuccess(thor)} 任务成功` }}</span></div>
-      <dl class="headline-metrics">
-        <div><dt>平均推理响应</dt><dd>{{ format(thor.metrics.filtered_calls.mean_ms) }} <span>ms</span></dd></div>
-        <div><dt>控制间隔 p95</dt><dd>{{ format(thor.metrics.control_intervals?.p95_ms) }} <span>ms</span></dd></div>
-        <div><dt>任务总耗时</dt><dd>{{ format(thor.metrics.rollout_wall_time_s) }} <span>s</span></dd></div>
-      </dl>
-    </div>
+    <p v-else class="selection-note">当前完整运行记录，按全部回合汇总。</p>
 
     <div class="metric-switch" role="group" aria-label="选择对比指标">
       <button v-for="item in metrics" :key="item.id" :aria-pressed="metricId === item.id" @click="metricId = item.id">{{ item.label }}</button>
@@ -72,7 +57,7 @@ const valueLabel = row => metricId.value === 'success'
     <p class="chart-caption">推理响应按完整动作块统计；首次调用的筛选规则见下方统计口径。</p>
 
     <details class="benchmark-details">
-      <summary>统计口径与本组说明</summary>
+      <summary>统计口径</summary>
       <p>推理响应包含预处理、计算、传输与动作转换。平均值与 p95 按每个 episode 排除前 N 次调用后统计；原始调用仍完整保留，未执行额外暖机。</p>
       <p v-if="matched">所有时间、阶段耗时与动作指标均使用同一成功案例交集。总耗时包含首次推理等待；控制间隔不额外剔除回合内的慢间隔。筛选后的案例数不代表整体成功率。</p>
       <ul><li v-for="run in rows.filter((row, index, list) => list.findIndex(other => other.run.id === row.run.id) === index)" :key="run.run.id">{{ run.run.hardware.device_name }} · {{ run.run.kind === 'local' ? '本机' : '协同' }}：每回合排除 {{ run.run.exclude_first_calls }} 次调用。</li></ul>
@@ -102,7 +87,7 @@ const valueLabel = row => metricId.value === 'success'
       </div>
       <label class="field-label" for="benchmark-record">运行详情</label>
       <select id="benchmark-record" :value="active.key" @change="selected = $event.target.value">
-        <option v-for="row in rows" :key="row.key" :value="row.key">{{ name(row) }} · {{ row.run.id }}</option>
+        <option v-for="row in rows" :key="row.key" :value="row.key">{{ name(row) }}</option>
       </select>
       <dl class="benchmark-facts">
         <div v-if="matched"><dt>原始完整运行成功 / 总数</dt><dd>{{ originalSuccess(active) }}（包含被排除案例）</dd></div>
@@ -126,11 +111,10 @@ const valueLabel = row => metricId.value === 'success'
         </table>
       </div>
       <details><summary>来源与校验摘要</summary>
-        <p><code>{{ active.run.source_directory }}</code></p>
-        <ul><li v-for="source in active.run.source_files" :key="source.file"><code>{{ source.file }}</code><br>SHA-256: <code>{{ source.sha256 }}</code></li></ul>
+        <p>运行 ID、原始文件名与 SHA-256 保存在下方 JSON 下载中。</p>
       </details>
     </details>
-    <p class="download-links"><a :href="withBase('/benchmarks/catalog.json')" download>下载 JSON</a><a :href="withBase('/benchmarks/summary.csv')" download>下载 CSV</a></p>
+    <p class="download-links"><a :href="withBase('/benchmarks/latest.json')" download>下载 JSON</a><a :href="withBase('/benchmarks/summary.csv')" download>下载 CSV</a></p>
   </section>
 </template>
 
@@ -139,14 +123,6 @@ const valueLabel = row => metricId.value === 'success'
 .selection-note { padding: 16px 20px; border-left: 3px solid #247F78; background: #f5f8fa; font-size: 16px; line-height: 1.8; }
 .field-label { display: block; font-weight: 600; margin: 20px 0 10px; }
 .benchmark-panel select { appearance: auto; padding: 12px 14px; border: 1px solid #d4dee4; border-radius: 8px; background: #fff; width: 100%; font: inherit; text-overflow: ellipsis; }
-.thor-summary { margin: 26px 0 30px; padding: 24px; background: #f0f7f5; border-radius: 12px; }
-.summary-heading { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
-.summary-heading strong { color: #216b65; font-size: 20px; }
-.summary-heading span { color: var(--muted); font-size: 15px; }
-.headline-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin: 22px 0 0; }
-.headline-metrics dt { font-size: 15px; color: var(--muted); }
-.headline-metrics dd { margin: 10px 0 0; font-size: clamp(24px, 2.4vw, 34px); line-height: 1.2; font-weight: 650; letter-spacing: -1px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.headline-metrics dd span { font-size: 16px; font-weight: 400; letter-spacing: 0; color: var(--muted); }
 .metric-switch { display: flex; gap: 5px; padding: 5px; background: #f2f5f7; border-radius: 10px; }
 .metric-switch button { flex: 1; padding: 10px 8px; font-size: 15px; font-weight: 600; border-radius: 7px; white-space: nowrap; }
 .metric-switch button[aria-pressed=true] { color: #216b65; background: #fff; box-shadow: 0 1px 4px #24374612; }
@@ -178,10 +154,6 @@ const valueLabel = row => metricId.value === 'success'
 .download-links { display: flex; flex-wrap: wrap; gap: 20px; font-size: 15px; }
 .benchmark-panel select:focus-visible, .benchmark-panel button:focus-visible, .benchmark-panel summary:focus-visible, .benchmark-scroll:focus-visible { outline: 3px solid #557caf; outline-offset: 3px; }
 @media (max-width: 600px) {
-  .thor-summary { padding: 20px 16px; }
-  .headline-metrics { grid-template-columns: 1fr; gap: 18px; }
-  .headline-metrics div { display: flex; justify-content: space-between; align-items: baseline; }
-  .headline-metrics dd { margin: 0; font-size: 30px; }
   .metric-switch { flex-wrap: wrap; }
   .metric-switch button { flex-basis: calc(50% - 5px); }
   .chart-row { grid-template-columns: 1fr auto; gap: 10px; }

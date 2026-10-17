@@ -18,6 +18,18 @@
 .vp-doc table { font-size: 14px; width: 100%; }
 .vp-doc th { white-space: nowrap; background: #eaf3fb; }
 .vp-doc tr:nth-child(2n) { background: #f7f9fc; }
+.vp-doc .capability-values table { display: table; table-layout: fixed; width: 100%; font-size: 15px; }
+.vp-doc .capability-values th:first-child,
+.vp-doc .capability-values td:first-child { width: 108px; white-space: nowrap; word-break: keep-all; }
+.vp-doc .capability-values th,
+.vp-doc .capability-values td { padding: 15px 18px; line-height: 1.8; vertical-align: top; }
+@media (max-width: 600px) {
+  .vp-doc .capability-values table { font-size: 14px; }
+  .vp-doc .capability-values th:first-child,
+  .vp-doc .capability-values td:first-child { width: 88px; }
+  .vp-doc .capability-values th,
+  .vp-doc .capability-values td { padding: 12px 10px; }
+}
 .vp-doc img { border-radius: 0; }
 .vp-doc .custom-block { border-radius: 4px; }
 .VPSidebar .group + .group { border-top: 0; }

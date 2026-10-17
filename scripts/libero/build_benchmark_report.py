@@ -311,12 +311,30 @@ def replace_block(text, start, end, content):
     return before + start + "\n\n" + content + "\n\n" + end + after
 
 
+def latest_catalog(catalog):
+    """Publish the selected current comparison without unrelated archived runs."""
+    selected = next((g for g in catalog['groups'] if g['id'] == catalog['featured_group']), None)
+    if selected is None:
+        raise ValueError('featured_group does not exist')
+    group = copy.deepcopy(selected)
+    runs = [copy.deepcopy(run) for run in catalog['runs'] if run['id'] in group['run_ids']]
+    suite = runs[0]['config']['task_suite_name'].replace('libero_', 'LIBERO ').replace('spatial', 'Spatial')
+    group['title'] = f'{suite} · 实测对照'
+    group['notes'] = [note.removeprefix('原始组说明：').replace('原始全案例分组', '来源数据')
+                      for note in group.get('notes', [])
+                      if not re.search(r'\d{4}-\d{2}-\d{2}|历史分组', note)]
+    return {'schema_version': catalog['schema_version'], 'featured_group': group['id'],
+            'groups': [group], 'runs': runs}
+
+
 def build(catalog):
+    catalog = latest_catalog(catalog)
+    (REPORTS/'latest.json').write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     all_rows = []
     page = ["# 实测数据", "", "数据来自已完成的运行记录；下表与图由同一份可追加的数据目录生成。Async 对应 CLI 的 `replace`。", "",
             "<BenchmarkDashboard />", "", "## 静态对照与下载", "",
             "¹ 推理响应时间的均值和 p95 均按每个 episode 排除前 N 次调用后汇总；N 见来源表。推理响应时间是从发起策略调用到收到整块动作的耗时；远程模式包含预处理、传输和服务端推理，不是每步耗时。`—` 表示原记录缺失。", "",
-            "[下载结构化数据](../../reports/evaluation/catalog.json) · [下载汇总 CSV](../../reports/evaluation/summary.csv)", ""]
+            "[下载当前数据](../../reports/evaluation/latest.json) · [下载汇总 CSV](../../reports/evaluation/summary.csv)", ""]
     featured = None
     for group in catalog['groups']:
         rows = group_rows(catalog, group)
@@ -325,7 +343,7 @@ def build(catalog):
         image_name = group['id']
         plot_group(rows, ROOT / f"assets/benchmarks/{image_name}", caption, matched)
         stage_chart = plot_stage_timings(rows, ROOT / f"assets/benchmarks/{image_name}-stages", caption)
-        page += [f'<details class="benchmark-archive"><summary>{group["title"]} · 静态图表与明细</summary>', "", f"## {group['title']}", "", caption, "", table(rows, matched), "",
+        page += ['<details class="benchmark-details"><summary>完整图表与明细</summary>', "", f"## {group['title']}", "", caption, "", table(rows, matched), "",
                  f"![{group['title']} 四项指标](../../assets/benchmarks/{image_name}.svg)", ""]
         page += [f"- {note}" for note in group.get('notes', [])] + [""]
         runs = [r for r in catalog['runs'] if r['id'] in group['run_ids']]
@@ -357,7 +375,8 @@ def build(catalog):
         page += ["| 来源运行 | 配置 | 每回合排除调用数 |", "| --- | --- | ---: |"]
         for run in [r for r in catalog['runs'] if r['id'] in group['run_ids']]:
             c=run['config']
-            page += [f"| `{run['id']}` | {c['task_suite_name']} / {c['precision']} / seed {c['seed']} / chunk {c['chunk_size']} | {run['exclude_first_calls']} |"]
+            source_label = f"{run['hardware']['device_name'].title()} " + ('本机' if run['kind'] == 'local' else '协同推理')
+            page += [f"| {source_label} | {c['task_suite_name']} / {c['precision']} / seed {c['seed']} / chunk {c['chunk_size']} | {run['exclude_first_calls']} |"]
         page += ["", "### 逐任务结果", "",
                  "| 模式 | task ID | episode | 成功 | 步数 | 任务耗时 / s | hold 步 |",
                  "| --- | ---: | ---: | --- | ---: | ---: | ---: |"]
@@ -382,7 +401,7 @@ def build(catalog):
                               if matched else caption + "。\n\n")
             featured = (f"**{group['title']}**\n\n" + selection_note + table(rows, matched) + "\n\n¹ 每个 episode 的首次调用筛选数见数据页；`—` 表示未记录。推理响应时间按整块动作统计，远程模式包含预处理、传输和服务端推理。任务总耗时仍包含保留回合的首次推理等待。\n\n"
                         +f"![实测指标对比](assets/benchmarks/{image_name}.svg)\n\n"
-                        +"[详细数据、口径与后续追加方式](docs-site/guide/benchmark-results.md) · [JSON 数据](reports/evaluation/catalog.json) · [CSV 汇总](reports/evaluation/summary.csv)")
+                        +"[详细数据与统计口径](docs-site/guide/benchmark-results.md) · [JSON 数据](reports/evaluation/latest.json) · [CSV 汇总](reports/evaluation/summary.csv)")
             thor = next((record for run, record in rows
                          if record['mode'] == 'local' and run['hardware']['device_name'] == 'thor'), None)
             if thor:
@@ -392,7 +411,7 @@ def build(catalog):
                              f"任务总耗时 {number(m['rollout_wall_time_s'])} s · "
                              + (f"共同成功案例 {m['episodes']} 个。**" if matched else f"成功 {m['successes']}/{m['episodes']}。**"))
                 featured = featured.replace("\n\n| 设备", "\n\n" + highlight + "\n\n| 设备", 1)
-                featured += "\n\n各运行的采样日期、控制频率及配置见数据页；总耗时包含任务轨迹差异。"
+                featured += "\n\n控制频率及配置见数据页；总耗时包含任务轨迹差异。"
             if stage_chart:
                 featured += ("\n\n**推理耗时构成**\n\n"
                              + f"![本机完整调用与协同推理耗时构成](assets/benchmarks/{image_name}-stages.svg)\n\n"
@@ -400,7 +419,7 @@ def build(catalog):
                              + f"[下载 SVG](assets/benchmarks/{image_name}-stages.svg) · [下载 PNG](assets/benchmarks/{image_name}-stages.png)")
     if featured is None:
         raise ValueError("featured_group does not exist")
-    page += ["## 口径与追加方法", "", "见[数据维护说明](./benchmark-data.md)。每组保留独立运行和逐任务结果，不自动合并不同 seed、任务集、设备或延迟设置。原始评测文件位于可提交的 `outputs/`，精简数据目录记录来源文件名及 SHA-256，重建网页无需访问原始文件。", ""]
+    page += ["## 口径与更新方法", "", "见[数据维护说明](./benchmark-data.md)。页面与下载只展示当前对照，保留逐任务结果。来源运行 ID 和 SHA-256 记录在 JSON 中，重建网页无需访问原始文件。", ""]
     (ROOT/'docs-site/guide/benchmark-results.md').write_text('\n'.join(page))
     with (REPORTS/'summary.csv').open('w',newline='') as stream:
         writer=csv.DictWriter(stream,fieldnames=list(all_rows[0]),lineterminator='\n'); writer.writeheader(); writer.writerows(all_rows)

@@ -151,7 +151,7 @@ bash scripts/libero/run_local_benchmark.sh
 
 <!-- BENCHMARK_RESULTS_START -->
 
-**LIBERO Spatial · 共同成功 9 个案例**
+**LIBERO Spatial · 实测对照**
 
 共同成功 9 个案例 · 排除 task/episode：4/0。使用现有记录重算，未重新评测。共同成功案例数不代表整体成功率。
 
@@ -169,9 +169,9 @@ bash scripts/libero/run_local_benchmark.sh
 
 ![实测指标对比](assets/benchmarks/libero-spatial-common-success.svg)
 
-[详细数据、口径与后续追加方式](docs-site/guide/benchmark-results.md) · [JSON 数据](reports/evaluation/catalog.json) · [CSV 汇总](reports/evaluation/summary.csv)
+[详细数据与统计口径](docs-site/guide/benchmark-results.md) · [JSON 数据](reports/evaluation/latest.json) · [CSV 汇总](reports/evaluation/summary.csv)
 
-各运行的采样日期、控制频率及配置见数据页；总耗时包含任务轨迹差异。
+控制频率及配置见数据页；总耗时包含任务轨迹差异。
 
 **推理耗时构成**
 
@@ -192,7 +192,7 @@ python scripts/libero/build_benchmark_report.py add /path/to/completed/run --gro
 python scripts/libero/build_benchmark_report.py build
 ```
 
-独立分组保留历史数据；在 `reports/evaluation/catalog.json` 的 `featured_group` 选择 README 展示的组，详见[数据维护说明](docs-site/guide/benchmark-data.md)。
+在 `reports/evaluation/catalog.json` 的 `featured_group` 指定最新对照后重新生成，README、网站和下载数据会同步更新，详见[数据维护说明](docs-site/guide/benchmark-data.md)。
 
 结果自动按设备和时间戳保存：远程在 `outputs/evaluation/async/`，本机在 `outputs/evaluation/local/`。远程每个模式包含原始 JSON、summary、逐请求/逐控制步 CSV 和视频，另有 comparison 与运行 metadata。
 
@@ -208,22 +208,22 @@ PYTHONPATH=third_party/vla_adapter:. python -m unittest discover -s tests -v
 
 ## 系统能力
 
-下表汇总系统实现机制及对应验证方式，覆盖功能、性能和工程质量。
+系统面向资源受限设备上的视觉语言动作模型部署，通过 Orin 控制执行与 Thor 模型推理的协同分工，支持闭环任务运行、推理调度优化与统一性能评估。
 
-| 维度 | 实现机制 | 验证方式 / 关键指标 |
-| --- | --- | --- |
-| 功能性 | 本机基线、远程 sync / replace / blend；LIBERO 12×7 动作闭环 | 成功率、三模式报告、动作数值一致性 |
-| 实时性 | 单请求后台预测、连接复用、无损压缩、控制节拍 | 控制间隔 p95、往返耗时、`hold_steps`、过期块 |
-| 实用性 | Orin 不载模型；统一脚本、YAML、preflight、独立输出 | 新环境完成预检与单任务闭环 |
-| 稳定性 | 观测快照、控制步对齐、过期裁剪、缓冲耗尽 hold、异常传播 | 延迟注入、掉线、长时运行；hold 与失败记录 |
-| 安全性 | 报文限长、有界解压、形状/有限值校验、请求与实例匹配；网络载荷无 pickle | 非法载荷、服务重启、错误请求测试 |
-| 一致性 | 精度/块长检查、无损 codec、严格权重加载、checkpoint SHA-256 | 位保真测试、同一 checkpoint 的 `check_split_parity.py` 对比 |
-| 可复现性 | seed、同初始状态、模式顺序随机化、配置与环境元数据 | 原始 JSON/CSV、模型哈希、完整配置与设备环境 |
-| 可观测性 | 分阶段计时、调用/控制步记录、墙钟视频、allocator 峰值 | metadata、summary、comparison、realtime 视频 |
-| 可维护性 | 模型/协议/调度分层、六个测试模块、文档网站 | 单元回归、入口和文档一致性 |
-| 可扩展性 | 共用模型、独立 RoboTwin 训练评测入口、可选压缩 codec | 新适配器与独立回归 |
+| 维度 | 能力描述 |
+| --- | --- |
+| **功能性** | 支持观测采集、远程推理与动作执行的完整闭环，提供同步、异步替换和异步融合三种协同模式。 |
+| **实时性** | 通过异步推理与动作执行重叠，减少推理等待对控制节拍的影响，提高计算与执行的并行程度。 |
+| **实用性** | 将完整模型部署于 Thor，降低 Orin 控制端的模型内存与计算需求，支持异构设备协同部署。 |
+| **稳定性** | 通过动作时序对齐、过期动作剔除及缓冲耗尽处理，减轻响应延迟对动作执行连续性的影响。 |
+| **安全性** | 校验通信报文、动作数值与响应归属，降低异常数据和错配响应进入控制链路的风险。 |
+| **一致性** | 统一模型调用接口与动作语义，为本机推理与远程推理的输出核对、协同模式对比提供共同基准。 |
+| **可复现性** | 记录实验配置、随机种子与原始运行数据，支持任务复现、结果复核及跨模式比较。 |
+| **可观测性** | 记录推理、通信与控制环节的耗时及缓冲状态，支持性能瓶颈定位与调度效果分析。 |
+| **可维护性** | 按模型、传输与调度划分模块职责，降低功能耦合，便于独立调试、故障定位与持续迭代。 |
+| **可扩展性** | 通过统一模型接口与任务适配入口，支持压缩策略、调度配置及任务场景的进一步扩展。 |
 
-本地验证（2026-10-17）：**33 项单元测试通过**，通过 mock / fake policy 与本机 HTTP 核验协议、调度和报告逻辑。设备端按“相同 checkpoint 数值一致性 → 三模式任务对比 → 长时运行与资源监控”组织评测并保存结果。
+本地验证：**33 项单元测试通过**，通过 mock / fake policy 与本机 HTTP 核验协议、调度和报告逻辑。设备端按“相同 checkpoint 数值一致性 → 三模式任务对比 → 长时运行与资源监控”组织评测并保存结果。
 
 推理 HTTP 服务部署于受控实验网络，静态文档网站独立部署。跨网络访问与设备安全要求见[系统能力说明](docs-site/guide/capabilities.md)。
 

@@ -5,7 +5,7 @@ import tempfile
 import unittest
 
 from scripts.libero.benchmark_common import summarize
-from scripts.libero.build_benchmark_report import add_run, common_success_group, group_rows, import_run, replace_block, table
+from scripts.libero.build_benchmark_report import add_run, common_success_group, group_rows, import_run, latest_catalog, replace_block, table
 from scripts.libero.plot_stage_timings import latency_breakdown
 
 
@@ -93,6 +93,30 @@ class BenchmarkReportTests(unittest.TestCase):
                          'before<S>\n\nnew\n\n<E>after')
         with self.assertRaises(ValueError):
             replace_block('no markers', '<S>', '<E>', 'new')
+
+    def test_publication_contains_only_current_comparison_without_mutating_sources(self):
+        run = import_run(self.directory)
+        run['config']['task_suite_name'] = 'libero_spatial'
+        catalog = {'schema_version': 1, 'groups': [], 'runs': []}
+        add_run(catalog, run, 'old-round')
+        current = copy.deepcopy(run)
+        current['id'] = 'current-run'
+        add_run(catalog, current, 'current-round', 'LIBERO Spatial · 2026-10-17')
+        catalog['featured_group'] = 'current-round'
+        catalog['groups'][1]['notes'] = ['2026-10-16 数据，历史分组保留。', '原始组说明：BF16、seed 7。']
+        original = copy.deepcopy(catalog)
+        published = latest_catalog(catalog)
+        self.assertEqual([group['id'] for group in published['groups']], ['current-round'])
+        self.assertEqual([item['id'] for item in published['runs']], ['current-run'])
+        self.assertEqual(published['runs'][0]['records'], current['records'])
+        self.assertEqual(published['groups'][0]['notes'], ['BF16、seed 7。'])
+        self.assertNotIn('2026', published['groups'][0]['title'])
+        published['runs'][0]['records'][0]['metrics']['successes'] = 999
+        self.assertEqual(catalog, original)
+
+    def test_publication_rejects_missing_current_selection(self):
+        with self.assertRaisesRegex(ValueError, 'featured_group'):
+            latest_catalog({'schema_version': 1, 'groups': [], 'runs': [], 'featured_group': 'missing'})
 
 
 class CommonSuccessTests(unittest.TestCase):

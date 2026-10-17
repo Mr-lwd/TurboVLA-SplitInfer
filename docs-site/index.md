@@ -59,7 +59,7 @@ title: 项目概览
 
 ## 已记录的实测数据
 
-[查看 Orin / Thor 本机与 Sync / Async / Blend 对比](./guide/benchmark-results.md)：提供可切换分组的指标表、逐任务结果、来源校验摘要及 JSON/CSV 下载。数据由完成的运行记录生成，支持后续追加实验。
+[查看 Orin / Thor 本机与 Sync / Async / Blend 对比](./guide/benchmark-results.md)：展示最新对照的指标、逐任务结果及 JSON/CSV 下载，支持切换比较指标和查看各模式详情。
 
 ## 最短验证路径
 

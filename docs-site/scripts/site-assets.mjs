@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs'
-const catalog = JSON.parse(readFileSync(new URL('../../reports/evaluation/catalog.json', import.meta.url), 'utf8'))
+const catalog = JSON.parse(readFileSync(new URL('../../reports/evaluation/latest.json', import.meta.url), 'utf8'))
 // Repository sources are authoritative; public/ is generated for website hosting.
 export const siteAssets = [
-  ['reports/evaluation/catalog.json', 'benchmarks/catalog.json'],
+  ['reports/evaluation/latest.json', 'benchmarks/latest.json'],
   ['reports/evaluation/summary.csv', 'benchmarks/summary.csv'],
   ...catalog.groups.flatMap(group => ['svg', 'png'].map(ext =>
     [`assets/benchmarks/${group.id}.${ext}`, `benchmarks/${group.id}.${ext}`])),

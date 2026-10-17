@@ -19,7 +19,7 @@ $env:PYTHONPATH = 'third_party/vla_adapter;.'
 python -m unittest discover -s tests -v
 ```
 
-2026-10-17 在本地 `turbovla-libero` 环境运行：**44 项通过**。测试通过 mock / fake policy 与本机 HTTP 核验协议、调度和报告逻辑。
+在本地 `turbovla-libero` 环境运行：**44 项通过**。测试通过 mock / fake policy 与本机 HTTP 核验协议、调度和报告逻辑。
 
 | 测试文件 | 核验内容 |
 | --- | --- |
