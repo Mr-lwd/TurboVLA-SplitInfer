@@ -6,16 +6,36 @@ title: 项目概览
 
 <p class="lead">TurboVLA-SplitInfer 将观测预处理与动作执行留在 Orin Nano 8GB，将完整神经网络放在 Thor 128GB，通过同步、异步替换与异步融合比较控制效果。</p>
 
-<a class="primary-link" href="./guide/deployment.html">开始部署</a>
-<a href="./guide/completeness.html">查看代码与验证链路</a>
+<div class="home-links">
+
+[开始部署](./guide/deployment.md) · [查看代码与验证链路](./guide/completeness.md)
+
+</div>
 
 <SystemOverview />
+
+<div class="github-only">
+
+![Orin Nano 与 Thor 双设备拆分推理框架](../assets/diagrams/split-inference/framework-flat.png)
+
+</div>
 
 ## 实物部署
 
 项目已在 **Jetson Orin Nano 8GB 与 Jetson Thor 128GB** 两台实体设备上部署。下图为项目现场设备的实拍整理版，分别对应观测与控制端、完整模型推理端。
 
 <DeploymentGallery />
+
+<div class="github-only">
+
+| Jetson Orin Nano · 8GB | Jetson Thor · 128GB |
+| --- | --- |
+| ![Orin Nano 实拍整理版](../assets/realpics/cleaned/orin-clean.jpg) | ![Thor 实拍整理版](../assets/realpics/cleaned/thor-clean.jpg) |
+| 观测预处理、调度与动作执行 | 完整模型推理与动作反归一化 |
+
+实拍经 DDS 清理背景杂物与污点，原图：[Orin](../assets/realpics/orin.jpg) · [Thor](../assets/realpics/Thor.jpg)。
+
+</div>
 
 部署步骤见[设备部署](./guide/deployment.md)，三种模式的运行结果按[验证与结果](./guide/validation.md)记录。
 

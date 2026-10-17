@@ -37,8 +37,10 @@
 .device li + li { margin-top: 7px; }
 .transport { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; font-size: 13px; color: #285b8e; text-align: center; padding: 8px; }
 .transport strong { font-size: 15px; }
-.primary-link { display: inline-block; background: #224f7b; padding: 11px 22px; color: white !important; text-decoration: none !important; font-weight: 600; border-radius: 4px; margin: 0 14px 10px 0; }
-.primary-link:hover { background: #173d62; }
+.primary-link, .home-links a:first-child { display: inline-block; background: #224f7b; padding: 11px 22px; color: white !important; text-decoration: none !important; font-weight: 600; border-radius: 4px; margin: 0 14px 10px 0; }
+.primary-link:hover, .home-links a:first-child:hover { background: #173d62; }
+/* GitHub renders these plain Markdown alternatives; the site uses its players. */
+.github-only { display: none; }
 .caption { font-size: 13px; color: #4e6070; line-height: 1.65 !important; }
 .deployment-gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin: 28px 0 14px; }
 .deployment-gallery figure { margin: 0; min-width: 0; }

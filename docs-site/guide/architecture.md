@@ -4,9 +4,9 @@
 
 ## 拆分推理框架图
 
-![Orin Nano 8GB 与 Thor 128GB 拆分推理框架，纯色模块及连续数据流](/figures/framework-flat.png)
+![Orin Nano 8GB 与 Thor 128GB 拆分推理框架，纯色模块及连续数据流](../../assets/diagrams/split-inference/framework-flat.png)
 
-<DiagramDownload />
+[下载两页可编辑 PPT](../../assets/diagrams/split-inference/turbovla-diagrams-editable.pptx)
 
 框架图由 DDS 生成后重建为原生文本、纯色形状及单个连续箭头；相机与机械臂为独立图标对象。图中 token 方块仅作结构示意，实际数量以配置为准。
 
@@ -24,7 +24,7 @@
 
 ## 模型继承关系
 
-![上游 TurboVLA 模型结构：DINOv3、BERT、视觉语言交互和动作块解码](/figures/architecture-overview.png)
+![上游 TurboVLA 模型结构：DINOv3、BERT、视觉语言交互和动作块解码](../../assets/figures/architecture-overview.png)
 
 原始结构图来自仓库 `assets/figures/architecture-overview.png`。双设备设计保留其模型语义：视觉与语言特征经过双向交互，生成 action-ready features；机器人状态通过独立投影后，与融合特征一起送入 ACT 解码器。
 

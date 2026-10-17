@@ -4,9 +4,9 @@
 
 ## 三模式流水线总览
 
-![Async、Blend、Sync 三种协同推理流水线，含 Thor 推理与 Orin 执行、动作裁剪和融合权重](/figures/pipeline-flat.png)
+![Async、Blend、Sync 三种协同推理流水线，含 Thor 推理与 Orin 执行、动作裁剪和融合权重](../../assets/diagrams/split-inference/pipeline-flat.png)
 
-<DiagramDownload />
+[下载两页可编辑 PPT](../../assets/diagrams/split-inference/turbovla-diagrams-editable.pptx)
 
 上述流水线图由 DDS 图稿重建为原生纯色对象。下面的动图按同一调度序列绘制，逐步展示控制推进与请求重叠。所有时间单位均为示意。
 
@@ -15,6 +15,24 @@
 ## 流水线动图
 
 <PipelineAnimation />
+
+<div class="github-only">
+
+**Async · 异步替换**
+
+![Async：后台推理、过期前缀裁剪与未来动作替换](../../assets/diagrams/split-inference/animations/pipeline-async.gif)
+
+**Blend · 异步融合**
+
+![Blend：后台推理与三步新旧动作融合](../../assets/diagrams/split-inference/animations/pipeline-blend.gif)
+
+**Sync · 同步推理**
+
+![Sync：执行动作块、阻塞等待与继续执行](../../assets/diagrams/split-inference/animations/pipeline-sync.gif)
+
+[三模式对照动图](../../assets/diagrams/split-inference/animations/pipeline-comparison.gif)
+
+</div>
 
 蓝色推理块在 Thor，动作序列在 Orin。三行使用同一示意墙钟时间轴；sync 的等待段保持实际控制步不变，async 与 blend 则继续执行已有动作。默认 `H=12 / R=4 / B=3`；动画显示重复重规划，而不是只展示一次请求。
 

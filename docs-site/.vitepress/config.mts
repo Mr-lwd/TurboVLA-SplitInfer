@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitepress'
+import { repositoryAssets } from '../scripts/markdown-assets.mjs'
 
 const base = process.env.DOCS_BASE || '/'
 if (!base.startsWith('/') || !base.endsWith('/')) throw new Error('DOCS_BASE must start and end with /')
@@ -12,6 +13,7 @@ export default defineConfig({
   appearance: false,
   lastUpdated: false,
   cleanUrls: false,
+  markdown: { config: md => repositoryAssets(md, base) },
   srcExclude: ['README.md', 'DESIGN.md', 'qa/**'],
   head: [['meta', { name: 'theme-color', content: '#ffffff' }]],
   themeConfig: {
