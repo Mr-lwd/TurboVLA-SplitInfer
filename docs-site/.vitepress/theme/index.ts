@@ -5,6 +5,7 @@ import SystemOverview from './SystemOverview.vue'
 import DeploymentGallery from './DeploymentGallery.vue'
 import PipelineAnimation from './PipelineAnimation.vue'
 import DiagramDownload from './DiagramDownload.vue'
+import BenchmarkDashboard from './BenchmarkDashboard.vue'
 import './style.css'
 
 export default {
@@ -15,5 +16,6 @@ export default {
     app.component('DeploymentGallery', DeploymentGallery)
     app.component('PipelineAnimation', PipelineAnimation)
     app.component('DiagramDownload', DiagramDownload)
+    app.component('BenchmarkDashboard', BenchmarkDashboard)
   }
 } satisfies Theme

@@ -1,5 +1,7 @@
 from contextlib import redirect_stdout
 import io
+import csv
+import copy
 import json
 import os
 from pathlib import Path
@@ -9,7 +11,7 @@ from unittest.mock import patch
 
 from scripts.libero.benchmark_common import (
     DEFAULT_CONFIG, device_label, distribution, expand_path, load_settings,
-    local_path, summarize,
+    control_step_rows, local_path, summarize, write_reports,
 )
 
 from scripts.libero.benchmark_local import main
@@ -66,12 +68,71 @@ class LocalBenchmarkTests(unittest.TestCase):
         self.assertEqual(summary["filtered_calls"]["count"], 2)
         self.assertAlmostEqual(summary["filtered_amortized_ms_per_predicted_action"], 10)
         self.assertEqual(summary["executed_steps"], 26)
+        self.assertIsNone(summary["control_intervals"])
+        self.assertIsNone(summary["hold_steps"])
         self.assertAlmostEqual(summary["non_inference_rollout_s"], 5.76)
         self.assertEqual([r["included_in_filtered"] for r in rows], [False, True, False, True])
         self.assertIsNone(summarize(result, 2)[0]["filtered_amortized_ms_per_predicted_action"])
         result["policy_backend"] = "remote"
         with self.assertRaises(ValueError):
             summarize(result, 1)
+
+    def timed_result(self):
+        episodes = []
+        for index, starts in enumerate(([0.4, 0.5, 0.9], [2.0, 2.2])):
+            episodes.append({"episode": index, "executed_steps": len(starts), "rollout_wall_time_s": 3,
+                             "inference_timings": [], "step_timings": [
+                                 {"step": i, "action_start_s": start, "action_end_s": start + .05,
+                                  "env_step_s": .05, "hold": False} for i, start in enumerate(starts)]})
+        return {"policy_backend": "local", "chunk_size": 12, "num_open_loop_steps": 12,
+                "total_episodes": 2, "total_successes": 2, "overall_success_rate": 1,
+                "timing_scope": "rollout", "tasks": [{"task_id": 0, "episode_results": episodes}]}
+
+    def test_control_intervals_pool_within_episodes_and_export_steps(self):
+        result = self.timed_result()
+        summary, calls = summarize(result, 1)
+        intervals = summary["control_intervals"]
+        # [100, 400, 200] ms, without bootstrap delay or cross-episode gaps.
+        self.assertEqual(intervals["count"], 3)
+        self.assertAlmostEqual(intervals["p95_ms"], 380)
+        self.assertAlmostEqual(intervals["mean_ms"], 700 / 3)
+        self.assertEqual(intervals, summarize(result, 99)[0]["control_intervals"])
+        self.assertAlmostEqual(summary["env_steps"]["mean_ms"], 50)
+        self.assertEqual(summary["hold_steps"], 0)
+        steps = control_step_rows(result)
+        self.assertIsNone(steps[0]["control_interval_s"])
+        self.assertIsNone(steps[3]["control_interval_s"])
+        with tempfile.TemporaryDirectory() as temp:
+            prefix = Path(temp) / "orin_run"
+            write_reports(prefix, summary, calls, steps)
+            with (Path(temp) / "orin_run_steps.csv").open() as stream:
+                exported = list(csv.DictReader(stream))
+            self.assertEqual(len(exported), 5)
+            self.assertEqual(exported[3]["control_interval_s"], "")
+            self.assertAlmostEqual(float(exported[2]["control_interval_s"]), .4)
+
+    def test_incomplete_or_invalid_control_timestamps(self):
+        result = self.timed_result()
+        for change in (lambda e: e["step_timings"].pop(),
+                       lambda e: e["step_timings"][1].update(action_start_s=float('nan')),
+                       lambda e: e["step_timings"][1].update(action_start_s=.1)):
+            broken = copy.deepcopy(result)
+            change(broken["tasks"][0]["episode_results"][0])
+            with self.assertRaises(ValueError):
+                summarize(broken, 1)
+        del result["tasks"][0]["episode_results"][0]["step_timings"]
+        summary, _ = summarize(result, 1)
+        self.assertIsNone(summary["control_intervals"])
+        self.assertEqual(summary["control_timing_episodes"], {"recorded": 1, "total": 2})
+
+    def test_single_step_episode_has_no_control_interval(self):
+        result = self.timed_result()
+        for episode in result["tasks"][0]["episode_results"]:
+            episode["step_timings"] = episode["step_timings"][:1]
+            episode["executed_steps"] = 1
+        summary, _ = summarize(result, 1)
+        self.assertEqual(summary["control_intervals"]["count"], 0)
+        self.assertIsNone(summary["control_intervals"]["p95_ms"])
 
     def test_runner_exports_device_named_files_and_records_failure(self):
         import yaml
@@ -115,7 +176,7 @@ class LocalBenchmarkTests(unittest.TestCase):
                 main()
                 summary = next(root.glob("thor_*/*_summary.json"))
                 self.assertEqual(json.loads(summary.read_text())["all_calls"]["count"], 0)
-                self.assertEqual(len(list(root.glob("thor_*/*.csv"))), 1)
+                self.assertEqual(len(list(root.glob("thor_*/*.csv"))), 2)
                 evaluator.side_effect = RuntimeError("evaluation failed")
                 with self.assertRaisesRegex(RuntimeError, "evaluation failed"):
                     main()

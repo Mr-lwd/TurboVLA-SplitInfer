@@ -74,6 +74,12 @@ class VideoTimingTests(unittest.TestCase):
             self.assertAlmostEqual(actual["duration_s"], expected)
         for actual, expected in zip(episode.frame_timestamps_s, [0, 0.5, 0.6, 1.0]):
             self.assertAlmostEqual(actual, expected)
+        self.assertEqual(len(episode.step_timings), 3)
+        for step, start, end in zip(episode.step_timings, [.4, .5, .9], [.5, .6, 1.]):
+            self.assertAlmostEqual(step["action_start_s"], start)
+            self.assertAlmostEqual(step["action_end_s"], end)
+            self.assertAlmostEqual(step["env_step_s"], .1)
+            self.assertFalse(step["hold"])
         self.assertEqual(int(episode.frames[-1][30, 0, 0]), 50)
 
     def test_realtime_export_preserves_waits_and_terminal_observation(self):

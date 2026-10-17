@@ -2,6 +2,8 @@
 
 验证分为代码行为、模型数值一致性和实机任务表现三层，分别对应单元测试、推理路径对比与设备端任务评测。
 
+已整理的数据见 [实测数据与对比](./benchmark-results.md)：Orin 本机以及指定远程运行的 Sync / Async / Blend，含关键指标、逐任务结果和可追溯来源。追加方法见 [数据维护说明](./benchmark-data.md)。
+
 ## 代码行为
 
 在仓库根目录运行已有测试：
@@ -17,16 +19,17 @@ $env:PYTHONPATH = 'third_party/vla_adapter;.'
 python -m unittest discover -s tests -v
 ```
 
-2026-10-17 在本地 `turbovla-libero` 环境运行：**33 项通过**。测试通过 mock / fake policy 与本机 HTTP 核验协议、调度和报告逻辑。
+2026-10-17 在本地 `turbovla-libero` 环境运行：**41 项通过**。测试通过 mock / fake policy 与本机 HTTP 核验协议、调度和报告逻辑。
 
 | 测试文件 | 核验内容 |
 | --- | --- |
 | `test_split_inference.py` | BF16/FP32 位保真、可用 codec、HTTP 往返、复用连接、服务实例变化、非法载荷 |
 | `test_async_inference.py` | replace 对齐、blend 权重、过期块、观测快照、单请求、hold、退出 drain |
 | `test_async_benchmark.py` | 三模式入口、CLI 覆盖、preflight、失败状态、报告 |
-| `test_local_benchmark.py` | 本机配置、统计、路径优先级、结果命名 |
+| `test_local_benchmark.py` | 本机配置、调用/控制间隔统计、时间戳校验、逐步导出、路径优先级、结果命名 |
 | `test_legacy_split_reports.py` | 历史报告补算及缺失指标处理 |
 | `test_libero_video_timing.py` | 真实等待时长、终止帧与视频时间轴 |
+| `test_benchmark_report.py` | 实测导入、来源校验、控制间隔发布、历史保留与文档生成 |
 
 ## 模型数值一致性
 
@@ -57,6 +60,12 @@ python scripts/libero/benchmark_transport.py \
 
 ## 结果文件
 
+本机运行存放于 `outputs/evaluation/local/<device>_<suite>_<precision>_<timestamp>/`。
+更新后直接运行 `bash scripts/libero/run_local_benchmark.sh` 即可记录控制间隔，无需新增配置：
+原始 `.json` 含每回合 `step_timings`，`_summary.json` 含 `control_intervals`（均值、中位数、p95、最小/最大值），
+`.csv` 为逐推理明细，`_steps.csv` 为逐动作开始/结束时间、环境执行耗时和控制间隔。
+每回合第一步没有前一步，CSV 的 `control_interval_s` 留空；旧文件缺少时间戳，不能从推理均值反推控制间隔。
+
 远程运行存放于 `outputs/evaluation/async/<device_pair>_<suite>_<timestamp>/`。每个模式的结果文件位于运行目录根部，视频位于 `<mode>/videos/`。
 
 | 文件后缀 | 用途 |
@@ -73,7 +82,7 @@ python scripts/libero/benchmark_transport.py \
 | 指标 | 解释 | 统计口径 |
 | --- | --- | --- |
 | `success_rate` | 成功 episode / 全部 episode | 同时报告任务数与重复次数 |
-| `control_intervals.p95_ms` | 相邻动作开始时间间隔 p95 | 按实际动作时间戳统计，控制频率上限配置为 20 Hz |
+| `control_intervals.p95_ms` | 相邻动作开始时间间隔 p95 | 仅回合内相邻动作，合并样本后计算；不受首次调用过滤影响。远程入口默认上限 20 Hz，本机入口无墙钟节拍限制 |
 | `hold_steps` | 缺少当前动作时的保持步数 | 与任务成功率、缓冲耗尽情况联合分析 |
 | `round_trip_s` | 一次请求的往返时间 | 包含服务处理，并非纯网络延迟 |
 | `transport_overhead_s` | 往返减服务总时间的残差 | 仍含 HTTP、socket、响应处理开销 |

@@ -237,6 +237,7 @@ class EpisodeResult:
     frame_timestamps_s: list[float]
     inference_timings: list[dict]
     rollout_wall_time_s: float
+    step_timings: list[dict]
 
 
 def _save_realtime_video(path: Path, episode: EpisodeResult, fps: int = 20) -> float:
@@ -307,6 +308,7 @@ def _run_episode(
     replay_images: list[np.ndarray] = []
     frame_timestamps_s: list[float] = []
     inference_timings: list[dict] = []
+    step_timings: list[dict] = []
     executed_actions: list[list[float]] = []
     dummy_action = np.asarray(get_libero_dummy_action(), dtype=np.float32)
     max_steps = TASK_MAX_STEPS[cfg.task_suite_name]
@@ -347,9 +349,21 @@ def _run_episode(
                 inference_timings[-1]["remote"] = dict(policy.last_timing)
             action_queue.extend(np.asarray(row, dtype=np.float32) for row in env_actions)
 
+        hold = not action_queue
         action = action_queue.popleft() if action_queue else dummy_action
         executed_actions.append(action.tolist())
+        # Match the async runner: intervals are between env.step start times,
+        # after any blocking prediction, not between observation/video frames.
+        action_start = time.perf_counter()
         obs, _, done, _ = env.step(action.tolist())
+        action_end = time.perf_counter()
+        step_timings.append({
+            "step": len(executed_actions) - 1,
+            "action_start_s": action_start - episode_start,
+            "action_end_s": action_end - episode_start,
+            "env_step_s": action_end - action_start,
+            "hold": hold,
+        })
         if done:
             success = True
             break
@@ -364,7 +378,7 @@ def _run_episode(
         frame_timestamps_s.append(rollout_wall_time_s)
     return EpisodeResult(
         success, replay_images, executed_actions, frame_timestamps_s,
-        inference_timings, rollout_wall_time_s,
+        inference_timings, rollout_wall_time_s, step_timings,
     )
 
 
@@ -549,6 +563,7 @@ def eval_libero(cfg: GenerateConfig) -> float:
                     "rollout_wall_time_s": episode.rollout_wall_time_s,
                     "inference_total_s": sum(item["duration_s"] for item in episode.inference_timings),
                     "inference_timings": episode.inference_timings,
+                    "step_timings": episode.step_timings,
                 }
                 if cfg.remote_policy_url:
                     timing["remote_inference_total_s"] = sum(

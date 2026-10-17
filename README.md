@@ -149,7 +149,37 @@ bash scripts/libero/run_local_benchmark.sh
 
 ## 结果与验证
 
+<!-- BENCHMARK_RESULTS_START -->
+
+| 设备 / 模式 | 成功 | 执行步数 | 任务总耗时 / s | 平均推理响应时间¹ / ms | 推理响应时间 p95¹ / ms | 控制间隔 p95 / ms | hold 步 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Orin local | 10/10 | 1002 | 94.34 | 148.51 | 189.49 | — | — |
+| Sync | 9/10 | 1122 | 92.44 | 130.97 | 284.81 | 165.58 | 0 |
+| Async / replace | 10/10 | 1026 | 74.78 | 115.03 | 241.70 | 82.45 | 3 |
+| Blend | 10/10 | 1021 | 75.08 | 117.63 | 230.05 | 81.64 | 0 |
+
+¹ 每个 episode 的首次调用筛选数见数据页；`—` 表示未记录。推理响应时间按整块动作统计，远程模式包含预处理、传输和服务端推理。
+
+![实测指标对比](assets/benchmarks/libero-spatial-20261016.svg)
+
+[详细数据、口径与后续追加方式](docs-site/guide/benchmark-results.md) · [JSON 数据](reports/evaluation/catalog.json) · [CSV 汇总](reports/evaluation/summary.csv)
+
+<!-- BENCHMARK_RESULTS_END -->
+
+比较时需结合样本数、成功情况和执行步数，任务总耗时差不能直接视为纯模型加速。缺失指标保留为未记录；具体来源、设备元数据和追加流程见数据页。
+
+后续追加完成的运行目录，再统一生成图表和文档（需要 Matplotlib）：
+
+```bash
+python scripts/libero/build_benchmark_report.py add /path/to/completed/run --group new-round --title '新一轮实验'
+python scripts/libero/build_benchmark_report.py build
+```
+
+独立分组保留历史数据；在 `reports/evaluation/catalog.json` 的 `featured_group` 选择 README 展示的组，详见[数据维护说明](docs-site/guide/benchmark-data.md)。
+
 结果自动按设备和时间戳保存：远程在 `outputs/evaluation/async/`，本机在 `outputs/evaluation/local/`。远程每个模式包含原始 JSON、summary、逐请求/逐控制步 CSV 和视频，另有 comparison 与运行 metadata。
+
+本机入口 `bash scripts/libero/run_local_benchmark.sh` 自动记录逐步时间戳，生成 `_steps.csv`，并在 `_summary.json` 的 `control_intervals.p95_ms` 输出控制间隔 p95。间隔按同一回合内相邻动作开始时间计算，不受首次推理过滤影响；旧记录缺少时间戳时仍为未记录，需重新运行获取。本机执行没有墙钟频率限制，远程对比入口默认限制为 20 Hz，横向比较需注明此差异。
 
 普通视频按控制步以 20 FPS 回放；`*_realtime.mp4` 保留实际等待时间。`filtered_calls` 默认排除每个 episode 的首次请求，原始记录保留。异步重点比较成功率、控制间隔 p95、`hold_steps` 和总用时；推理与执行重叠，不能用总用时减推理耗时推导其他耗时。配置中的 20Hz 是墙钟频率上限，不保证仿真达到该速度。
 

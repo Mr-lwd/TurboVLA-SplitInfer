@@ -18,7 +18,7 @@ export default defineConfig({
   head: [['meta', { name: 'theme-color', content: '#ffffff' }]],
   themeConfig: {
     siteTitle: 'TurboVLA / SplitInfer',
-    nav: [{ text: '文档', link: '/' }, { text: '部署', link: '/guide/deployment' }, { text: '验证', link: '/guide/validation' }],
+    nav: [{ text: '文档', link: '/' }, { text: '部署', link: '/guide/deployment' }, { text: '实测数据', link: '/guide/benchmark-results' }, { text: '验证', link: '/guide/validation' }],
     sidebar: [
       { text: '理解系统', items: [
         { text: '项目概览', link: '/' },
@@ -28,6 +28,8 @@ export default defineConfig({
       { text: '运行与复现', items: [
         { text: '设备部署', link: '/guide/deployment' },
         { text: '配置速查', link: '/guide/configuration' },
+        { text: '实测数据与对比', link: '/guide/benchmark-results' },
+        { text: '数据口径与追加', link: '/guide/benchmark-data' },
         { text: '验证与结果', link: '/guide/validation' }
       ] },
       { text: '工程说明', items: [

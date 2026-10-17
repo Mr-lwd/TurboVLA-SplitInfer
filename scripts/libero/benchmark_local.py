@@ -12,7 +12,7 @@ import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from scripts.libero.benchmark_common import (
-    DEFAULT_CONFIG, LIBERO_KEYS, PATH_ENV, REPO_ROOT, expand_path,
+    DEFAULT_CONFIG, LIBERO_KEYS, PATH_ENV, REPO_ROOT, control_step_rows, expand_path,
     hardware_info, load_settings, local_path, summarize, write_json, write_reports,
 )
 
@@ -110,9 +110,9 @@ def main():
         summary, rows = summarize(result, args.exclude_first_calls)
         summary.update({"device_name": metadata["device_name"], "source_result": cfg.result_json_path,
                         "metadata_path": str(metadata_path)})
-        write_reports(prefix, summary, rows)
+        write_reports(prefix, summary, rows, control_step_rows(result))
         metadata["status"] = "completed"
-        print(json.dumps({k: summary[k] for k in ("all_calls", "filtered_calls", "overall_success_rate")}, indent=2))
+        print(json.dumps({k: summary[k] for k in ("all_calls", "filtered_calls", "control_intervals", "overall_success_rate")}, indent=2))
     except BaseException as exc:
         metadata.update(status="failed", error=f"{type(exc).__name__}: {exc}")
         raise

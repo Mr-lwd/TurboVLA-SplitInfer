@@ -1,5 +1,11 @@
+import { readFileSync } from 'node:fs'
+const catalog = JSON.parse(readFileSync(new URL('../../reports/evaluation/catalog.json', import.meta.url), 'utf8'))
 // Repository sources are authoritative; public/ is generated for website hosting.
 export const siteAssets = [
+  ['reports/evaluation/catalog.json', 'benchmarks/catalog.json'],
+  ['reports/evaluation/summary.csv', 'benchmarks/summary.csv'],
+  ...catalog.groups.flatMap(group => ['svg', 'png'].map(ext =>
+    [`assets/benchmarks/${group.id}.${ext}`, `benchmarks/${group.id}.${ext}`])),
   ['assets/figures/architecture-overview.png', 'figures/architecture-overview.png'],
   ...['framework-flat.png', 'pipeline-flat.png'].map(file => [`assets/diagrams/split-inference/${file}`, `figures/${file}`]),
   ['assets/diagrams/split-inference/turbovla-diagrams-editable.pptx', 'downloads/turbovla-diagrams-editable.pptx'],

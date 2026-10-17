@@ -25,6 +25,8 @@ libero_paths:
 
 benchmark:
   output_root: outputs/evaluation/local
+  # 仅过滤推理调用统计；控制间隔保留所有回合内相邻动作，不受此项影响。
+  # 每次自动导出控制间隔 p95 和 *_steps.csv，无需额外开启。
   exclude_first_calls: 1
 
 # 可填写 GenerateConfig 的其他非路径参数；命令行参数优先于此处。

@@ -57,6 +57,10 @@ title: 项目概览
 
 三种模式采用相同配置评测，通过成功率、控制间隔和往返延迟比较调度效果。
 
+## 已记录的实测数据
+
+[查看 Orin 本机与 Sync / Async / Blend 对比](./guide/benchmark-results.md)：提供可切换分组的指标表、逐任务结果、来源校验摘要及 JSON/CSV 下载。数据由完成的运行记录生成，支持后续追加实验。
+
 ## 最短验证路径
 
 1. 按[设备部署](./guide/deployment.md)准备依赖、模型与 LIBERO assets。

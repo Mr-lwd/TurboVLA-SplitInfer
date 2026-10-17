@@ -29,6 +29,8 @@ REMOTE_STAGES = ("client_preprocess_s", "client_encode_s", "round_trip_s", "serv
 REMOTE_BYTES = ("request_bytes", "uncompressed_tensor_bytes")
 REMOTE_MEMORY = ("server_cuda_peak_allocated_bytes", "server_cuda_peak_reserved_bytes")
 BASE_COLUMNS = ["task_id", "episode", "call_index", "step", "duration_s", "duration_ms", "included_in_filtered"]
+STEP_COLUMNS = ["task_id", "episode", "step", "action_start_s", "action_end_s",
+                "env_step_s", "control_interval_s", "hold"]
 
 
 def expand_path(value, libero_root=None):
@@ -109,6 +111,35 @@ def distribution(values, unit="ms", scale=1000):
             f"min_{unit}": values[0] * scale, f"max_{unit}": values[-1] * scale}
 
 
+def control_step_rows(result):
+    """Validate recorded control timestamps; never infer them from call/video timing."""
+    rows = []
+    for task in result["tasks"]:
+        for episode in task["episode_results"]:
+            steps = episode.get("step_timings")
+            if steps is None:  # Historical results did not record control steps.
+                continue
+            if not isinstance(steps, list) or len(steps) != episode["executed_steps"]:
+                raise ValueError("Control-step count mismatch")
+            previous = None
+            for index, step in enumerate(steps):
+                start, end, duration = (step[key] for key in ("action_start_s", "action_end_s", "env_step_s"))
+                if any(not isinstance(v, (int, float)) or not math.isfinite(v) or v < 0
+                       for v in (start, end, duration)):
+                    raise ValueError("Invalid control-step timestamp")
+                if (step["step"] != index or end < start or
+                    end > episode["rollout_wall_time_s"] + 1e-7 or
+                    (previous is not None and start < previous["action_end_s"]) or
+                    not math.isclose(end - start, duration, rel_tol=1e-7, abs_tol=1e-7) or
+                    type(step["hold"]) is not bool):
+                    raise ValueError("Inconsistent control-step timing")
+                rows.append({"task_id": task["task_id"], "episode": episode["episode"],
+                             **{key: step[key] for key in ("step", "action_start_s", "action_end_s", "env_step_s", "hold")},
+                             "control_interval_s": start - previous["action_start_s"] if previous is not None else None})
+                previous = step
+    return rows
+
+
 def summarize(result, exclude_first_calls):
     if exclude_first_calls < 0:
         raise ValueError("exclude_first_calls must be nonnegative")
@@ -145,6 +176,9 @@ def summarize(result, exclude_first_calls):
     wall = sum(ep["rollout_wall_time_s"] for ep in episodes)
     inference = sum(all_calls)
     steps = sum(ep["executed_steps"] for ep in episodes)
+    step_rows = control_step_rows(result)
+    recorded_episodes = sum(ep.get("step_timings") is not None for ep in episodes)
+    complete_steps = bool(episodes) and recorded_episodes == len(episodes)
     chunk = result.get("chunk_size") or (result.get("remote_server") or {}).get("chunk_size")
     if not isinstance(chunk, int) or chunk <= 0:
         raise ValueError("Result must record a positive model chunk_size")
@@ -162,6 +196,16 @@ def summarize(result, exclude_first_calls):
         "total_episodes": result["total_episodes"], "total_successes": result["total_successes"],
         "overall_success_rate": result["overall_success_rate"],
         "executed_steps": steps, "rollout_wall_time_s": wall,
+        "control_intervals": distribution([r["control_interval_s"] for r in step_rows
+                                            if r["control_interval_s"] is not None]) if complete_steps else None,
+        "env_steps": distribution([r["env_step_s"] for r in step_rows]) if complete_steps else None,
+        "hold_steps": sum(r["hold"] for r in step_rows) if complete_steps else None,
+        "control_timing_episodes": {"recorded": recorded_episodes, "total": len(episodes)},
+        "control_interval_scope": "adjacent env.step start times within each episode, pooled before percentiles; "
+                                  "no first-call filtering, no cross-episode intervals; initial inference before the first "
+                                  "action is excluded; no wall-clock rate limiter in this runner; "
+                                  "null if any episode lacks step timings",
+        "hold_scope": "dummy-action fallback when the synchronous policy returns an empty chunk; excludes settling steps",
         "inference_total_s": inference, "non_inference_rollout_s": wall - inference,
         "non_inference_scope": "simulation, rendering, image preparation and Python overhead; not environment stepping alone",
         "inference_fraction_of_rollout": inference / wall if wall else None,
@@ -196,7 +240,7 @@ def summarize(result, exclude_first_calls):
     return summary, rows
 
 
-def write_reports(prefix, summary, rows):
+def write_reports(prefix, summary, rows, step_rows=None):
     write_json(prefix.with_name(prefix.name + "_summary.json"), summary)
     columns = BASE_COLUMNS + (["request_id", "compression", "connection_reused", *REMOTE_STAGES, *REMOTE_BYTES, *REMOTE_MEMORY]
                               if summary["policy_backend"] == "remote" else [])
@@ -204,6 +248,11 @@ def write_reports(prefix, summary, rows):
         writer = csv.DictWriter(stream, fieldnames=columns)
         writer.writeheader()
         writer.writerows(rows)
+    if step_rows is not None:
+        with prefix.with_name(prefix.name + "_steps.csv").open("w", newline="", encoding="utf-8") as stream:
+            writer = csv.DictWriter(stream, fieldnames=STEP_COLUMNS)
+            writer.writeheader()
+            writer.writerows(step_rows)
 
 
 def command_output(command):
