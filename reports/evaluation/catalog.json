@@ -2,23 +2,1933 @@
   "schema_version": 1,
   "groups": [
     {
-      "id": "libero-spatial-20261017",
-      "title": "LIBERO Spatial · 2026-10-17 本机复测 / 2026-10-16 远程",
+      "id": "libero-spatial-common-success",
+      "title": "LIBERO Spatial · 共同成功 9 个案例",
       "run_ids": [
         "orin_libero_spatial_bf16_20261017T180050_872432+0800",
+        "thor_libero_spatial_bf16_20261017T180559_765357+0800",
+        "orin_to_thor_async_libero_spatial_20261016T224546_700348+0800"
+      ],
+      "selection": {
+        "kind": "common_success",
+        "source_group": "libero-spatial-20261017",
+        "keys": [
+          "task_id",
+          "episode"
+        ],
+        "retained": [
+          {
+            "task_id": 0,
+            "episode": 0
+          },
+          {
+            "task_id": 1,
+            "episode": 0
+          },
+          {
+            "task_id": 2,
+            "episode": 0
+          },
+          {
+            "task_id": 3,
+            "episode": 0
+          },
+          {
+            "task_id": 5,
+            "episode": 0
+          },
+          {
+            "task_id": 6,
+            "episode": 0
+          },
+          {
+            "task_id": 7,
+            "episode": 0
+          },
+          {
+            "task_id": 8,
+            "episode": 0
+          },
+          {
+            "task_id": 9,
+            "episode": 0
+          }
+        ],
+        "excluded": [
+          {
+            "task_id": 4,
+            "episode": 0
+          }
+        ],
+        "exclusions_by_mode": [
+          {
+            "run_id": "orin_libero_spatial_bf16_20261017T180050_872432+0800",
+            "mode": "local",
+            "failed": [],
+            "missing": []
+          },
+          {
+            "run_id": "thor_libero_spatial_bf16_20261017T180559_765357+0800",
+            "mode": "local",
+            "failed": [
+              {
+                "task_id": 4,
+                "episode": 0
+              }
+            ],
+            "missing": []
+          },
+          {
+            "run_id": "orin_to_thor_async_libero_spatial_20261016T224546_700348+0800",
+            "mode": "sync",
+            "failed": [
+              {
+                "task_id": 4,
+                "episode": 0
+              }
+            ],
+            "missing": []
+          },
+          {
+            "run_id": "orin_to_thor_async_libero_spatial_20261016T224546_700348+0800",
+            "mode": "replace",
+            "failed": [],
+            "missing": []
+          },
+          {
+            "run_id": "orin_to_thor_async_libero_spatial_20261016T224546_700348+0800",
+            "mode": "blend",
+            "failed": [],
+            "missing": []
+          }
+        ]
+      },
+      "derived_records": [
+        {
+          "run_id": "orin_libero_spatial_bf16_20261017T180050_872432+0800",
+          "record": {
+            "mode": "local",
+            "label": "Orin local",
+            "metrics": {
+              "episodes": 9,
+              "successes": 9,
+              "executed_steps": 868,
+              "rollout_wall_time_s": 71.40215710400116,
+              "all_calls": {
+                "count": 76,
+                "mean_ms": 151.02876596055418,
+                "median_ms": 124.70992949965876,
+                "p95_ms": 132.8517225010728,
+                "min_ms": 122.9330480000499,
+                "max_ms": 2026.9253719998233
+              },
+              "filtered_calls": {
+                "count": 67,
+                "mean_ms": 125.00637567164131,
+                "median_ms": 124.53680799990252,
+                "p95_ms": 127.69547529987904,
+                "min_ms": 122.9330480000499,
+                "max_ms": 132.7942340012669
+              },
+              "first_call_per_episode": {
+                "count": 9,
+                "mean_ms": 344.7510047780169,
+                "median_ms": 131.8056929994782,
+                "p95_ms": 1278.329768800176,
+                "min_ms": 128.93728900053247,
+                "max_ms": 2026.9253719998233
+              },
+              "control_intervals": {
+                "count": 859,
+                "mean_ms": 78.62751714318904,
+                "median_ms": 69.23892799932219,
+                "p95_ms": 192.12893180065294,
+                "min_ms": 60.38279399945168,
+                "max_ms": 209.85812899925804
+              },
+              "hold_steps": 0,
+              "expired_chunks": null,
+              "bootstrap_wait_s": null,
+              "blocking_wait_after_bootstrap_s": null,
+              "worker_drain_after_episode_s": null,
+              "env_overlap_fraction_of_inference": null,
+              "arm_action_changes": null,
+              "remote_stage_timings": null
+            },
+            "episodes": [
+              {
+                "task_id": 0,
+                "episode": 0,
+                "instruction": "pick up the black bowl between the plate and the ramekin and place it on the plate",
+                "success": true,
+                "steps": 76,
+                "wall_s": 7.8144653199997265,
+                "calls": 7,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 1,
+                "episode": 0,
+                "instruction": "pick up the black bowl next to the ramekin and place it on the plate",
+                "success": true,
+                "steps": 111,
+                "wall_s": 8.51738019000004,
+                "calls": 10,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 2,
+                "episode": 0,
+                "instruction": "pick up the black bowl from table center and place it on the plate",
+                "success": true,
+                "steps": 90,
+                "wall_s": 7.0396815380008775,
+                "calls": 8,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 3,
+                "episode": 0,
+                "instruction": "pick up the black bowl on the cookie box and place it on the plate",
+                "success": true,
+                "steps": 80,
+                "wall_s": 6.177602383999329,
+                "calls": 7,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 5,
+                "episode": 0,
+                "instruction": "pick up the black bowl on the ramekin and place it on the plate",
+                "success": true,
+                "steps": 95,
+                "wall_s": 7.686753773001328,
+                "calls": 8,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 6,
+                "episode": 0,
+                "instruction": "pick up the black bowl next to the cookie box and place it on the plate",
+                "success": true,
+                "steps": 100,
+                "wall_s": 8.24264299099923,
+                "calls": 9,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 7,
+                "episode": 0,
+                "instruction": "pick up the black bowl on the stove and place it on the plate",
+                "success": true,
+                "steps": 107,
+                "wall_s": 9.129864661001193,
+                "calls": 9,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 8,
+                "episode": 0,
+                "instruction": "pick up the black bowl next to the plate and place it on the plate",
+                "success": true,
+                "steps": 96,
+                "wall_s": 7.4670029419994535,
+                "calls": 8,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 9,
+                "episode": 0,
+                "instruction": "pick up the black bowl on the wooden cabinet and place it on the plate",
+                "success": true,
+                "steps": 113,
+                "wall_s": 9.326763304999986,
+                "calls": 10,
+                "hold_steps": 0
+              }
+            ]
+          }
+        },
+        {
+          "run_id": "thor_libero_spatial_bf16_20261017T180559_765357+0800",
+          "record": {
+            "mode": "local",
+            "label": "Thor local",
+            "metrics": {
+              "episodes": 9,
+              "successes": 9,
+              "executed_steps": 898,
+              "rollout_wall_time_s": 26.951914242001294,
+              "all_calls": {
+                "count": 78,
+                "mean_ms": 38.67052315380976,
+                "median_ms": 30.849525499434094,
+                "p95_ms": 41.42175084880364,
+                "min_ms": 29.86253499875602,
+                "max_ms": 532.7321950007899
+              },
+              "filtered_calls": {
+                "count": 69,
+                "mean_ms": 31.150978623122352,
+                "median_ms": 30.77720799956296,
+                "p95_ms": 33.364913200057345,
+                "min_ms": 29.86253499875602,
+                "max_ms": 35.51840900036041
+              },
+              "first_call_per_episode": {
+                "count": 9,
+                "mean_ms": 96.3203645557466,
+                "median_ms": 41.33982099847344,
+                "p95_ms": 337.4420066003948,
+                "min_ms": 40.62384000098973,
+                "max_ms": 532.7321950007899
+              },
+              "control_intervals": {
+                "count": 889,
+                "mean_ms": 29.0058619707508,
+                "median_ms": 26.61529299984977,
+                "p95_ms": 55.83482080073736,
+                "min_ms": 22.41812200009008,
+                "max_ms": 74.22510399919702
+              },
+              "hold_steps": 0,
+              "expired_chunks": null,
+              "bootstrap_wait_s": null,
+              "blocking_wait_after_bootstrap_s": null,
+              "worker_drain_after_episode_s": null,
+              "env_overlap_fraction_of_inference": null,
+              "arm_action_changes": null,
+              "remote_stage_timings": null
+            },
+            "episodes": [
+              {
+                "task_id": 0,
+                "episode": 0,
+                "instruction": "pick up the black bowl between the plate and the ramekin and place it on the plate",
+                "success": true,
+                "steps": 79,
+                "wall_s": 2.616025945000729,
+                "calls": 7,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 1,
+                "episode": 0,
+                "instruction": "pick up the black bowl next to the ramekin and place it on the plate",
+                "success": true,
+                "steps": 118,
+                "wall_s": 3.395634283000618,
+                "calls": 10,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 2,
+                "episode": 0,
+                "instruction": "pick up the black bowl from table center and place it on the plate",
+                "success": true,
+                "steps": 95,
+                "wall_s": 2.5441286749992287,
+                "calls": 8,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 3,
+                "episode": 0,
+                "instruction": "pick up the black bowl on the cookie box and place it on the plate",
+                "success": true,
+                "steps": 87,
+                "wall_s": 2.512229035999553,
+                "calls": 8,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 5,
+                "episode": 0,
+                "instruction": "pick up the black bowl on the ramekin and place it on the plate",
+                "success": true,
+                "steps": 93,
+                "wall_s": 2.84709632600061,
+                "calls": 8,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 6,
+                "episode": 0,
+                "instruction": "pick up the black bowl next to the cookie box and place it on the plate",
+                "success": true,
+                "steps": 105,
+                "wall_s": 3.3192627400003403,
+                "calls": 9,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 7,
+                "episode": 0,
+                "instruction": "pick up the black bowl on the stove and place it on the plate",
+                "success": true,
+                "steps": 113,
+                "wall_s": 3.496226032000777,
+                "calls": 10,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 8,
+                "episode": 0,
+                "instruction": "pick up the black bowl next to the plate and place it on the plate",
+                "success": true,
+                "steps": 94,
+                "wall_s": 2.6607499519996054,
+                "calls": 8,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 9,
+                "episode": 0,
+                "instruction": "pick up the black bowl on the wooden cabinet and place it on the plate",
+                "success": true,
+                "steps": 114,
+                "wall_s": 3.5605612529998325,
+                "calls": 10,
+                "hold_steps": 0
+              }
+            ]
+          }
+        },
+        {
+          "run_id": "orin_to_thor_async_libero_spatial_20261016T224546_700348+0800",
+          "record": {
+            "mode": "sync",
+            "label": "Sync",
+            "metrics": {
+              "episodes": 9,
+              "successes": 9,
+              "executed_steps": 902,
+              "rollout_wall_time_s": 74.75881800899515,
+              "all_calls": {
+                "count": 78,
+                "mean_ms": 138.11172711547653,
+                "median_ms": 102.17259800083411,
+                "p95_ms": 290.85276254700113,
+                "min_ms": 81.33648299917695,
+                "max_ms": 445.7615480023378
+              },
+              "filtered_calls": {
+                "count": 69,
+                "mean_ms": 134.03112601456775,
+                "median_ms": 100.25043400310096,
+                "p95_ms": 285.3006039986212,
+                "min_ms": 81.33648299917695,
+                "max_ms": 386.59459100017557
+              },
+              "first_call_per_episode": {
+                "count": 9,
+                "mean_ms": 169.3963355557773,
+                "median_ms": 138.21446700239903,
+                "p95_ms": 343.22391680107097,
+                "min_ms": 93.7581379985204,
+                "max_ms": 445.7615480023378
+              },
+              "control_intervals": {
+                "count": 893,
+                "mean_ms": 81.12899059126782,
+                "median_ms": 70.20759199804161,
+                "p95_ms": 167.39867419964867,
+                "min_ms": 61.37209100052132,
+                "max_ms": 462.2778400007519
+              },
+              "hold_steps": 0,
+              "expired_chunks": 0,
+              "bootstrap_wait_s": 1.5179324509954313,
+              "blocking_wait_after_bootstrap_s": 9.295455147985194,
+              "worker_drain_after_episode_s": 0.004968855002516648,
+              "env_overlap_fraction_of_inference": 0.0,
+              "arm_action_changes": {
+                "count": 893,
+                "mean_action_l2": 0.08683074256332231,
+                "median_action_l2": 0.07002882659435272,
+                "p95_action_l2": 0.19895497560501096,
+                "min_action_l2": 0.0011265194043517113,
+                "max_action_l2": 0.6583550572395325
+              },
+              "remote_stage_timings": {
+                "client_preprocess_s": {
+                  "all_calls": {
+                    "count": 78,
+                    "mean_ms": 9.654096794689302,
+                    "median_ms": 6.972539998969296,
+                    "p95_ms": 28.631296800267492,
+                    "min_ms": 3.796933000558056,
+                    "max_ms": 77.8817939972214,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 69,
+                    "mean_ms": 6.987427449042814,
+                    "median_ms": 6.728115000441903,
+                    "p95_ms": 8.712581000872888,
+                    "min_ms": 3.796933000558056,
+                    "max_ms": 26.866746000450803,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 30.098561777979032,
+                    "median_ms": 10.620001001370838,
+                    "p95_ms": 69.94112919855978,
+                    "min_ms": 7.098686000972521,
+                    "max_ms": 77.8817939972214,
+                    "missing_count": 0
+                  }
+                },
+                "client_encode_s": {
+                  "all_calls": {
+                    "count": 78,
+                    "mean_ms": 7.52597220539778,
+                    "median_ms": 7.003302500379505,
+                    "p95_ms": 10.678604152599267,
+                    "min_ms": 5.033343000832247,
+                    "max_ms": 28.223217999766348,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 69,
+                    "mean_ms": 6.866193130733428,
+                    "median_ms": 6.827158998930827,
+                    "p95_ms": 9.944409400486618,
+                    "min_ms": 5.033343000832247,
+                    "max_ms": 10.230548003164586,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 12.584278444491146,
+                    "median_ms": 8.662635998916812,
+                    "p95_ms": 23.676923600578444,
+                    "min_ms": 6.620821000979049,
+                    "max_ms": 28.223217999766348,
+                    "missing_count": 0
+                  }
+                },
+                "round_trip_s": {
+                  "all_calls": {
+                    "count": 78,
+                    "mean_ms": 120.68797134587584,
+                    "median_ms": 85.0819674997183,
+                    "p95_ms": 278.3487633469118,
+                    "min_ms": 69.04538899834733,
+                    "max_ms": 374.5249999992666,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 69,
+                    "mean_ms": 119.93763776774648,
+                    "median_ms": 84.60719299910124,
+                    "p95_ms": 272.357725197071,
+                    "min_ms": 69.04538899834733,
+                    "max_ms": 374.5249999992666,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 126.44052877820083,
+                    "median_ms": 89.22507099850918,
+                    "p95_ms": 272.91789400114783,
+                    "min_ms": 75.62550000147894,
+                    "max_ms": 339.2865480018372,
+                    "missing_count": 0
+                  }
+                },
+                "server_decode_s": {
+                  "all_calls": {
+                    "count": 78,
+                    "mean_ms": 2.7319731408892833,
+                    "median_ms": 2.7316674968460575,
+                    "p95_ms": 2.8556155524711357,
+                    "min_ms": 2.5947510002879426,
+                    "max_ms": 2.880403997551184,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 69,
+                    "mean_ms": 2.7210602172577847,
+                    "median_ms": 2.7266149991191924,
+                    "p95_ms": 2.8075940019334666,
+                    "min_ms": 2.5947510002879426,
+                    "max_ms": 2.855766004358884,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 2.815638888730771,
+                    "median_ms": 2.807238000968937,
+                    "p95_ms": 2.876403999107424,
+                    "min_ms": 2.7195209986530244,
+                    "max_ms": 2.880403997551184,
+                    "missing_count": 0
+                  }
+                },
+                "server_queue_s": {
+                  "all_calls": {
+                    "count": 78,
+                    "mean_ms": 0.004000141089841819,
+                    "median_ms": 0.003898996510542929,
+                    "p95_ms": 0.0055420958233298725,
+                    "min_ms": 0.0028799986466765404,
+                    "max_ms": 0.006973001291044056,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 69,
+                    "mean_ms": 0.0038231449687610502,
+                    "median_ms": 0.0038420039345510304,
+                    "p95_ms": 0.0047525987611152214,
+                    "min_ms": 0.0028799986466765404,
+                    "max_ms": 0.005621994205284864,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 0.005357111351461046,
+                    "median_ms": 0.00549999822396785,
+                    "p95_ms": 0.006569002289324998,
+                    "min_ms": 0.004139001248404384,
+                    "max_ms": 0.006973001291044056,
+                    "missing_count": 0
+                  }
+                },
+                "server_inference_s": {
+                  "all_calls": {
+                    "count": 78,
+                    "mean_ms": 29.026967884699566,
+                    "median_ms": 28.858636498625856,
+                    "p95_ms": 31.16510285253753,
+                    "min_ms": 26.949180995870847,
+                    "max_ms": 31.590970000252128,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 69,
+                    "mean_ms": 28.807330637747604,
+                    "median_ms": 28.713651998259593,
+                    "p95_ms": 30.45031579968054,
+                    "min_ms": 26.949180995870847,
+                    "max_ms": 30.76754499488743,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 30.710853444664583,
+                    "median_ms": 31.161452003289014,
+                    "p95_ms": 31.46191080159042,
+                    "min_ms": 28.88779299973976,
+                    "max_ms": 31.590970000252128,
+                    "missing_count": 0
+                  }
+                },
+                "server_total_s": {
+                  "all_calls": {
+                    "count": 78,
+                    "mean_ms": 31.762941166678686,
+                    "median_ms": 31.596728000295116,
+                    "p95_ms": 34.038420051001594,
+                    "min_ms": 29.593154999020044,
+                    "max_ms": 34.40417100500781,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 69,
+                    "mean_ms": 31.53221399997415,
+                    "median_ms": 31.432194999069907,
+                    "p95_ms": 33.274523602449335,
+                    "min_ms": 29.593154999020044,
+                    "max_ms": 33.53561599942623,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 33.53184944474682,
+                    "median_ms": 34.037384000839666,
+                    "p95_ms": 34.27108580362983,
+                    "min_ms": 31.611452999641187,
+                    "max_ms": 34.40417100500781,
+                    "missing_count": 0
+                  }
+                },
+                "transport_overhead_s": {
+                  "all_calls": {
+                    "count": 78,
+                    "mean_ms": 88.92503017919715,
+                    "median_ms": 53.41672349823057,
+                    "p95_ms": 248.12677584613962,
+                    "min_ms": 39.45223399932729,
+                    "max_ms": 343.60096599993994,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 69,
+                    "mean_ms": 88.40542376777233,
+                    "median_ms": 53.300729996408336,
+                    "p95_ms": 241.81846759965993,
+                    "min_ms": 39.45223399932729,
+                    "max_ms": 343.60096599993994,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 92.90867933345402,
+                    "median_ms": 55.22989100063569,
+                    "p95_ms": 238.93938900073402,
+                    "min_ms": 44.01404700183775,
+                    "max_ms": 305.242256999918,
+                    "missing_count": 0
+                  }
+                },
+                "client_request_send_s": {
+                  "all_calls": {
+                    "count": 78,
+                    "mean_ms": 0.7131445257143171,
+                    "median_ms": 0.6471120013884502,
+                    "p95_ms": 1.0540448993197056,
+                    "min_ms": 0.5157160012458917,
+                    "max_ms": 1.3810720010951627,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 69,
+                    "mean_ms": 0.6893955217927452,
+                    "median_ms": 0.6460880031227134,
+                    "p95_ms": 0.9515320001810323,
+                    "min_ms": 0.5157160012458917,
+                    "max_ms": 1.095853000151692,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 0.895220222446369,
+                    "median_ms": 0.7368090009549633,
+                    "p95_ms": 1.3628824010083918,
+                    "min_ms": 0.6021829976816662,
+                    "max_ms": 1.3810720010951627,
+                    "missing_count": 0
+                  }
+                },
+                "client_response_wait_s": {
+                  "all_calls": {
+                    "count": 78,
+                    "mean_ms": 119.63284382027967,
+                    "median_ms": 84.1334425003879,
+                    "p95_ms": 277.430925300541,
+                    "min_ms": 68.07974499679403,
+                    "max_ms": 373.63526099943556,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 69,
+                    "mean_ms": 118.89759053604169,
+                    "median_ms": 83.81976099917665,
+                    "p95_ms": 271.42101060089766,
+                    "min_ms": 68.07974499679403,
+                    "max_ms": 373.63526099943556,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 125.26978566610423,
+                    "median_ms": 88.37965699785855,
+                    "p95_ms": 271.35909319913475,
+                    "min_ms": 74.7245610000391,
+                    "max_ms": 337.566207999771,
+                    "missing_count": 0
+                  }
+                },
+                "client_response_read_s": {
+                  "all_calls": {
+                    "count": 78,
+                    "mean_ms": 0.3259106282572387,
+                    "median_ms": 0.24835500153130852,
+                    "p95_ms": 0.35568384901125677,
+                    "min_ms": 0.17158500122604892,
+                    "max_ms": 4.032351997011574,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 69,
+                    "mean_ms": 0.33470765218067833,
+                    "median_ms": 0.24777900034678169,
+                    "p95_ms": 0.3568353997252416,
+                    "min_ms": 0.17158500122604892,
+                    "max_ms": 4.032351997011574,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 0.25846677817753516,
+                    "median_ms": 0.2650909991643857,
+                    "p95_ms": 0.31464719941141084,
+                    "min_ms": 0.20796900207642466,
+                    "max_ms": 0.3195239987690002,
+                    "missing_count": 0
+                  }
+                },
+                "server_receive_s": {
+                  "all_calls": {
+                    "count": 78,
+                    "mean_ms": 62.05569746145137,
+                    "median_ms": 46.28550600318704,
+                    "p95_ms": 159.56399674978456,
+                    "min_ms": 34.67270900000585,
+                    "max_ms": 273.3952269991278,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 69,
+                    "mean_ms": 62.2413017680747,
+                    "median_ms": 46.05102500499925,
+                    "p95_ms": 159.97358000022356,
+                    "min_ms": 34.67270900000585,
+                    "max_ms": 273.3952269991278,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 60.63273111067247,
+                    "median_ms": 46.594473998993635,
+                    "p95_ms": 126.49782739899817,
+                    "min_ms": 37.67506100120954,
+                    "max_ms": 155.98431300168158,
+                    "missing_count": 0
+                  }
+                }
+              }
+            },
+            "episodes": [
+              {
+                "task_id": 0,
+                "episode": 0,
+                "instruction": "pick up the black bowl between the plate and the ramekin and place it on the plate",
+                "success": true,
+                "steps": 80,
+                "wall_s": 6.297551540999848,
+                "calls": 7,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 1,
+                "episode": 0,
+                "instruction": "pick up the black bowl next to the ramekin and place it on the plate",
+                "success": true,
+                "steps": 114,
+                "wall_s": 8.898958754998603,
+                "calls": 10,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 2,
+                "episode": 0,
+                "instruction": "pick up the black bowl from table center and place it on the plate",
+                "success": true,
+                "steps": 96,
+                "wall_s": 7.775547634002578,
+                "calls": 8,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 3,
+                "episode": 0,
+                "instruction": "pick up the black bowl on the cookie box and place it on the plate",
+                "success": true,
+                "steps": 86,
+                "wall_s": 7.526370694999059,
+                "calls": 8,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 5,
+                "episode": 0,
+                "instruction": "pick up the black bowl on the ramekin and place it on the plate",
+                "success": true,
+                "steps": 96,
+                "wall_s": 7.774652345000504,
+                "calls": 8,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 6,
+                "episode": 0,
+                "instruction": "pick up the black bowl next to the cookie box and place it on the plate",
+                "success": true,
+                "steps": 108,
+                "wall_s": 9.153295283998887,
+                "calls": 9,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 7,
+                "episode": 0,
+                "instruction": "pick up the black bowl on the stove and place it on the plate",
+                "success": true,
+                "steps": 112,
+                "wall_s": 9.740496217997133,
+                "calls": 10,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 8,
+                "episode": 0,
+                "instruction": "pick up the black bowl next to the plate and place it on the plate",
+                "success": true,
+                "steps": 94,
+                "wall_s": 7.223938554998313,
+                "calls": 8,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 9,
+                "episode": 0,
+                "instruction": "pick up the black bowl on the wooden cabinet and place it on the plate",
+                "success": true,
+                "steps": 116,
+                "wall_s": 10.368006982000225,
+                "calls": 10,
+                "hold_steps": 0
+              }
+            ]
+          }
+        },
+        {
+          "run_id": "orin_to_thor_async_libero_spatial_20261016T224546_700348+0800",
+          "record": {
+            "mode": "replace",
+            "label": "Async / replace",
+            "metrics": {
+              "episodes": 9,
+              "successes": 9,
+              "executed_steps": 900,
+              "rollout_wall_time_s": 65.71584905699638,
+              "all_calls": {
+                "count": 224,
+                "mean_ms": 113.31973339286249,
+                "median_ms": 94.75778099840682,
+                "p95_ms": 229.828091049967,
+                "min_ms": 83.01285200286657,
+                "max_ms": 515.9600139995746
+              },
+              "filtered_calls": {
+                "count": 215,
+                "mean_ms": 113.14485855811739,
+                "median_ms": 94.3517250016157,
+                "p95_ms": 235.41569530061656,
+                "min_ms": 83.01285200286657,
+                "max_ms": 515.9600139995746
+              },
+              "first_call_per_episode": {
+                "count": 9,
+                "mean_ms": 117.49729888955092,
+                "median_ms": 122.40076300076908,
+                "p95_ms": 148.83478400006425,
+                "min_ms": 94.62623600120423,
+                "max_ms": 156.54412200092338
+              },
+              "control_intervals": {
+                "count": 891,
+                "mean_ms": 71.71686391357622,
+                "median_ms": 71.43172799987951,
+                "p95_ms": 82.32508200126176,
+                "min_ms": 61.52593200022238,
+                "max_ms": 119.89785300102085
+              },
+              "hold_steps": 3,
+              "expired_chunks": 0,
+              "bootstrap_wait_s": 0.9932832440063066,
+              "blocking_wait_after_bootstrap_s": 0,
+              "worker_drain_after_episode_s": 0.011990021001111018,
+              "env_overlap_fraction_of_inference": 0.9414232163367856,
+              "arm_action_changes": {
+                "count": 891,
+                "mean_action_l2": 0.09244503222267937,
+                "median_action_l2": 0.07551935315132141,
+                "p95_action_l2": 0.21117186546325684,
+                "min_action_l2": 0.0,
+                "max_action_l2": 0.9715254902839661
+              },
+              "remote_stage_timings": {
+                "client_preprocess_s": {
+                  "all_calls": {
+                    "count": 224,
+                    "mean_ms": 11.589661816937483,
+                    "median_ms": 10.661395497663761,
+                    "p95_ms": 14.658915752625035,
+                    "min_ms": 7.705469000939047,
+                    "max_ms": 56.939382000564365,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 215,
+                    "mean_ms": 11.017039986032868,
+                    "median_ms": 10.6586919973779,
+                    "p95_ms": 14.387001598515777,
+                    "min_ms": 7.743551999737974,
+                    "max_ms": 34.488629000406945,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 25.26896111076995,
+                    "median_ms": 30.059616998187266,
+                    "p95_ms": 51.00785600006929,
+                    "min_ms": 7.705469000939047,
+                    "max_ms": 56.939382000564365,
+                    "missing_count": 0
+                  }
+                },
+                "client_encode_s": {
+                  "all_calls": {
+                    "count": 224,
+                    "mean_ms": 7.491515281344618,
+                    "median_ms": 7.341639498918084,
+                    "p95_ms": 10.750471799110528,
+                    "min_ms": 5.325248999724863,
+                    "max_ms": 16.666880997945555,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 215,
+                    "mean_ms": 7.4560586047672865,
+                    "median_ms": 7.355522997386288,
+                    "p95_ms": 10.739698399993358,
+                    "min_ms": 5.325248999724863,
+                    "max_ms": 14.746004999324214,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 8.338535888469778,
+                    "median_ms": 7.248416997754248,
+                    "p95_ms": 13.401870598318052,
+                    "min_ms": 6.651048999628983,
+                    "max_ms": 16.666880997945555,
+                    "missing_count": 0
+                  }
+                },
+                "round_trip_s": {
+                  "all_calls": {
+                    "count": 224,
+                    "mean_ms": 93.92248038834948,
+                    "median_ms": 75.66257049984415,
+                    "p95_ms": 211.04068134973198,
+                    "min_ms": 64.92975899891462,
+                    "max_ms": 496.4027280002483,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 215,
+                    "mean_ms": 94.3544943255019,
+                    "median_ms": 75.04991199675715,
+                    "p95_ms": 216.26398359985595,
+                    "min_ms": 64.92975899891462,
+                    "max_ms": 496.4027280002483,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 83.60214744526375,
+                    "median_ms": 82.64316799977678,
+                    "p95_ms": 90.64414300082717,
+                    "min_ms": 78.95121500041569,
+                    "max_ms": 92.98498499993002,
+                    "missing_count": 0
+                  }
+                },
+                "server_decode_s": {
+                  "all_calls": {
+                    "count": 224,
+                    "mean_ms": 2.6801618394074467,
+                    "median_ms": 2.6720234964159317,
+                    "p95_ms": 2.7869278525031405,
+                    "min_ms": 2.5560830035828985,
+                    "max_ms": 2.894121003919281,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 215,
+                    "mean_ms": 2.674867874546096,
+                    "median_ms": 2.669547997356858,
+                    "p95_ms": 2.7664808978443034,
+                    "min_ms": 2.5560830035828985,
+                    "max_ms": 2.894121003919281,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 2.8066287777619436,
+                    "median_ms": 2.8150009966338985,
+                    "p95_ms": 2.865164802642539,
+                    "min_ms": 2.7494499954627827,
+                    "max_ms": 2.867246003006585,
+                    "missing_count": 0
+                  }
+                },
+                "server_queue_s": {
+                  "all_calls": {
+                    "count": 224,
+                    "mean_ms": 0.0033692456327116815,
+                    "median_ms": 0.0033009964681696147,
+                    "p95_ms": 0.004620750769390724,
+                    "min_ms": 0.001981999957934022,
+                    "max_ms": 0.006017995474394411,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 215,
+                    "mean_ms": 0.0032931490094660846,
+                    "median_ms": 0.003278000804129988,
+                    "p95_ms": 0.004300801083445548,
+                    "min_ms": 0.001981999957934022,
+                    "max_ms": 0.00583400105824694,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 0.005187109410245385,
+                    "median_ms": 0.00504699710290879,
+                    "p95_ms": 0.005973996303509921,
+                    "min_ms": 0.004333000106271356,
+                    "max_ms": 0.006017995474394411,
+                    "missing_count": 0
+                  }
+                },
+                "server_inference_s": {
+                  "all_calls": {
+                    "count": 224,
+                    "mean_ms": 28.038449647088523,
+                    "median_ms": 27.899313496163813,
+                    "p95_ms": 30.238861096222536,
+                    "min_ms": 26.40066100138938,
+                    "max_ms": 31.405347006511874,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 215,
+                    "mean_ms": 27.934926967129794,
+                    "median_ms": 27.865072996064555,
+                    "p95_ms": 29.713534699112643,
+                    "min_ms": 26.40066100138938,
+                    "max_ms": 31.050997000420466,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 30.511491446102607,
+                    "median_ms": 31.05037000204902,
+                    "p95_ms": 31.30648900405504,
+                    "min_ms": 29.009644997131545,
+                    "max_ms": 31.405347006511874,
+                    "missing_count": 0
+                  }
+                },
+                "server_total_s": {
+                  "all_calls": {
+                    "count": 224,
+                    "mean_ms": 30.72198073212868,
+                    "median_ms": 30.570260998501908,
+                    "p95_ms": 33.00758064906404,
+                    "min_ms": 29.024340001342352,
+                    "max_ms": 34.27265900245402,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 215,
+                    "mean_ms": 30.613087990685354,
+                    "median_ms": 30.534871002600994,
+                    "p95_ms": 32.492384900251636,
+                    "min_ms": 29.024340001342352,
+                    "max_ms": 33.94978500000434,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 33.32330733327479,
+                    "median_ms": 33.84481099783443,
+                    "p95_ms": 34.16308740270324,
+                    "min_ms": 31.763936996867415,
+                    "max_ms": 34.27265900245402,
+                    "missing_count": 0
+                  }
+                },
+                "transport_overhead_s": {
+                  "all_calls": {
+                    "count": 224,
+                    "mean_ms": 63.20049965622079,
+                    "median_ms": 44.984119000218925,
+                    "p95_ms": 180.6006586995863,
+                    "min_ms": 34.9317269938183,
+                    "max_ms": 465.28303300146945,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 215,
+                    "mean_ms": 63.74140633481655,
+                    "median_ms": 44.77079799835337,
+                    "p95_ms": 185.57223650022914,
+                    "min_ms": 34.9317269938183,
+                    "max_ms": 465.28303300146945,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 50.278840111988956,
+                    "median_ms": 48.93358900517342,
+                    "p95_ms": 57.57803320302628,
+                    "min_ms": 45.068660998367704,
+                    "max_ms": 59.14017400209559,
+                    "missing_count": 0
+                  }
+                },
+                "client_request_send_s": {
+                  "all_calls": {
+                    "count": 224,
+                    "mean_ms": 1.4351579153851293,
+                    "median_ms": 1.4236465012800181,
+                    "p95_ms": 2.0158580500719836,
+                    "min_ms": 0.5613809989881702,
+                    "max_ms": 9.37016099851462,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 215,
+                    "mean_ms": 1.4643052792539386,
+                    "median_ms": 1.428847997885896,
+                    "p95_ms": 2.0272105008189096,
+                    "min_ms": 0.891175997821847,
+                    "max_ms": 9.37016099851462,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 0.7388597785191249,
+                    "median_ms": 0.6522959993162658,
+                    "p95_ms": 1.2112276002881113,
+                    "min_ms": 0.5613809989881702,
+                    "max_ms": 1.4882739997119643,
+                    "missing_count": 0
+                  }
+                },
+                "client_response_wait_s": {
+                  "all_calls": {
+                    "count": 224,
+                    "mean_ms": 92.10056899090497,
+                    "median_ms": 73.46531400071399,
+                    "p95_ms": 208.84094460107002,
+                    "min_ms": 62.99792800200521,
+                    "max_ms": 494.29268699896056,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 215,
+                    "mean_ms": 92.5114131068471,
+                    "median_ms": 72.94067399925552,
+                    "p95_ms": 214.1390853012124,
+                    "min_ms": 62.99792800200521,
+                    "max_ms": 494.29268699896056,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 82.28595955450955,
+                    "median_ms": 80.9410680012661,
+                    "p95_ms": 89.71089779879549,
+                    "min_ms": 77.66527599960682,
+                    "max_ms": 92.0272789990122,
+                    "missing_count": 0
+                  }
+                },
+                "client_response_read_s": {
+                  "all_calls": {
+                    "count": 224,
+                    "mean_ms": 0.37070930807203695,
+                    "median_ms": 0.22709000040777028,
+                    "p95_ms": 0.8725795987629678,
+                    "min_ms": 0.15766599972266704,
+                    "max_ms": 4.795835000550142,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 215,
+                    "mean_ms": 0.3627745721280726,
+                    "median_ms": 0.22233799973037094,
+                    "p95_ms": 0.8407588011323232,
+                    "min_ms": 0.15766599972266704,
+                    "max_ms": 4.795835000550142,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 0.5602613334000731,
+                    "median_ms": 0.2823390022967942,
+                    "p95_ms": 1.8764268002996678,
+                    "min_ms": 0.1977299980353564,
+                    "max_ms": 2.886969999963185,
+                    "missing_count": 0
+                  }
+                },
+                "server_receive_s": {
+                  "all_calls": {
+                    "count": 224,
+                    "mean_ms": 46.364704482584784,
+                    "median_ms": 38.40068049976253,
+                    "p95_ms": 107.72843880040442,
+                    "min_ms": 16.713778000848833,
+                    "max_ms": 345.8786289993441,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 215,
+                    "mean_ms": 46.431983753952174,
+                    "median_ms": 37.85857000184478,
+                    "p95_ms": 114.00063150067564,
+                    "min_ms": 16.713778000848833,
+                    "max_ms": 345.8786289993441,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 44.75747744436376,
+                    "median_ms": 43.97507700196002,
+                    "p95_ms": 51.98356100008823,
+                    "min_ms": 38.69114899862325,
+                    "max_ms": 52.47331300051883,
+                    "missing_count": 0
+                  }
+                }
+              }
+            },
+            "episodes": [
+              {
+                "task_id": 0,
+                "episode": 0,
+                "instruction": "pick up the black bowl between the plate and the ramekin and place it on the plate",
+                "success": true,
+                "steps": 79,
+                "wall_s": 5.427350003999891,
+                "calls": 20,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 1,
+                "episode": 0,
+                "instruction": "pick up the black bowl next to the ramekin and place it on the plate",
+                "success": true,
+                "steps": 113,
+                "wall_s": 8.179445558002044,
+                "calls": 27,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 2,
+                "episode": 0,
+                "instruction": "pick up the black bowl from table center and place it on the plate",
+                "success": true,
+                "steps": 99,
+                "wall_s": 7.042655542998546,
+                "calls": 25,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 3,
+                "episode": 0,
+                "instruction": "pick up the black bowl on the cookie box and place it on the plate",
+                "success": true,
+                "steps": 90,
+                "wall_s": 6.5102868219983066,
+                "calls": 23,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 5,
+                "episode": 0,
+                "instruction": "pick up the black bowl on the ramekin and place it on the plate",
+                "success": true,
+                "steps": 90,
+                "wall_s": 6.5648140070006775,
+                "calls": 23,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 6,
+                "episode": 0,
+                "instruction": "pick up the black bowl next to the cookie box and place it on the plate",
+                "success": true,
+                "steps": 104,
+                "wall_s": 8.050651894998737,
+                "calls": 26,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 7,
+                "episode": 0,
+                "instruction": "pick up the black bowl on the stove and place it on the plate",
+                "success": true,
+                "steps": 112,
+                "wall_s": 8.427951423000195,
+                "calls": 26,
+                "hold_steps": 3
+              },
+              {
+                "task_id": 8,
+                "episode": 0,
+                "instruction": "pick up the black bowl next to the plate and place it on the plate",
+                "success": true,
+                "steps": 104,
+                "wall_s": 7.304162780998013,
+                "calls": 26,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 9,
+                "episode": 0,
+                "instruction": "pick up the black bowl on the wooden cabinet and place it on the plate",
+                "success": true,
+                "steps": 109,
+                "wall_s": 8.208531023999967,
+                "calls": 28,
+                "hold_steps": 0
+              }
+            ]
+          }
+        },
+        {
+          "run_id": "orin_to_thor_async_libero_spatial_20261016T224546_700348+0800",
+          "record": {
+            "mode": "blend",
+            "label": "Blend",
+            "metrics": {
+              "episodes": 9,
+              "successes": 9,
+              "executed_steps": 893,
+              "rollout_wall_time_s": 65.94060160000299,
+              "all_calls": {
+                "count": 226,
+                "mean_ms": 117.65396095122006,
+                "median_ms": 94.83862849992875,
+                "p95_ms": 230.77680624919594,
+                "min_ms": 81.91255599740543,
+                "max_ms": 361.2166149978293
+              },
+              "filtered_calls": {
+                "count": 217,
+                "mean_ms": 116.92236988468395,
+                "median_ms": 94.350724000833,
+                "p95_ms": 226.76170559789162,
+                "min_ms": 81.91255599740543,
+                "max_ms": 361.2166149978293
+              },
+              "first_call_per_episode": {
+                "count": 9,
+                "mean_ms": 135.29343444436867,
+                "median_ms": 122.5517970015062,
+                "p95_ms": 209.24688539962514,
+                "min_ms": 92.57630899810465,
+                "max_ms": 249.0725969983032
+              },
+              "control_intervals": {
+                "count": 884,
+                "mean_ms": 72.33752821379954,
+                "median_ms": 72.61270150047494,
+                "p95_ms": 81.35407654863229,
+                "min_ms": 61.88305599789601,
+                "max_ms": 106.77899299844285
+              },
+              "hold_steps": 0,
+              "expired_chunks": 0,
+              "bootstrap_wait_s": 1.1899557239958085,
+              "blocking_wait_after_bootstrap_s": 0,
+              "worker_drain_after_episode_s": 0.07641933600461925,
+              "env_overlap_fraction_of_inference": 0.9374419700461843,
+              "arm_action_changes": {
+                "count": 884,
+                "mean_action_l2": 0.0851247292933817,
+                "median_action_l2": 0.07013087347149849,
+                "p95_action_l2": 0.19915888234972948,
+                "min_action_l2": 0.005415692459791899,
+                "max_action_l2": 0.4349030554294586
+              },
+              "remote_stage_timings": {
+                "client_preprocess_s": {
+                  "all_calls": {
+                    "count": 226,
+                    "mean_ms": 11.119862053025255,
+                    "median_ms": 10.175655499551794,
+                    "p95_ms": 13.539360499635222,
+                    "min_ms": 7.2361499987891875,
+                    "max_ms": 71.38177199885831,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 217,
+                    "mean_ms": 10.349376022997166,
+                    "median_ms": 10.116695000760956,
+                    "p95_ms": 13.122371398640098,
+                    "min_ms": 7.2361499987891875,
+                    "max_ms": 16.35785200051032,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 29.697136332591374,
+                    "median_ms": 17.822198999056127,
+                    "p95_ms": 65.41021639932296,
+                    "min_ms": 7.403881998470752,
+                    "max_ms": 71.38177199885831,
+                    "missing_count": 0
+                  }
+                },
+                "client_encode_s": {
+                  "all_calls": {
+                    "count": 226,
+                    "mean_ms": 7.404886345179834,
+                    "median_ms": 7.220459499876597,
+                    "p95_ms": 10.536286499700509,
+                    "min_ms": 5.237075998593355,
+                    "max_ms": 17.274998001084896,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 217,
+                    "mean_ms": 7.276323764981415,
+                    "median_ms": 7.212536998849828,
+                    "p95_ms": 10.436197002127301,
+                    "min_ms": 5.237075998593355,
+                    "max_ms": 11.155547999806004,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 10.504673001075085,
+                    "median_ms": 8.537200999853667,
+                    "p95_ms": 17.194066801312147,
+                    "min_ms": 6.456972998421406,
+                    "max_ms": 17.274998001084896,
+                    "missing_count": 0
+                  }
+                },
+                "round_trip_s": {
+                  "all_calls": {
+                    "count": 226,
+                    "mean_ms": 98.81586199104132,
+                    "median_ms": 77.26678549988719,
+                    "p95_ms": 208.84569250029017,
+                    "min_ms": 65.40407599823084,
+                    "max_ms": 344.60054300143383,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 217,
+                    "mean_ms": 98.9837651796327,
+                    "median_ms": 76.93103600104223,
+                    "p95_ms": 209.99582540098342,
+                    "min_ms": 65.40407599823084,
+                    "max_ms": 344.60054300143383,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 94.76752955500463,
+                    "median_ms": 83.09165699756704,
+                    "p95_ms": 140.37061079798147,
+                    "min_ms": 75.65332000012859,
+                    "max_ms": 162.31275399695733,
+                    "missing_count": 0
+                  }
+                },
+                "server_decode_s": {
+                  "all_calls": {
+                    "count": 226,
+                    "mean_ms": 2.6794538318539614,
+                    "median_ms": 2.6723139962996356,
+                    "p95_ms": 2.8118515001551714,
+                    "min_ms": 2.559307002229616,
+                    "max_ms": 2.8915889997733757,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 217,
+                    "mean_ms": 2.673110331821498,
+                    "median_ms": 2.667030996235553,
+                    "p95_ms": 2.7885100003913976,
+                    "min_ms": 2.559307002229616,
+                    "max_ms": 2.8915889997733757,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 2.832402665970019,
+                    "median_ms": 2.83992199547356,
+                    "p95_ms": 2.8845635999459773,
+                    "min_ms": 2.7332809986546636,
+                    "max_ms": 2.885636000428349,
+                    "missing_count": 0
+                  }
+                },
+                "server_queue_s": {
+                  "all_calls": {
+                    "count": 226,
+                    "mean_ms": 0.003320203740685453,
+                    "median_ms": 0.0031480012694373727,
+                    "p95_ms": 0.004742500095744617,
+                    "min_ms": 0.002082997525576502,
+                    "max_ms": 0.015000005078036338,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 217,
+                    "mean_ms": 0.003244820459153555,
+                    "median_ms": 0.003130000550299883,
+                    "p95_ms": 0.004331400850787759,
+                    "min_ms": 0.002082997525576502,
+                    "max_ms": 0.015000005078036338,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 0.005137778417621221,
+                    "median_ms": 0.005157002306077629,
+                    "p95_ms": 0.00600740168010816,
+                    "min_ms": 0.004296001861803234,
+                    "max_ms": 0.006241003575269133,
+                    "missing_count": 0
+                  }
+                },
+                "server_inference_s": {
+                  "all_calls": {
+                    "count": 226,
+                    "mean_ms": 28.055801207607406,
+                    "median_ms": 27.866550997714512,
+                    "p95_ms": 30.23037274761009,
+                    "min_ms": 26.415043001179583,
+                    "max_ms": 31.885617994703352,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 217,
+                    "mean_ms": 27.94876679688105,
+                    "median_ms": 27.826559999084566,
+                    "p95_ms": 29.384636804752517,
+                    "min_ms": 26.415043001179583,
+                    "max_ms": 31.885617994703352,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 30.63651977734278,
+                    "median_ms": 31.22785300365649,
+                    "p95_ms": 31.420854998577852,
+                    "min_ms": 28.942903998540714,
+                    "max_ms": 31.45669699733844,
+                    "missing_count": 0
+                  }
+                },
+                "server_total_s": {
+                  "all_calls": {
+                    "count": 226,
+                    "mean_ms": 30.73857524320205,
+                    "median_ms": 30.537439499312313,
+                    "p95_ms": 33.01383674806857,
+                    "min_ms": 29.027896001935005,
+                    "max_ms": 34.504897994338535,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 217,
+                    "mean_ms": 30.625121949161702,
+                    "median_ms": 30.518667001160793,
+                    "p95_ms": 32.18860899942228,
+                    "min_ms": 29.027896001935005,
+                    "max_ms": 34.504897994338535,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 33.47406022173042,
+                    "median_ms": 34.11914600292221,
+                    "p95_ms": 34.28077459684573,
+                    "min_ms": 31.681647997174878,
+                    "max_ms": 34.308158996282145,
+                    "missing_count": 0
+                  }
+                },
+                "transport_overhead_s": {
+                  "all_calls": {
+                    "count": 226,
+                    "mean_ms": 68.07728674783927,
+                    "median_ms": 46.33949550043326,
+                    "p95_ms": 178.05168999893795,
+                    "min_ms": 35.011965999729,
+                    "max_ms": 312.7339159982512,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 217,
+                    "mean_ms": 68.358643230471,
+                    "median_ms": 46.285857002658304,
+                    "p95_ms": 179.32896679994877,
+                    "min_ms": 35.011965999729,
+                    "max_ms": 312.7339159982512,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 61.29346933327421,
+                    "median_ms": 48.85195899987593,
+                    "p95_ms": 106.11800699916782,
+                    "min_ms": 43.62864899667329,
+                    "max_ms": 128.097186996456,
+                    "missing_count": 0
+                  }
+                },
+                "client_request_send_s": {
+                  "all_calls": {
+                    "count": 226,
+                    "mean_ms": 1.4362190573367308,
+                    "median_ms": 1.38548650102166,
+                    "p95_ms": 1.9658142491607578,
+                    "min_ms": 0.5807109992019832,
+                    "max_ms": 11.599642999499338,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 217,
+                    "mean_ms": 1.4123397647846578,
+                    "median_ms": 1.4022869981999975,
+                    "p95_ms": 1.963984398753382,
+                    "min_ms": 0.8401029990636744,
+                    "max_ms": 2.358588000788586,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 2.0119753333144925,
+                    "median_ms": 0.6638480008405168,
+                    "p95_ms": 7.4453849993005825,
+                    "min_ms": 0.5807109992019832,
+                    "max_ms": 11.599642999499338,
+                    "missing_count": 0
+                  }
+                },
+                "client_response_wait_s": {
+                  "all_calls": {
+                    "count": 226,
+                    "mean_ms": 97.0010987833692,
+                    "median_ms": 75.38263049900706,
+                    "p95_ms": 207.40869950168417,
+                    "min_ms": 63.63996700019925,
+                    "max_ms": 343.2843350019539,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 217,
+                    "mean_ms": 97.20459877436431,
+                    "median_ms": 75.03783799984376,
+                    "p95_ms": 208.51862380150118,
+                    "min_ms": 63.63996700019925,
+                    "max_ms": 343.2843350019539,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 92.09448788937556,
+                    "median_ms": 81.59234300183016,
+                    "p95_ms": 132.91375860062544,
+                    "min_ms": 73.3585510024568,
+                    "max_ms": 150.4914130018733,
+                    "missing_count": 0
+                  }
+                },
+                "client_response_read_s": {
+                  "all_calls": {
+                    "count": 226,
+                    "mean_ms": 0.3628045043895697,
+                    "median_ms": 0.21572950026893523,
+                    "p95_ms": 0.7898100011516362,
+                    "min_ms": 0.15526599963777699,
+                    "max_ms": 7.548827001301106,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 217,
+                    "mean_ms": 0.35116770040860273,
+                    "median_ms": 0.21065900000394322,
+                    "p95_ms": 0.6936590005352608,
+                    "min_ms": 0.15526599963777699,
+                    "max_ms": 7.548827001301106,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 0.6433807781528836,
+                    "median_ms": 0.2690270011953544,
+                    "p95_ms": 2.3438248004822513,
+                    "min_ms": 0.2014739984588232,
+                    "max_ms": 3.6772519997612108,
+                    "missing_count": 0
+                  }
+                },
+                "server_receive_s": {
+                  "all_calls": {
+                    "count": 226,
+                    "mean_ms": 44.62785753111774,
+                    "median_ms": 38.532324997504475,
+                    "p95_ms": 78.76030874831486,
+                    "min_ms": 23.256432003108785,
+                    "max_ms": 246.07567099883454,
+                    "missing_count": 0
+                  },
+                  "filtered_calls": {
+                    "count": 217,
+                    "mean_ms": 44.181344281275294,
+                    "median_ms": 38.28745499777142,
+                    "p95_ms": 75.44328680232859,
+                    "min_ms": 23.256432003108785,
+                    "max_ms": 246.07567099883454,
+                    "missing_count": 0
+                  },
+                  "first_call_per_episode": {
+                    "count": 9,
+                    "mean_ms": 55.393788110652366,
+                    "median_ms": 42.98119899613084,
+                    "p95_ms": 100.0080622048699,
+                    "min_ms": 36.51898899988737,
+                    "max_ms": 122.77677900419803,
+                    "missing_count": 0
+                  }
+                }
+              }
+            },
+            "episodes": [
+              {
+                "task_id": 0,
+                "episode": 0,
+                "instruction": "pick up the black bowl between the plate and the ramekin and place it on the plate",
+                "success": true,
+                "steps": 82,
+                "wall_s": 5.97558051300075,
+                "calls": 21,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 1,
+                "episode": 0,
+                "instruction": "pick up the black bowl next to the ramekin and place it on the plate",
+                "success": true,
+                "steps": 107,
+                "wall_s": 7.541156369999953,
+                "calls": 27,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 2,
+                "episode": 0,
+                "instruction": "pick up the black bowl from table center and place it on the plate",
+                "success": true,
+                "steps": 97,
+                "wall_s": 6.714880612998968,
+                "calls": 25,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 3,
+                "episode": 0,
+                "instruction": "pick up the black bowl on the cookie box and place it on the plate",
+                "success": true,
+                "steps": 88,
+                "wall_s": 6.429944873001659,
+                "calls": 22,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 5,
+                "episode": 0,
+                "instruction": "pick up the black bowl on the ramekin and place it on the plate",
+                "success": true,
+                "steps": 94,
+                "wall_s": 7.092463212000439,
+                "calls": 23,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 6,
+                "episode": 0,
+                "instruction": "pick up the black bowl next to the cookie box and place it on the plate",
+                "success": true,
+                "steps": 105,
+                "wall_s": 7.949568984000507,
+                "calls": 27,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 7,
+                "episode": 0,
+                "instruction": "pick up the black bowl on the stove and place it on the plate",
+                "success": true,
+                "steps": 113,
+                "wall_s": 8.933427359999769,
+                "calls": 29,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 8,
+                "episode": 0,
+                "instruction": "pick up the black bowl next to the plate and place it on the plate",
+                "success": true,
+                "steps": 96,
+                "wall_s": 6.736215141001594,
+                "calls": 24,
+                "hold_steps": 0
+              },
+              {
+                "task_id": 9,
+                "episode": 0,
+                "instruction": "pick up the black bowl on the wooden cabinet and place it on the plate",
+                "success": true,
+                "steps": 111,
+                "wall_s": 8.567364533999353,
+                "calls": 28,
+                "hold_steps": 0
+              }
+            ]
+          }
+        }
+      ],
+      "notes": [
+        "仅统计全部 5 种模式共同成功的 9 个案例；统一排除：task 4 / episode 0。",
+        "使用现有原始记录重算，未重新评测。按 task ID / episode 匹配；均值与 p95 从保留调用和控制步重新汇总。",
+        "共同成功样本数不代表整体成功率；完整运行的失败记录和成功比例保留在原始全案例分组。",
+        "推理均值与 p95 仍按每回合排除首次调用；任务总耗时包含首次推理等待，控制间隔不额外剔除回合内的慢间隔。",
+        "原始组说明：Orin / Thor 本机为 2026-10-17 运行；远程 Sync / Async / Blend 沿用 2026-10-16 的记录。历史分组保留，不跨运行合并样本。",
+        "原始组说明：同为 LIBERO Spatial、10 个任务各 1 次、seed 7、BF16、chunk 12。本机无墙钟限频，远程为 20 Hz 上限；远程重规划间隔 4 步、融合窗口 3 步、额外延迟 0。",
+        "原始组说明：Orin 本机成功 10/10、1002 步；Thor 本机成功 9/10、1118 步，task 4 失败。远程 Sync 同样在 task 4 失败；各模式轨迹与执行步数不同，总耗时差不等于纯模型加速。",
+        "原始组说明：各次运行来自不同代码提交与运行时刻；本机 metadata 未记录 checkpoint SHA-256，不能仅凭文件名确认与远程权重一致。",
+        "原始组说明：Orin 板卡 metadata 为 Orin NX Engineering Reference Developer Kit，与项目 Orin Nano 标注存在差异，结果保留 Orin 泛称。"
+      ]
+    },
+    {
+      "id": "libero-spatial-20261017",
+      "title": "LIBERO Spatial · Orin / Thor 本机与协同推理 · 原始全案例（含失败）",
+      "run_ids": [
+        "orin_libero_spatial_bf16_20261017T180050_872432+0800",
+        "thor_libero_spatial_bf16_20261017T180559_765357+0800",
         "orin_to_thor_async_libero_spatial_20261016T224546_700348+0800"
       ],
       "notes": [
-        "Orin 本机为 2026-10-17 复测；远程 Sync / Async / Blend 沿用 2026-10-16 的运行，不是同日重新测量。原分组保留历史数据，不跨运行合并样本。",
+        "Orin / Thor 本机为 2026-10-17 运行；远程 Sync / Async / Blend 沿用 2026-10-16 的记录。历史分组保留，不跨运行合并样本。",
         "同为 LIBERO Spatial、10 个任务各 1 次、seed 7、BF16、chunk 12。本机无墙钟限频，远程为 20 Hz 上限；远程重规划间隔 4 步、融合窗口 3 步、额外延迟 0。",
-        "本机 10/10 成功、1002 步，记录 992 个控制间隔。远程 Sync 在 task 4 失败，各模式轨迹与执行步数不同，总耗时差不等于纯模型加速。",
-        "不同代码提交与运行时刻；本机没有 checkpoint SHA-256，不能仅凭文件名确认与远程权重一致。尚无 Thor 本机独立运行结果。",
-        "板卡 metadata 为 Orin NX Engineering Reference Developer Kit，与项目 Orin Nano 标注存在差异，结果保留 Orin 泛称。"
+        "Orin 本机成功 10/10、1002 步；Thor 本机成功 9/10、1118 步，task 4 失败。远程 Sync 同样在 task 4 失败；各模式轨迹与执行步数不同，总耗时差不等于纯模型加速。",
+        "各次运行来自不同代码提交与运行时刻；本机 metadata 未记录 checkpoint SHA-256，不能仅凭文件名确认与远程权重一致。",
+        "Orin 板卡 metadata 为 Orin NX Engineering Reference Developer Kit，与项目 Orin Nano 标注存在差异，结果保留 Orin 泛称。"
       ]
     },
     {
       "id": "libero-spatial-20261016",
-      "title": "LIBERO Spatial · 2026-10-16",
+      "title": "LIBERO Spatial · 2026-10-16 · 原始全案例（含失败）",
       "run_ids": [
         "orin_libero_spatial_bf16_20261016T211904_081157+0800",
         "orin_to_thor_async_libero_spatial_20261016T224546_700348+0800"
@@ -2063,7 +3973,217 @@
           ]
         }
       ]
+    },
+    {
+      "id": "thor_libero_spatial_bf16_20261017T180559_765357+0800",
+      "kind": "local",
+      "source_directory": "outputs/evaluation/local/thor_libero_spatial_bf16_20261017T180559_765357+0800",
+      "source_files": [
+        {
+          "file": "thor_libero_spatial_bf16_20261017T180559_765357+0800_metadata.json",
+          "sha256": "02a06be7872889f32edeee0e8c2bc33bebc414d01c7e875ce856237866fd299c"
+        },
+        {
+          "file": "thor_libero_spatial_bf16_20261017T180559_765357+0800.json",
+          "sha256": "2573b09255da95d0ead8d03e927e431db32b2ac87155ad7fc40442ec1f975b1f"
+        },
+        {
+          "file": "thor_libero_spatial_bf16_20261017T180559_765357+0800_summary.json",
+          "sha256": "80cef3579f145dd40bcf871b8fba8fe09819565eb6c3653e85f4922eac37092b"
+        }
+      ],
+      "config": {
+        "task_suite_name": "libero_spatial",
+        "precision": "bf16",
+        "seed": 7,
+        "chunk_size": 12,
+        "num_open_loop_steps": 12,
+        "stats_key": "libero_all4_no_noops",
+        "env_img_res": 256,
+        "num_steps_wait": 10,
+        "num_trials_per_task": 1,
+        "control_mode": "relative"
+      },
+      "experiment": {},
+      "exclude_first_calls": 1,
+      "hardware": {
+        "device_name": "thor",
+        "gpu_name": "NVIDIA Thor",
+        "board": "NVIDIA Jetson AGX Thor Developer Kit",
+        "nvpmodel": "NV Power Mode: MAXN\n0",
+        "torch": "2.14.0+cu130",
+        "cuda": "13.0",
+        "packages": {
+          "transformers": "4.57.6",
+          "numpy": "1.26.4",
+          "mujoco": "2.3.7",
+          "robosuite": "1.4.1"
+        }
+      },
+      "server": {
+        "gpu_name": null,
+        "checkpoint_sha256": null,
+        "runtime": null
+      },
+      "checkpoint_name": "turbovla_libero.pth",
+      "git_commit": "0a8f71f46dcddf83b33d820f14334786430759ad",
+      "git_dirty": false,
+      "compression": null,
+      "records": [
+        {
+          "mode": "local",
+          "label": "Thor local",
+          "metrics": {
+            "episodes": 10,
+            "successes": 9,
+            "executed_steps": 1118,
+            "rollout_wall_time_s": 33.37681466400136,
+            "all_calls": {
+              "count": 97,
+              "mean_ms": 37.20951196906359,
+              "median_ms": 30.830734000119264,
+              "p95_ms": 41.25700499971572,
+              "min_ms": 29.86253499875602,
+              "max_ms": 532.7321950007899
+            },
+            "filtered_calls": {
+              "count": 87,
+              "mean_ms": 31.048311252843945,
+              "median_ms": 30.751334999877145,
+              "p95_ms": 33.22379860073852,
+              "min_ms": 29.86253499875602,
+              "max_ms": 35.51840900036041
+            },
+            "first_call_per_episode": {
+              "count": 10,
+              "mean_ms": 90.81195820017456,
+              "median_ms": 41.288060999249865,
+              "p95_ms": 313.0307330503451,
+              "min_ms": 40.62384000098973,
+              "max_ms": 532.7321950007899
+            },
+            "control_intervals": {
+              "count": 1108,
+              "mean_ms": 29.010779079419496,
+              "median_ms": 26.351317500484583,
+              "p95_ms": 56.343576349991025,
+              "min_ms": 22.41812200009008,
+              "max_ms": 74.22510399919702
+            },
+            "hold_steps": 0,
+            "expired_chunks": null,
+            "bootstrap_wait_s": null,
+            "blocking_wait_after_bootstrap_s": null,
+            "worker_drain_after_episode_s": null,
+            "env_overlap_fraction_of_inference": null,
+            "arm_action_changes": null,
+            "remote_stage_timings": null
+          },
+          "episodes": [
+            {
+              "task_id": 0,
+              "episode": 0,
+              "instruction": "pick up the black bowl between the plate and the ramekin and place it on the plate",
+              "success": true,
+              "steps": 79,
+              "wall_s": 2.616025945000729,
+              "calls": 7,
+              "hold_steps": 0
+            },
+            {
+              "task_id": 1,
+              "episode": 0,
+              "instruction": "pick up the black bowl next to the ramekin and place it on the plate",
+              "success": true,
+              "steps": 118,
+              "wall_s": 3.395634283000618,
+              "calls": 10,
+              "hold_steps": 0
+            },
+            {
+              "task_id": 2,
+              "episode": 0,
+              "instruction": "pick up the black bowl from table center and place it on the plate",
+              "success": true,
+              "steps": 95,
+              "wall_s": 2.5441286749992287,
+              "calls": 8,
+              "hold_steps": 0
+            },
+            {
+              "task_id": 3,
+              "episode": 0,
+              "instruction": "pick up the black bowl on the cookie box and place it on the plate",
+              "success": true,
+              "steps": 87,
+              "wall_s": 2.512229035999553,
+              "calls": 8,
+              "hold_steps": 0
+            },
+            {
+              "task_id": 4,
+              "episode": 0,
+              "instruction": "pick up the black bowl in the top drawer of the wooden cabinet and place it on the plate",
+              "success": false,
+              "steps": 220,
+              "wall_s": 6.424900422000064,
+              "calls": 19,
+              "hold_steps": 0
+            },
+            {
+              "task_id": 5,
+              "episode": 0,
+              "instruction": "pick up the black bowl on the ramekin and place it on the plate",
+              "success": true,
+              "steps": 93,
+              "wall_s": 2.84709632600061,
+              "calls": 8,
+              "hold_steps": 0
+            },
+            {
+              "task_id": 6,
+              "episode": 0,
+              "instruction": "pick up the black bowl next to the cookie box and place it on the plate",
+              "success": true,
+              "steps": 105,
+              "wall_s": 3.3192627400003403,
+              "calls": 9,
+              "hold_steps": 0
+            },
+            {
+              "task_id": 7,
+              "episode": 0,
+              "instruction": "pick up the black bowl on the stove and place it on the plate",
+              "success": true,
+              "steps": 113,
+              "wall_s": 3.496226032000777,
+              "calls": 10,
+              "hold_steps": 0
+            },
+            {
+              "task_id": 8,
+              "episode": 0,
+              "instruction": "pick up the black bowl next to the plate and place it on the plate",
+              "success": true,
+              "steps": 94,
+              "wall_s": 2.6607499519996054,
+              "calls": 8,
+              "hold_steps": 0
+            },
+            {
+              "task_id": 9,
+              "episode": 0,
+              "instruction": "pick up the black bowl on the wooden cabinet and place it on the plate",
+              "success": true,
+              "steps": 114,
+              "wall_s": 3.5605612529998325,
+              "calls": 10,
+              "hold_steps": 0
+            }
+          ]
+        }
+      ]
     }
   ],
-  "featured_group": "libero-spatial-20261017"
+  "featured_group": "libero-spatial-common-success"
 }

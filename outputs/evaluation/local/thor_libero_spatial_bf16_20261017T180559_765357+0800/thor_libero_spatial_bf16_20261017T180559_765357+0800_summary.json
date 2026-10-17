@@ -1,0 +1,72 @@
+{
+  "scope": "complete synchronous policy call: preprocessing, inference, transfers and action decoding; not GPU-only",
+  "filter": "exclude first 1 calls of EACH episode from filtered statistics only; no extra warmup calls",
+  "percentile_method": "linear interpolation",
+  "all_calls": {
+    "count": 97,
+    "mean_ms": 37.20951196906359,
+    "median_ms": 30.830734000119264,
+    "p95_ms": 41.25700499971572,
+    "min_ms": 29.86253499875602,
+    "max_ms": 532.7321950007899
+  },
+  "first_call_per_episode": {
+    "count": 10,
+    "mean_ms": 90.81195820017456,
+    "median_ms": 41.288060999249865,
+    "p95_ms": 313.0307330503451,
+    "min_ms": 40.62384000098973,
+    "max_ms": 532.7321950007899
+  },
+  "filtered_calls": {
+    "count": 87,
+    "mean_ms": 31.048311252843945,
+    "median_ms": 30.751334999877145,
+    "p95_ms": 33.22379860073852,
+    "min_ms": 29.86253499875602,
+    "max_ms": 35.51840900036041
+  },
+  "filtered_amortized_ms_per_predicted_action": 2.5873592710703286,
+  "filtered_predicted_actions_per_inference_second": 386.49445060883403,
+  "amortization_note": "chunk latency divided by model chunk size; actions become available together, not at this interval",
+  "chunk_size": 12,
+  "num_open_loop_steps": 12,
+  "total_episodes": 10,
+  "total_successes": 9,
+  "overall_success_rate": 0.9,
+  "executed_steps": 1118,
+  "rollout_wall_time_s": 33.37681466400136,
+  "control_intervals": {
+    "count": 1108,
+    "mean_ms": 29.010779079419496,
+    "median_ms": 26.351317500484583,
+    "p95_ms": 56.343576349991025,
+    "min_ms": 22.41812200009008,
+    "max_ms": 74.22510399919702
+  },
+  "env_steps": {
+    "count": 1118,
+    "mean_ms": 25.85653069944879,
+    "median_ms": 25.351641999804997,
+    "p95_ms": 31.669720449917797,
+    "min_ms": 21.67391900002258,
+    "max_ms": 43.69478900116519
+  },
+  "hold_steps": 0,
+  "control_timing_episodes": {
+    "recorded": 10,
+    "total": 10
+  },
+  "control_interval_scope": "adjacent env.step start times within each episode, pooled before percentiles; no first-call filtering, no cross-episode intervals; initial inference before the first action is excluded; no wall-clock rate limiter in this runner; null if any episode lacks step timings",
+  "hold_scope": "dummy-action fallback when the synchronous policy returns an empty chunk; excludes settling steps",
+  "inference_total_s": 3.609322660999169,
+  "non_inference_rollout_s": 29.76749200300219,
+  "non_inference_scope": "simulation, rendering, image preparation and Python overhead; not environment stepping alone",
+  "inference_fraction_of_rollout": 0.10813861949780404,
+  "executed_steps_per_rollout_second": 33.49630608117381,
+  "rollout_scope": "after settling, through final env.step; excludes reset, model load and video encoding",
+  "policy_backend": "local",
+  "device_name": "thor",
+  "source_result": "/home/jetson/LWD/TurboVLA/outputs/evaluation/local/thor_libero_spatial_bf16_20261017T180559_765357+0800/thor_libero_spatial_bf16_20261017T180559_765357+0800.json",
+  "metadata_path": "/home/jetson/LWD/TurboVLA/outputs/evaluation/local/thor_libero_spatial_bf16_20261017T180559_765357+0800/thor_libero_spatial_bf16_20261017T180559_765357+0800_metadata.json"
+}

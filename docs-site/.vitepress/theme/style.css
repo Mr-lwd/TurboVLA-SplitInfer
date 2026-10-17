@@ -90,3 +90,8 @@ button:focus-visible, input:focus-visible, .timeline-scroll:focus-visible { outl
   .vp-doc .lead { font-size: 17px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
+
+/* Keep complete benchmark records available without crowding the overview. */
+.benchmark-archive { margin: 20px 0; padding: 18px 0; border-top: 1px solid #e3e9ed; }
+.benchmark-archive > summary { cursor: pointer; font-size: 16px; font-weight: 600; line-height: 1.75; }
+.benchmark-archive > summary:focus-visible { outline: 3px solid #557caf; outline-offset: 4px; }

@@ -5,7 +5,7 @@ import tempfile
 import unittest
 
 from scripts.libero.benchmark_common import summarize
-from scripts.libero.build_benchmark_report import add_run, import_run, replace_block, table
+from scripts.libero.build_benchmark_report import add_run, common_success_group, group_rows, import_run, replace_block, table
 from scripts.libero.plot_stage_timings import latency_breakdown
 
 
@@ -93,6 +93,118 @@ class BenchmarkReportTests(unittest.TestCase):
                          'before<S>\n\nnew\n\n<E>after')
         with self.assertRaises(ValueError):
             replace_block('no markers', '<S>', '<E>', 'new')
+
+
+class CommonSuccessTests(unittest.TestCase):
+    def setUp(self):
+        temp = tempfile.TemporaryDirectory()
+        self.addCleanup(temp.cleanup)
+        self.root = Path(temp.name)
+        self.catalog = {'groups': [], 'runs': []}
+        for name, failure in [('orin', 2), ('thor', 3)]:
+            directory = self.root / name
+            directory.mkdir()
+            metadata = {'status': 'completed', 'device_name': name,
+                        'exclude_first_calls_per_episode': 1,
+                        'config': {'task_suite_name': 'libero_spatial', 'seed': 7, 'chunk_size': 12}}
+            tasks = []
+            for task_id, durations in enumerate(([10., .2], [20., .3, .4], [30., 4.], [40., 5.])):
+                episode = {'episode': 0, 'success': task_id != failure,
+                           'executed_steps': 3, 'rollout_wall_time_s': 2. if task_id < 2 else 100.,
+                           'inference_timings': [{'step': i, 'duration_s': d} for i, d in enumerate(durations)],
+                           'step_timings': [{'step': i, 'action_start_s': i * .1, 'action_end_s': i * .1 + .05,
+                                             'env_step_s': .05, 'hold': False} for i in range(3)]}
+                tasks.append({'task_id': task_id, 'task_description': 'test', 'episode_results': [episode]})
+            result = {'policy_backend': 'local', 'chunk_size': 12, 'num_open_loop_steps': 12,
+                      'total_episodes': 4, 'total_successes': 3, 'overall_success_rate': .75,
+                      'timing_scope': 'rollout', 'tasks': tasks}
+            for suffix, data in [('_metadata', metadata), ('', result), ('_summary', summarize(result, 1)[0])]:
+                (directory / f'{name}{suffix}.json').write_text(json.dumps(data))
+            add_run(self.catalog, import_run(directory), 'full')
+
+    def test_intersection_recomputes_pooled_metrics_and_preserves_originals(self):
+        original = copy.deepcopy(self.catalog)
+        group = common_success_group(self.catalog, 'full', 'matched', self.root)
+        self.assertEqual(group['selection']['retained'], [{'task_id': i, 'episode': 0} for i in [0, 1]])
+        self.assertEqual(group['selection']['excluded'], [{'task_id': i, 'episode': 0} for i in [2, 3]])
+        self.assertEqual(self.catalog, original)
+        # A successful episode in one run must still be removed if another run failed it.
+        for run, record in group_rows(self.catalog, group):
+            self.assertEqual([e['task_id'] for e in record['episodes']], [0, 1])
+            metrics = record['metrics']
+            self.assertEqual(metrics['episodes'], 2)
+            self.assertEqual(metrics['rollout_wall_time_s'], 4.)
+            self.assertEqual(metrics['all_calls']['count'], 5)
+            self.assertEqual(metrics['filtered_calls']['count'], 3)
+            self.assertAlmostEqual(metrics['filtered_calls']['mean_ms'], 300.)
+            self.assertAlmostEqual(metrics['filtered_calls']['p95_ms'], 390.)
+            self.assertEqual(metrics['control_intervals']['count'], 4)
+            self.assertEqual(metrics['first_call_per_episode']['count'], 2)
+            self.assertEqual(run['records'][0]['metrics']['episodes'], 4)
+        rendered = table(group_rows(self.catalog, group), matched=True)
+        self.assertIn('共同成功案例数', rendered)
+        self.assertNotIn('2/2', rendered)
+        # Publication needs only portable catalog data, not raw output directories.
+        self.catalog['groups'].append(group)
+        portable = json.loads(json.dumps(self.catalog))
+        self.assertEqual(group_rows(portable, portable['groups'][-1]), group_rows(self.catalog, group))
+
+    def test_changed_source_is_rejected(self):
+        path = self.root / 'orin/orin.json'
+        path.write_text(path.read_text() + ' ')
+        with self.assertRaisesRegex(ValueError, 'Source data changed'):
+            common_success_group(self.catalog, 'full', 'matched', self.root)
+
+    def test_remote_modes_filter_stages_and_control_samples_together(self):
+        from scripts.libero.benchmark_async import summarize_episodes
+        directory = self.root / 'remote'
+        directory.mkdir()
+        metadata = {'status': 'completed', 'device_name': 'orin', 'exclude_first_calls_per_episode': 1,
+                    'experiment': {'modes': ['sync', 'replace', 'blend']},
+                    'config': {'task_suite_name': 'libero_spatial', 'seed': 7, 'remote_policy_url': 'http://example'}}
+        (directory / 'remote_metadata.json').write_text(json.dumps(metadata))
+        local = json.loads((self.root / 'orin/orin.json').read_text())
+        for mode in metadata['experiment']['modes']:
+            episodes = []
+            for task in copy.deepcopy(local['tasks']):
+                e = task['episode_results'][0]
+                e.update(task_id=task['task_id'], instruction='test', success=True,
+                         blocking_waits=[], drain_wall_time_s=.01)
+                for c in e['inference_timings']:
+                    c.update(start_s=c['step'], end_s=c['step']+c['duration_s'],
+                             policy_duration_s=c['duration_s'], expired=False, applied=True,
+                             reason='applied', discarded_prefix_actions=0, blended_steps=0,
+                             remote={'server_inference_s': c['duration_s'] / 2})
+                for step in e['step_timings']:
+                    step.update(control_lateness_s=0., oldest_observation_age_steps=0,
+                                arm_action_change_l2=None, gripper_changed=False)
+                episodes.append(e)
+            (directory / f'remote_{mode}.json').write_text(json.dumps({'mode': mode, 'episodes': episodes}))
+            (directory / f'remote_{mode}_summary.json').write_text(json.dumps(summarize_episodes(episodes, 1)))
+        add_run(self.catalog, import_run(directory), 'full')
+        group = common_success_group(self.catalog, 'full', 'matched', self.root)
+        remote_rows = [(run, record) for run, record in group_rows(self.catalog, group) if run['kind'] == 'remote']
+        self.assertEqual(len(remote_rows), 3)
+        for _, record in remote_rows:
+            metrics = record['metrics']
+            self.assertEqual(metrics['episodes'], 2)
+            self.assertEqual(metrics['control_intervals']['count'], 4)
+            self.assertEqual(metrics['rollout_wall_time_s'], 4.)
+            self.assertEqual(metrics['filtered_calls']['count'], 3)
+            stage = metrics['remote_stage_timings']['server_inference_s']['filtered_calls']
+            self.assertEqual(stage['count'], 3)
+            self.assertAlmostEqual(stage['mean_ms'], 150.)
+            self.assertAlmostEqual(stage['p95_ms'], 195.)
+
+    def test_empty_intersection_and_incompatible_seed_are_rejected(self):
+        catalog = copy.deepcopy(self.catalog)
+        for e in catalog['runs'][0]['records'][0]['episodes']:
+            e['success'] = False
+        with self.assertRaisesRegex(ValueError, 'No common successful'):
+            common_success_group(catalog, 'full', 'matched', self.root)
+        self.catalog['runs'][0]['config']['seed'] = 8
+        with self.assertRaisesRegex(ValueError, 'same recorded seed'):
+            common_success_group(self.catalog, 'full', 'matched', self.root)
 
 
 class StageTimingTests(unittest.TestCase):

@@ -1,0 +1,432 @@
+/home/jetson/anaconda3/envs/turbovla/lib/python3.10/site-packages/timm/models/layers/__init__.py:49: FutureWarning: Importing from timm.models.layers is deprecated, please import via timm.layers
+  warnings.warn(f"Importing from {__name__} is deprecated, please import via timm.layers", FutureWarning)
+[TurboVLAPolicy] model source: turbovla.models.turbovla
+[TurboVLAPolicy] precision=bf16, dinov3_output_hidden_states=True
+[TurboVLAPolicy] strict checkpoint load: /home/jetson/LWD/TurboVLA/pretrained/TurboVLA/checkpoints/libero/turbovla_libero.pth (672 tensors)
+[TurboVLAPolicy] precision=bf16, model_parameter_dtype=bfloat16
+[TurboVLAPolicy] suite stats: path=/home/jetson/LWD/TurboVLA/experiments/libero/configs/libero_all4_stats.json, key=libero_all4_no_noops, normalize_binary_gripper=False
+/home/jetson/anaconda3/envs/turbovla/lib/python3.10/site-packages/transformers/modeling_utils.py:1621: FutureWarning: The `device` argument is deprecated and will be removed in v5 of Transformers.
+  warnings.warn(
+2026-10-16 22:22:04,127 [INFO] READY http://192.168.123.38:8766 GPU=NVIDIA Thor server_id=a0ebba1f43af4e36bfb57365050ce374
+2026-10-16 22:24:08,662 [INFO] client=192.168.123.141 "GET /health HTTP/1.1" 200 -
+2026-10-16 22:24:27,306 [INFO] client=192.168.123.141 "GET /health HTTP/1.1" 200 -
+2026-10-16 22:26:12,993 [INFO] client=192.168.123.141 "GET /health HTTP/1.1" 200 -
+/home/jetson/anaconda3/envs/turbovla/lib/python3.10/site-packages/transformers/modeling_utils.py:1621: FutureWarning: The `device` argument is deprecated and will be removed in v5 of Transformers.
+  warnings.warn(
+2026-10-16 22:26:29,698 [INFO] request=f4a7d374fa4e4053a453c7e7f47037f5 received_bytes=244716 returned_steps=12 inference_ms=35.29 total_ms=39.04
+2026-10-16 22:26:29,698 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:30,040 [INFO] request=93ad98adf898435db5e9377c1ae8e677 received_bytes=251360 returned_steps=12 inference_ms=26.30 total_ms=29.20
+2026-10-16 22:26:30,040 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:30,301 [INFO] request=75ce32bb78524689a5479f394eca4d45 received_bytes=246719 returned_steps=12 inference_ms=25.76 total_ms=28.40
+2026-10-16 22:26:30,301 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:30,555 [INFO] request=441591b91e684824bf3a23f7a490efc6 received_bytes=242859 returned_steps=12 inference_ms=25.78 total_ms=28.46
+2026-10-16 22:26:30,555 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:30,817 [INFO] request=a8be53f7de824f8e873c22a6e10d9ed5 received_bytes=236846 returned_steps=12 inference_ms=25.84 total_ms=28.50
+2026-10-16 22:26:30,817 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:31,078 [INFO] request=8a6012cd9f3a4ee08f15d6b5c2ea1e25 received_bytes=232892 returned_steps=12 inference_ms=26.46 total_ms=29.11
+2026-10-16 22:26:31,078 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:31,337 [INFO] request=8d551e51acc84500aa2efe9e1e38e1f7 received_bytes=236042 returned_steps=12 inference_ms=26.15 total_ms=28.79
+2026-10-16 22:26:31,337 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:31,599 [INFO] request=f32c6f3a283a4482a1da46ebda5d4be4 received_bytes=233283 returned_steps=12 inference_ms=27.15 total_ms=29.86
+2026-10-16 22:26:31,599 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:31,856 [INFO] request=cce751b49e33424e964c5ed7a50bfced received_bytes=234941 returned_steps=12 inference_ms=26.52 total_ms=29.29
+2026-10-16 22:26:31,856 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:32,133 [INFO] request=a7e9253441cd4941988f02132b0af1da received_bytes=242776 returned_steps=12 inference_ms=27.42 total_ms=30.11
+2026-10-16 22:26:32,133 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:32,368 [INFO] request=474d4b0d27ca414ba173af95183e0fcb received_bytes=240331 returned_steps=12 inference_ms=27.00 total_ms=29.71
+2026-10-16 22:26:32,369 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:32,630 [INFO] request=cde05cf587464f90a4fe9f3f6c873279 received_bytes=229676 returned_steps=12 inference_ms=26.90 total_ms=29.58
+2026-10-16 22:26:32,631 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:32,948 [INFO] request=31fece39621949cfb3a2b09f1641aad7 received_bytes=239417 returned_steps=12 inference_ms=28.18 total_ms=30.94
+2026-10-16 22:26:32,948 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:33,253 [INFO] request=017978449bbc43cb879d604e85a1a3ea received_bytes=244375 returned_steps=12 inference_ms=27.07 total_ms=29.74
+2026-10-16 22:26:33,253 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:33,550 [INFO] request=2dd132f9468d4c27984c1fcc7c80058f received_bytes=256197 returned_steps=12 inference_ms=26.68 total_ms=29.33
+2026-10-16 22:26:33,550 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:33,854 [INFO] request=8b90d3e1681f49d6b02158ef4c593fe7 received_bytes=266418 returned_steps=12 inference_ms=26.81 total_ms=29.47
+2026-10-16 22:26:33,855 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:34,162 [INFO] request=9113b91475604479ba515eeabf4544b0 received_bytes=272730 returned_steps=12 inference_ms=27.84 total_ms=30.54
+2026-10-16 22:26:34,162 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:34,466 [INFO] request=b39316f204d94ecb8917f4c3520f7fd6 received_bytes=261170 returned_steps=12 inference_ms=26.68 total_ms=29.39
+2026-10-16 22:26:34,467 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:34,759 [INFO] request=9044b39d70b94271aa2bd84866383152 received_bytes=258949 returned_steps=12 inference_ms=26.56 total_ms=29.26
+2026-10-16 22:26:34,759 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:35,046 [INFO] request=0f8cf46c829e41e2a6abc88a4eb0060b received_bytes=259774 returned_steps=12 inference_ms=27.09 total_ms=29.77
+2026-10-16 22:26:35,046 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:35,392 [INFO] request=1427a6ebcd5e42eaa9c4c445cc536c32 received_bytes=251689 returned_steps=12 inference_ms=26.59 total_ms=29.22
+2026-10-16 22:26:35,392 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:50,652 [INFO] request=cd4cce9da1c84996a27ce87f0c3cf427 received_bytes=244716 returned_steps=12 inference_ms=28.83 total_ms=31.62
+2026-10-16 22:26:50,652 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:51,500 [INFO] request=06409cb63bee424f8695f29e5cf4f4c6 received_bytes=242950 returned_steps=12 inference_ms=27.61 total_ms=30.31
+2026-10-16 22:26:51,500 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:52,350 [INFO] request=c34bd0b72a2f482d8f2b0ca8a643def0 received_bytes=236185 returned_steps=12 inference_ms=26.91 total_ms=29.57
+2026-10-16 22:26:52,350 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:53,192 [INFO] request=31b710ecd8974597814fee3ed947165e received_bytes=242738 returned_steps=12 inference_ms=27.48 total_ms=30.18
+2026-10-16 22:26:53,192 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:54,048 [INFO] request=c6d72a249b144da989d63e8eae12c5fb received_bytes=241457 returned_steps=12 inference_ms=27.38 total_ms=30.02
+2026-10-16 22:26:54,048 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:55,002 [INFO] request=55d6a8ac3d2848449e8885715d8e645f received_bytes=261588 returned_steps=12 inference_ms=27.98 total_ms=30.67
+2026-10-16 22:26:55,002 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:26:56,109 [INFO] request=c436f7c1d89c46f7a5d7e5239cceb322 received_bytes=257468 returned_steps=12 inference_ms=27.33 total_ms=30.05
+2026-10-16 22:26:56,109 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:11,842 [INFO] request=e5df6be1f68b42ecbe4fc65426246475 received_bytes=244716 returned_steps=12 inference_ms=28.69 total_ms=31.47
+2026-10-16 22:27:11,843 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:12,275 [INFO] request=b13b27f3df8d4d8a982aef835d0483f5 received_bytes=251360 returned_steps=12 inference_ms=26.52 total_ms=29.20
+2026-10-16 22:27:12,275 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:12,869 [INFO] request=6a08c5a56f7d4b0cbe80edcd3a4307a2 received_bytes=246435 returned_steps=12 inference_ms=27.10 total_ms=29.78
+2026-10-16 22:27:12,869 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:13,096 [INFO] request=5b2de08d70974fe59741d45596c563ec received_bytes=236333 returned_steps=12 inference_ms=27.31 total_ms=29.99
+2026-10-16 22:27:13,096 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:13,272 [INFO] request=9b89c6a88b9944bca98a1440fa1b2ea1 received_bytes=232372 returned_steps=12 inference_ms=26.62 total_ms=29.28
+2026-10-16 22:27:13,272 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:13,519 [INFO] request=2e23615a284d42368db328d64edaab1d received_bytes=235449 returned_steps=12 inference_ms=26.75 total_ms=29.39
+2026-10-16 22:27:13,519 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:13,771 [INFO] request=eb9d152ede5c42029829922dceea259b received_bytes=233368 returned_steps=12 inference_ms=26.72 total_ms=29.37
+2026-10-16 22:27:13,771 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:14,032 [INFO] request=06692a7356b94fd5b2d699cf48a40a7c received_bytes=241864 returned_steps=12 inference_ms=26.49 total_ms=29.14
+2026-10-16 22:27:14,032 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:14,292 [INFO] request=791089e284184b4d88d92b22e1597825 received_bytes=240731 returned_steps=12 inference_ms=26.46 total_ms=29.13
+2026-10-16 22:27:14,292 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:14,546 [INFO] request=cf4f0268f0d2435d817b02fa6f55a078 received_bytes=242397 returned_steps=12 inference_ms=26.40 total_ms=29.04
+2026-10-16 22:27:14,546 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:14,801 [INFO] request=f5e308125bcc4486bafe301811ee4b16 received_bytes=229789 returned_steps=12 inference_ms=26.24 total_ms=28.86
+2026-10-16 22:27:14,801 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:15,084 [INFO] request=aaa3be69861541e59a9fa4140abc422b received_bytes=240190 returned_steps=12 inference_ms=27.63 total_ms=30.28
+2026-10-16 22:27:15,084 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:15,364 [INFO] request=39a079f2207f4e8ea81f00a3aa5b1b2e received_bytes=241990 returned_steps=12 inference_ms=26.38 total_ms=28.98
+2026-10-16 22:27:15,365 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:15,653 [INFO] request=2c239e0f246d44f6bdc06585bfd2b7f6 received_bytes=248973 returned_steps=12 inference_ms=26.64 total_ms=29.26
+2026-10-16 22:27:15,653 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:15,927 [INFO] request=57e6f34e5f924f90a9a8e01397ceecc7 received_bytes=263477 returned_steps=12 inference_ms=26.71 total_ms=29.38
+2026-10-16 22:27:15,927 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:16,214 [INFO] request=35fb12ded9a14385add9ab6520411a3b received_bytes=268590 returned_steps=12 inference_ms=26.46 total_ms=29.14
+2026-10-16 22:27:16,214 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:16,508 [INFO] request=7554fac533e746c5a7e82df12b5a2524 received_bytes=258254 returned_steps=12 inference_ms=26.49 total_ms=29.20
+2026-10-16 22:27:16,508 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:16,792 [INFO] request=a57daabb05c248888f90188207542c63 received_bytes=255382 returned_steps=12 inference_ms=26.13 total_ms=28.82
+2026-10-16 22:27:16,792 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:17,084 [INFO] request=5da72b6f2ba64f9c810daddb75477c48 received_bytes=251541 returned_steps=12 inference_ms=28.25 total_ms=31.01
+2026-10-16 22:27:17,084 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:32,137 [INFO] request=b17f91bcf4b44b4688f6951b91b8f8cc received_bytes=243145 returned_steps=12 inference_ms=29.97 total_ms=32.84
+2026-10-16 22:27:32,138 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:32,498 [INFO] request=ea0d4b815f3e4c5d9ebd09ec04bd2cb6 received_bytes=244207 returned_steps=12 inference_ms=27.74 total_ms=30.43
+2026-10-16 22:27:32,498 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:32,758 [INFO] request=e6a6bac7cffd46acb109952490b06722 received_bytes=253301 returned_steps=12 inference_ms=27.41 total_ms=30.24
+2026-10-16 22:27:32,759 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:33,008 [INFO] request=88ab19793e5f4b1ea5bdfb47027d5e24 received_bytes=247474 returned_steps=12 inference_ms=29.02 total_ms=31.76
+2026-10-16 22:27:33,009 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:33,271 [INFO] request=3aeee38ec9574c5e9aa61948b3dd8648 received_bytes=245618 returned_steps=12 inference_ms=27.13 total_ms=29.98
+2026-10-16 22:27:33,271 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:33,529 [INFO] request=faaf3e9a3bf74b58998bc7ed4e2d9c4c received_bytes=246473 returned_steps=12 inference_ms=26.75 total_ms=29.52
+2026-10-16 22:27:33,529 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:33,787 [INFO] request=e4b6e8629b4f47abb5f94228f7c3c5a9 received_bytes=235421 returned_steps=12 inference_ms=26.78 total_ms=29.72
+2026-10-16 22:27:33,787 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:34,039 [INFO] request=0c1818f1f0f1446880bd87ad3b2478fd received_bytes=234873 returned_steps=12 inference_ms=29.20 total_ms=31.88
+2026-10-16 22:27:34,039 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:34,302 [INFO] request=5cbeec76652b4174b201c6063f90b193 received_bytes=239898 returned_steps=12 inference_ms=28.04 total_ms=30.78
+2026-10-16 22:27:34,302 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:34,549 [INFO] request=3380aead2e98408f8587f7c36f8d425b received_bytes=233033 returned_steps=12 inference_ms=28.08 total_ms=30.78
+2026-10-16 22:27:34,549 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:34,829 [INFO] request=d1eab171d0ec423cb288c97f1ae4c9bc received_bytes=232310 returned_steps=12 inference_ms=28.00 total_ms=30.72
+2026-10-16 22:27:34,829 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:35,080 [INFO] request=1b6a493803c248bbbe45f14e83bfe57d received_bytes=231597 returned_steps=12 inference_ms=28.39 total_ms=31.14
+2026-10-16 22:27:35,081 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:35,332 [INFO] request=8abd4f026c3c49f1b49e03b7219a3f65 received_bytes=224239 returned_steps=12 inference_ms=27.62 total_ms=30.32
+2026-10-16 22:27:35,333 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:35,586 [INFO] request=ae5997303c5a4f7db06c9aa4dd850c04 received_bytes=232547 returned_steps=12 inference_ms=27.39 total_ms=30.10
+2026-10-16 22:27:35,586 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:35,849 [INFO] request=93c4eac313d842ed954261e5dec257bf received_bytes=242749 returned_steps=12 inference_ms=27.52 total_ms=30.23
+2026-10-16 22:27:35,849 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:36,146 [INFO] request=74b65ebfbb714d50a4b5048fd7f6ea46 received_bytes=247774 returned_steps=12 inference_ms=27.28 total_ms=29.97
+2026-10-16 22:27:36,147 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:36,472 [INFO] request=de174748c46646f391cea4ba663d8685 received_bytes=245351 returned_steps=12 inference_ms=26.85 total_ms=29.55
+2026-10-16 22:27:36,473 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:36,791 [INFO] request=87a8913192ab4b82b8d357e1f23d60cc received_bytes=248681 returned_steps=12 inference_ms=26.48 total_ms=29.17
+2026-10-16 22:27:36,791 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:37,094 [INFO] request=55bfe9c3f66f42859795bdeb3dcb55b0 received_bytes=250288 returned_steps=12 inference_ms=27.97 total_ms=30.67
+2026-10-16 22:27:37,094 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:37,399 [INFO] request=a56d4da2bdf84167a872d75420605f96 received_bytes=255676 returned_steps=12 inference_ms=26.51 total_ms=29.18
+2026-10-16 22:27:37,399 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:37,681 [INFO] request=6059801daa5e4d31975ab6c0490fa81c received_bytes=264912 returned_steps=12 inference_ms=26.95 total_ms=29.63
+2026-10-16 22:27:37,681 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:37,968 [INFO] request=2b4a2a22f4e54aacab13d6415e5f0dec received_bytes=263804 returned_steps=12 inference_ms=26.68 total_ms=29.36
+2026-10-16 22:27:37,968 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:38,267 [INFO] request=99123920d001459098ae4d6f50745a59 received_bytes=263592 returned_steps=12 inference_ms=26.64 total_ms=29.33
+2026-10-16 22:27:38,267 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:38,555 [INFO] request=a52ab3fe6e074755b567797dd8bbc59e received_bytes=274266 returned_steps=12 inference_ms=26.08 total_ms=28.77
+2026-10-16 22:27:38,555 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:38,850 [INFO] request=d79a5ba28b84412aab26875e6203c99d received_bytes=275552 returned_steps=12 inference_ms=28.33 total_ms=31.09
+2026-10-16 22:27:38,850 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:39,152 [INFO] request=cd1f63dc932140feb1a62343554a3b11 received_bytes=264020 returned_steps=12 inference_ms=27.58 total_ms=30.30
+2026-10-16 22:27:39,152 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:39,459 [INFO] request=b6633e0df55544f89a8a328fa8fdccf4 received_bytes=266805 returned_steps=12 inference_ms=26.68 total_ms=29.38
+2026-10-16 22:27:39,459 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:54,754 [INFO] request=78af76cc9ac64079a24480709bb745c9 received_bytes=243145 returned_steps=12 inference_ms=31.04 total_ms=33.98
+2026-10-16 22:27:54,754 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:55,755 [INFO] request=75857eddcf03464bbff9556e105fd443 received_bytes=247847 returned_steps=12 inference_ms=29.31 total_ms=32.12
+2026-10-16 22:27:55,755 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:56,689 [INFO] request=55afad3c0afb407892fef75dd12dd673 received_bytes=236351 returned_steps=12 inference_ms=28.52 total_ms=31.26
+2026-10-16 22:27:56,690 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:57,518 [INFO] request=98061dcbd3fd4574aee9a8de0faf499b received_bytes=236181 returned_steps=12 inference_ms=29.22 total_ms=32.01
+2026-10-16 22:27:57,518 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:58,345 [INFO] request=bc3f32ceb5074fbea2d4d079d31a5b7f received_bytes=224969 returned_steps=12 inference_ms=27.82 total_ms=30.53
+2026-10-16 22:27:58,345 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:27:59,232 [INFO] request=42dfab15fb4244b298bc922e18db08e8 received_bytes=241251 returned_steps=12 inference_ms=30.64 total_ms=33.49
+2026-10-16 22:27:59,232 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:00,251 [INFO] request=6f0a299c6a0d45f4a656d029ba76bbef received_bytes=225195 returned_steps=12 inference_ms=28.34 total_ms=31.08
+2026-10-16 22:28:00,251 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:01,223 [INFO] request=004ba577bc6042e4a2c2a99b8bc42198 received_bytes=240690 returned_steps=12 inference_ms=28.49 total_ms=31.24
+2026-10-16 22:28:01,223 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:02,208 [INFO] request=742434894736486cb79af7eadb5fe1db received_bytes=255535 returned_steps=12 inference_ms=28.71 total_ms=31.52
+2026-10-16 22:28:02,209 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:03,181 [INFO] request=b9e620036a304ee8aeba2cb69272bfbd received_bytes=254589 returned_steps=12 inference_ms=28.82 total_ms=31.63
+2026-10-16 22:28:03,181 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:18,567 [INFO] request=70f78c1ea4864bb6b5d2ae04bdbdc184 received_bytes=243145 returned_steps=12 inference_ms=30.99 total_ms=33.89
+2026-10-16 22:28:18,568 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:18,910 [INFO] request=c3eeee220fdd4968b5e433e7e95beb3c received_bytes=244207 returned_steps=12 inference_ms=30.32 total_ms=33.17
+2026-10-16 22:28:18,910 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:19,168 [INFO] request=4519e02c328546a0b147bb5b6fdcd84d received_bytes=247316 returned_steps=12 inference_ms=28.30 total_ms=31.09
+2026-10-16 22:28:19,168 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:19,426 [INFO] request=c2873b86c18f47178b12db1eebd72c24 received_bytes=247826 returned_steps=12 inference_ms=27.88 total_ms=30.62
+2026-10-16 22:28:19,426 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:19,685 [INFO] request=d687a749559f4beaac6dd486e4957b26 received_bytes=245729 returned_steps=12 inference_ms=27.65 total_ms=30.39
+2026-10-16 22:28:19,685 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:19,939 [INFO] request=11fd17f1ce174f6f85b9353be92481ba received_bytes=240136 returned_steps=12 inference_ms=27.38 total_ms=30.10
+2026-10-16 22:28:19,939 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:20,196 [INFO] request=321f5193f7c5445194e649b5f441aec8 received_bytes=235737 returned_steps=12 inference_ms=27.54 total_ms=30.22
+2026-10-16 22:28:20,196 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:20,451 [INFO] request=1560d3d8f8524f15a60a3fc778202b22 received_bytes=239417 returned_steps=12 inference_ms=27.24 total_ms=29.92
+2026-10-16 22:28:20,451 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:20,707 [INFO] request=d0b858c13bc94dfbad7493b54c2a71b1 received_bytes=239792 returned_steps=12 inference_ms=27.76 total_ms=30.50
+2026-10-16 22:28:20,708 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:20,965 [INFO] request=7a2479405bdb4af39d666c4ec5124d28 received_bytes=237507 returned_steps=12 inference_ms=28.60 total_ms=31.39
+2026-10-16 22:28:20,965 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:21,215 [INFO] request=fa789065b21e47829af730e97924dc5e received_bytes=232598 returned_steps=12 inference_ms=27.70 total_ms=30.44
+2026-10-16 22:28:21,216 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:21,470 [INFO] request=0412f2b476d84827b6d3b8d8b6254b5f received_bytes=231331 returned_steps=12 inference_ms=27.47 total_ms=30.17
+2026-10-16 22:28:21,471 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:21,724 [INFO] request=90b983f7befe4c539dc89e9215119925 received_bytes=224593 returned_steps=12 inference_ms=27.36 total_ms=30.05
+2026-10-16 22:28:21,725 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:21,978 [INFO] request=9e22b2173104483db7bee42ca5ce6b5a received_bytes=232044 returned_steps=12 inference_ms=29.45 total_ms=32.24
+2026-10-16 22:28:21,978 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:22,231 [INFO] request=55a2f9ffaba34037bdbf3f09342bc2b2 received_bytes=241528 returned_steps=12 inference_ms=27.86 total_ms=30.58
+2026-10-16 22:28:22,231 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:22,525 [INFO] request=e0d538937e4446d28f55968c8a37e2c3 received_bytes=245293 returned_steps=12 inference_ms=27.50 total_ms=30.19
+2026-10-16 22:28:22,525 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:22,851 [INFO] request=bb05926312b74889a9ab7663b2667fa1 received_bytes=243193 returned_steps=12 inference_ms=27.24 total_ms=29.94
+2026-10-16 22:28:22,852 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:23,177 [INFO] request=2c76accea7084bb182ebe0c8395bcaf9 received_bytes=238885 returned_steps=12 inference_ms=28.20 total_ms=30.95
+2026-10-16 22:28:23,178 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:23,481 [INFO] request=258819d0e9c646d7804ce138b5158fcd received_bytes=237802 returned_steps=12 inference_ms=27.51 total_ms=30.25
+2026-10-16 22:28:23,481 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:23,754 [INFO] request=2ae2871305bf41a59851fb8a7b21a438 received_bytes=245537 returned_steps=12 inference_ms=27.28 total_ms=30.00
+2026-10-16 22:28:23,755 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:24,066 [INFO] request=d8aa3bb4b8d349889b2a88865ca4cdba received_bytes=248046 returned_steps=12 inference_ms=27.30 total_ms=30.03
+2026-10-16 22:28:24,066 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:24,372 [INFO] request=52be5ecbcf864d1c87b8713db057a9c8 received_bytes=255982 returned_steps=12 inference_ms=27.25 total_ms=29.97
+2026-10-16 22:28:24,372 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:24,668 [INFO] request=34e1005a888644beaeb0b5c97014b5b0 received_bytes=258573 returned_steps=12 inference_ms=26.97 total_ms=29.72
+2026-10-16 22:28:24,668 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:24,963 [INFO] request=944b80f0d323429abc1bc62a5eb20e0f received_bytes=256192 returned_steps=12 inference_ms=28.01 total_ms=30.76
+2026-10-16 22:28:24,963 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:25,254 [INFO] request=95a14657ea37464a9668701132d22680 received_bytes=256284 returned_steps=12 inference_ms=27.61 total_ms=30.33
+2026-10-16 22:28:25,254 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:25,561 [INFO] request=c72f33ce3e014224ada02985a6161131 received_bytes=258535 returned_steps=12 inference_ms=27.42 total_ms=30.13
+2026-10-16 22:28:25,561 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:26,005 [INFO] request=fa9b7ac8d935454db4b2d899f8076559 received_bytes=257228 returned_steps=12 inference_ms=27.42 total_ms=30.14
+2026-10-16 22:28:26,005 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:41,548 [INFO] request=a41f4851513d4173bd0617873594aba4 received_bytes=248003 returned_steps=12 inference_ms=30.98 total_ms=33.85
+2026-10-16 22:28:41,549 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:41,981 [INFO] request=7f717073dd274759b901558ff81caaf6 received_bytes=248177 returned_steps=12 inference_ms=28.48 total_ms=31.23
+2026-10-16 22:28:41,981 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:42,327 [INFO] request=20844f76750e4d62984518d018976536 received_bytes=254818 returned_steps=12 inference_ms=27.75 total_ms=30.47
+2026-10-16 22:28:42,327 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:42,560 [INFO] request=9b43905edbfc4150a83af8e82ba96525 received_bytes=247906 returned_steps=12 inference_ms=27.64 total_ms=30.36
+2026-10-16 22:28:42,560 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:42,747 [INFO] request=2470c552fc564b4cb9c222d00c86844e received_bytes=242778 returned_steps=12 inference_ms=27.39 total_ms=30.10
+2026-10-16 22:28:42,747 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:42,984 [INFO] request=e34d8f00623843d8a7c54debdd6964f8 received_bytes=239891 returned_steps=12 inference_ms=28.28 total_ms=31.02
+2026-10-16 22:28:42,985 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:43,362 [INFO] request=e868eae1a2d0447bb76cbb4b3a8ec2b4 received_bytes=242526 returned_steps=12 inference_ms=27.78 total_ms=30.53
+2026-10-16 22:28:43,363 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:43,584 [INFO] request=bb9967c9ee1d460895dd5caa61b38f89 received_bytes=242591 returned_steps=12 inference_ms=27.29 total_ms=30.03
+2026-10-16 22:28:43,584 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:43,790 [INFO] request=bc9c482543a142bda32e5a9fd9ee5ceb received_bytes=239879 returned_steps=12 inference_ms=27.17 total_ms=29.88
+2026-10-16 22:28:43,791 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:44,027 [INFO] request=ddd1193de8d14b69a740b5ee7176da0e received_bytes=244052 returned_steps=12 inference_ms=27.28 total_ms=30.00
+2026-10-16 22:28:44,027 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:44,451 [INFO] request=c5eb31253d334acb9016ca45e795e944 received_bytes=246118 returned_steps=12 inference_ms=27.35 total_ms=30.04
+2026-10-16 22:28:44,451 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:44,580 [INFO] request=2c3779962fb14f9385d72548400cad46 received_bytes=253752 returned_steps=12 inference_ms=26.99 total_ms=29.69
+2026-10-16 22:28:44,580 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:44,851 [INFO] request=3bdd58ca698d4fb8a734228bde417805 received_bytes=239226 returned_steps=12 inference_ms=26.92 total_ms=29.63
+2026-10-16 22:28:44,851 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:45,154 [INFO] request=2c808f1b50fe42c5ac8f055f72209bce received_bytes=235228 returned_steps=12 inference_ms=27.29 total_ms=29.97
+2026-10-16 22:28:45,154 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:45,453 [INFO] request=25f23fa5ece8458b8ef729b5a187aec3 received_bytes=242920 returned_steps=12 inference_ms=27.55 total_ms=30.25
+2026-10-16 22:28:45,453 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:45,749 [INFO] request=bf4b57bcdc4c4e4d8977c2ec062ca00a received_bytes=249402 returned_steps=12 inference_ms=27.23 total_ms=29.94
+2026-10-16 22:28:45,750 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:46,055 [INFO] request=5d6ba1dfcd9c43c197cbc8811462e486 received_bytes=253606 returned_steps=12 inference_ms=26.93 total_ms=29.63
+2026-10-16 22:28:46,055 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:46,343 [INFO] request=818c658b6e164adeb53472be77171d8c received_bytes=262188 returned_steps=12 inference_ms=27.09 total_ms=29.81
+2026-10-16 22:28:46,343 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:46,642 [INFO] request=08efcb17fd2a4a359030904e13845e73 received_bytes=265335 returned_steps=12 inference_ms=27.54 total_ms=30.26
+2026-10-16 22:28:46,642 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:46,938 [INFO] request=76236a76f1814be6a354021b6821b3c0 received_bytes=266331 returned_steps=12 inference_ms=28.10 total_ms=30.89
+2026-10-16 22:28:46,939 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:47,230 [INFO] request=03275c8bf5c44d45bb45f0b23a51a26a received_bytes=264211 returned_steps=12 inference_ms=27.87 total_ms=30.63
+2026-10-16 22:28:47,230 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:47,526 [INFO] request=01b318eeec284e87b32a4eee94fbe917 received_bytes=259352 returned_steps=12 inference_ms=27.49 total_ms=30.22
+2026-10-16 22:28:47,527 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:47,817 [INFO] request=4ecea0fe97c5445f816583ea9aebfdb2 received_bytes=257005 returned_steps=12 inference_ms=27.51 total_ms=30.22
+2026-10-16 22:28:47,817 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:28:48,114 [INFO] request=533d2b906c8a4521a85d620b6231e71a received_bytes=256977 returned_steps=12 inference_ms=27.17 total_ms=29.89
+2026-10-16 22:28:48,115 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:03,406 [INFO] request=652041c3be6f40a18a03ddff4032787d received_bytes=248003 returned_steps=12 inference_ms=30.84 total_ms=33.71
+2026-10-16 22:29:03,406 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:03,782 [INFO] request=940c3a1459bf441fb80159ae09aeebcc received_bytes=248177 returned_steps=12 inference_ms=28.49 total_ms=31.21
+2026-10-16 22:29:03,783 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:04,017 [INFO] request=1469314759af41c4a1d6eaaed14c704c received_bytes=249753 returned_steps=12 inference_ms=27.89 total_ms=30.60
+2026-10-16 22:29:04,017 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:04,271 [INFO] request=abe1641518524713bccf29c8b63cb2fa received_bytes=248817 returned_steps=12 inference_ms=27.62 total_ms=30.34
+2026-10-16 22:29:04,271 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:04,533 [INFO] request=7eaca05ef9514840a38df68de880d62a received_bytes=244307 returned_steps=12 inference_ms=29.65 total_ms=32.48
+2026-10-16 22:29:04,533 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:04,796 [INFO] request=93c5add76fc04ad9bc53e666d7679600 received_bytes=248083 returned_steps=12 inference_ms=28.77 total_ms=31.51
+2026-10-16 22:29:04,796 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:05,054 [INFO] request=fccdb42d3ad4415eaf2530d61c871a6e received_bytes=240796 returned_steps=12 inference_ms=28.19 total_ms=30.92
+2026-10-16 22:29:05,054 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:05,312 [INFO] request=7ab83c236f76402fa8f25978585acd07 received_bytes=243235 returned_steps=12 inference_ms=27.21 total_ms=29.92
+2026-10-16 22:29:05,312 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:05,576 [INFO] request=04a1fa29e70f453795474fe956f9a2bf received_bytes=240572 returned_steps=12 inference_ms=26.88 total_ms=29.54
+2026-10-16 22:29:05,577 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:05,840 [INFO] request=8575b14a10a24c3e857e355e991966ce received_bytes=242151 returned_steps=12 inference_ms=27.18 total_ms=29.83
+2026-10-16 22:29:05,841 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:06,109 [INFO] request=0a8a0c6f4ad54680870c0ab4cca24fb3 received_bytes=244314 returned_steps=12 inference_ms=26.80 total_ms=29.44
+2026-10-16 22:29:06,110 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:06,374 [INFO] request=642fd18fc2fa43998482f88805001a2b received_bytes=249122 returned_steps=12 inference_ms=26.66 total_ms=29.32
+2026-10-16 22:29:06,374 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:06,648 [INFO] request=69bd97b48fa24787b5a68f3897dc1385 received_bytes=244700 returned_steps=12 inference_ms=26.59 total_ms=29.24
+2026-10-16 22:29:06,648 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:06,948 [INFO] request=a68ad2e8081b42359ba82823ee18a6d3 received_bytes=237272 returned_steps=12 inference_ms=28.16 total_ms=30.88
+2026-10-16 22:29:06,949 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:07,296 [INFO] request=3aff914d7b784318976991ec264ad685 received_bytes=243659 returned_steps=12 inference_ms=26.82 total_ms=29.50
+2026-10-16 22:29:07,296 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:07,580 [INFO] request=396c6752dc574857a1bf01df94ddb4e9 received_bytes=250313 returned_steps=12 inference_ms=26.20 total_ms=28.87
+2026-10-16 22:29:07,580 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:07,885 [INFO] request=158aeda91f4642cc82ce33329da4ea99 received_bytes=252546 returned_steps=12 inference_ms=26.48 total_ms=29.14
+2026-10-16 22:29:07,885 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:08,179 [INFO] request=94b51fd313f34f42aad4d621693ef893 received_bytes=261440 returned_steps=12 inference_ms=26.67 total_ms=29.38
+2026-10-16 22:29:08,179 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:08,462 [INFO] request=01019478e0374d2cb92cbbccfa46bab2 received_bytes=265240 returned_steps=12 inference_ms=26.44 total_ms=29.14
+2026-10-16 22:29:08,463 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:08,739 [INFO] request=b253d0f1fb2d48acbb7fda0e6095289b received_bytes=265991 returned_steps=12 inference_ms=26.42 total_ms=29.11
+2026-10-16 22:29:08,739 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:09,019 [INFO] request=ebb1b2ae13f44529b3f8e5ec49893855 received_bytes=265348 returned_steps=12 inference_ms=28.27 total_ms=31.12
+2026-10-16 22:29:09,019 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:09,298 [INFO] request=64ccd2ae955845dba0cd570dbb8e1c45 received_bytes=260378 returned_steps=12 inference_ms=26.83 total_ms=29.54
+2026-10-16 22:29:09,298 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:09,577 [INFO] request=a75f87d2b9c642f8888b4823bafc634e received_bytes=257264 returned_steps=12 inference_ms=26.23 total_ms=28.88
+2026-10-16 22:29:09,577 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:09,857 [INFO] request=30226f7e386740eb8b4fe19bfba5d971 received_bytes=257074 returned_steps=12 inference_ms=26.20 total_ms=28.91
+2026-10-16 22:29:09,857 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:25,052 [INFO] request=a2e4aaa056454ac497d37a2b20e3fba5 received_bytes=248003 returned_steps=12 inference_ms=29.10 total_ms=31.90
+2026-10-16 22:29:25,053 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:26,011 [INFO] request=9ba1d2460bc643c2af2feca0f4059eda received_bytes=248520 returned_steps=12 inference_ms=27.38 total_ms=30.07
+2026-10-16 22:29:26,011 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:27,008 [INFO] request=3630ec60611848a3b71433baa6379f57 received_bytes=241606 returned_steps=12 inference_ms=28.05 total_ms=30.78
+2026-10-16 22:29:27,008 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:27,880 [INFO] request=2946432cc4b041b2a1917fd6a7897abb received_bytes=242060 returned_steps=12 inference_ms=27.05 total_ms=29.70
+2026-10-16 22:29:27,880 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:28,784 [INFO] request=75252764ad6d434099ce590a3758c641 received_bytes=244564 returned_steps=12 inference_ms=26.85 total_ms=29.52
+2026-10-16 22:29:28,784 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:29,733 [INFO] request=810a33bd53fa4443ae4d7c3e1003d9db received_bytes=248779 returned_steps=12 inference_ms=28.89 total_ms=31.72
+2026-10-16 22:29:29,733 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:30,668 [INFO] request=14f35eafea0e4186ace100742e120652 received_bytes=263306 returned_steps=12 inference_ms=27.39 total_ms=30.15
+2026-10-16 22:29:30,668 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:29:31,593 [INFO] request=746ac82e00e94c1188534625a67e2261 received_bytes=258604 returned_steps=12 inference_ms=27.84 total_ms=30.56
+2026-10-16 22:29:31,593 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:11,041 [INFO] client=192.168.123.141 "GET /health HTTP/1.1" 200 -
+2026-10-16 22:31:26,815 [INFO] request=0413095440e04fcf8836cad6e6068d63 received_bytes=244716 returned_steps=12 inference_ms=29.03 total_ms=31.87
+2026-10-16 22:31:26,815 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:27,466 [INFO] request=fa3e6e1e91a74935b686b8f0ba30346a received_bytes=251360 returned_steps=12 inference_ms=27.63 total_ms=30.33
+2026-10-16 22:31:27,466 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:27,877 [INFO] request=40f688a6a27448c6a2e9f3cb85f30cf9 received_bytes=242950 returned_steps=12 inference_ms=26.53 total_ms=29.21
+2026-10-16 22:31:27,877 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:28,198 [INFO] request=b3c26356c0ec4a469aac33cb99febf1c received_bytes=236356 returned_steps=12 inference_ms=26.10 total_ms=28.79
+2026-10-16 22:31:28,199 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:28,526 [INFO] request=c9e69b9e19fc4f2eba9c61c0099b24bb received_bytes=233552 returned_steps=12 inference_ms=26.06 total_ms=28.71
+2026-10-16 22:31:28,526 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:28,845 [INFO] request=03385feea0e145e68a32381875455b1f received_bytes=234408 returned_steps=12 inference_ms=26.55 total_ms=29.21
+2026-10-16 22:31:28,846 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:29,167 [INFO] request=45bb19cd9613413ea28b564201cad152 received_bytes=241976 returned_steps=12 inference_ms=26.96 total_ms=29.63
+2026-10-16 22:31:29,167 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:29,483 [INFO] request=ba25d7b8c88d489a9d28e2665d6a6c6b received_bytes=242914 returned_steps=12 inference_ms=26.03 total_ms=28.70
+2026-10-16 22:31:29,483 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:29,801 [INFO] request=af1de69e1c674b15a322c5f812e312c2 received_bytes=230555 returned_steps=12 inference_ms=25.58 total_ms=28.20
+2026-10-16 22:31:29,801 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:30,152 [INFO] request=85b0e57c6e224f4480007bc1fa9f6290 received_bytes=230544 returned_steps=12 inference_ms=25.97 total_ms=28.57
+2026-10-16 22:31:30,153 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:30,528 [INFO] request=1d88e071b78b47a5904fc0d5a5979437 received_bytes=244948 returned_steps=12 inference_ms=25.96 total_ms=28.55
+2026-10-16 22:31:30,529 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:30,909 [INFO] request=8cf47594843a4ccdb7cda004fa4713a1 received_bytes=245846 returned_steps=12 inference_ms=26.74 total_ms=29.37
+2026-10-16 22:31:30,909 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:31,225 [INFO] request=7a745f8a7e924003b0fcce9b54e499ed received_bytes=262580 returned_steps=12 inference_ms=26.49 total_ms=29.13
+2026-10-16 22:31:31,225 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:31,525 [INFO] request=a453347e8707490db0bf894ccf5a46ea received_bytes=265575 returned_steps=12 inference_ms=26.05 total_ms=28.73
+2026-10-16 22:31:31,525 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:31,884 [INFO] request=55b6bb9719064ede8a74ee01449d790b received_bytes=262580 returned_steps=12 inference_ms=26.10 total_ms=28.77
+2026-10-16 22:31:31,884 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:32,216 [INFO] request=52b5995897674971b9151ab53d55a412 received_bytes=256422 returned_steps=12 inference_ms=26.17 total_ms=28.81
+2026-10-16 22:31:32,216 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:32,574 [INFO] request=e6364e8ef0e441abbb6f36c76a04c238 received_bytes=249345 returned_steps=12 inference_ms=26.31 total_ms=28.94
+2026-10-16 22:31:32,574 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:32,896 [INFO] request=84d03fe9ff6c43d4ae19830c5a95b036 received_bytes=251129 returned_steps=12 inference_ms=26.64 total_ms=29.31
+2026-10-16 22:31:32,896 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:48,349 [INFO] request=2db0ace41eb7481cab005dfc09e9bc31 received_bytes=244716 returned_steps=12 inference_ms=28.35 total_ms=31.14
+2026-10-16 22:31:48,349 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:49,423 [INFO] request=30c9f37b14f440c4baf6b7abfdc93560 received_bytes=242950 returned_steps=12 inference_ms=27.52 total_ms=30.25
+2026-10-16 22:31:49,423 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:50,482 [INFO] request=21ad4725237f432a87e7af72e005aac7 received_bytes=236185 returned_steps=12 inference_ms=26.46 total_ms=29.14
+2026-10-16 22:31:50,482 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:51,539 [INFO] request=409c0df5c0d3435ea34cd2fe1c4dff81 received_bytes=242738 returned_steps=12 inference_ms=28.36 total_ms=31.14
+2026-10-16 22:31:51,539 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:52,605 [INFO] request=fe78c724cabb4700bcc888d98a52d953 received_bytes=241457 returned_steps=12 inference_ms=28.13 total_ms=30.87
+2026-10-16 22:31:52,606 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:53,759 [INFO] request=24f8c7761b89433b9f3e6b9a0d398f4d received_bytes=261588 returned_steps=12 inference_ms=28.90 total_ms=31.72
+2026-10-16 22:31:53,760 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:31:54,904 [INFO] request=0ee8581dc51c4e25a53aaa326a62b6b1 received_bytes=257468 returned_steps=12 inference_ms=28.61 total_ms=31.39
+2026-10-16 22:31:54,904 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:32:10,251 [INFO] request=0c665d3bc647491abf60cb7855ae03b3 received_bytes=244716 returned_steps=12 inference_ms=29.44 total_ms=32.25
+2026-10-16 22:32:10,251 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:32:11,047 [INFO] request=9b8b68faa8f844ceb7055bab34b6b27e received_bytes=251360 returned_steps=12 inference_ms=28.75 total_ms=31.50
+2026-10-16 22:32:11,048 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:32:11,506 [INFO] request=655e2434a1d248d8bc4d0089362361f7 received_bytes=242958 returned_steps=12 inference_ms=28.22 total_ms=30.95
+2026-10-16 22:32:11,506 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:32:12,120 [INFO] request=94ed061946c3486b81a40d804f80e39f received_bytes=238741 returned_steps=12 inference_ms=27.26 total_ms=29.99
+2026-10-16 22:32:12,120 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:32:12,564 [INFO] request=7a4cc9d2271040078d2cf9c7e7c823f5 received_bytes=243028 returned_steps=12 inference_ms=26.85 total_ms=29.57
+2026-10-16 22:32:12,564 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:32:12,884 [INFO] request=a016bfa136bc41799ac2dd70271c4172 received_bytes=238159 returned_steps=12 inference_ms=27.54 total_ms=30.25
+2026-10-16 22:32:12,885 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:32:13,222 [INFO] request=200f52ed019d4e48ac20a38cc3cfea6d received_bytes=241836 returned_steps=12 inference_ms=27.19 total_ms=29.90
+2026-10-16 22:32:13,222 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:32:13,515 [INFO] request=a0427715583440d9985b525bf13b9f8b received_bytes=246101 returned_steps=12 inference_ms=26.93 total_ms=29.65
+2026-10-16 22:32:13,515 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:32:13,850 [INFO] request=594b029907a349eeaa2602cfd1e27433 received_bytes=248197 returned_steps=12 inference_ms=26.79 total_ms=29.47
+2026-10-16 22:32:13,851 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:32:14,180 [INFO] request=0a06591bb5a34926951142c594aebfd2 received_bytes=232960 returned_steps=12 inference_ms=26.91 total_ms=29.58
+2026-10-16 22:32:14,180 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:32:14,553 [INFO] request=e9e987d54f5b40ec9889a13e286f89cb received_bytes=234742 returned_steps=12 inference_ms=26.68 total_ms=29.33
+2026-10-16 22:32:14,553 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:32:14,885 [INFO] request=645fdd55f30a4eff8d48070449bc2db8 received_bytes=242791 returned_steps=12 inference_ms=27.37 total_ms=30.05
+2026-10-16 22:32:14,885 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:32:15,213 [INFO] request=86b4130623d24f9894039bb4227c26fa received_bytes=262728 returned_steps=12 inference_ms=26.96 total_ms=29.64
+2026-10-16 22:32:15,213 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:32:15,547 [INFO] request=1b6329f5f0c54c70a001af9b034d1b9d received_bytes=269944 returned_steps=12 inference_ms=26.83 total_ms=29.52
+2026-10-16 22:32:15,548 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:32:15,896 [INFO] request=a583691747264b43b8dbe55c883c04f5 received_bytes=259939 returned_steps=12 inference_ms=26.95 total_ms=29.68
+2026-10-16 22:32:15,896 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -
+2026-10-16 22:32:16,240 [INFO] request=0d1e09436eff45e7815447f42f96bb1c received_bytes=255427 returned_steps=12 inference_ms=26.69 total_ms=29.37
+2026-10-16 22:32:16,240 [INFO] client=192.168.123.141 "POST /predict HTTP/1.1" 200 -

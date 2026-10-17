@@ -151,28 +151,35 @@ bash scripts/libero/run_local_benchmark.sh
 
 <!-- BENCHMARK_RESULTS_START -->
 
-**LIBERO Spatial · 2026-10-17 本机复测 / 2026-10-16 远程**
+**LIBERO Spatial · 共同成功 9 个案例**
 
-| 设备 / 模式 | 成功 | 执行步数 | 任务总耗时 / s | 平均推理响应时间¹ / ms | 推理响应时间 p95¹ / ms | 控制间隔 p95 / ms | hold 步 |
+共同成功 9 个案例 · 排除 task/episode：4/0。使用现有记录重算，未重新评测。共同成功案例数不代表整体成功率。
+
+**Thor 本机：平均推理 31.15 ms/块 · 控制间隔 p95 55.83 ms · 任务总耗时 26.95 s · 共同成功案例 9 个。**
+
+| 设备 / 模式 | 共同成功案例数 | 执行步数 | 任务总耗时 / s | 平均推理响应时间¹ / ms | 推理响应时间 p95¹ / ms | 控制间隔 p95 / ms | hold 步 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Orin local | 10/10 | 1002 | 81.91 | 124.78 | 127.54 | 190.34 | 0 |
-| Sync | 9/10 | 1122 | 92.44 | 130.97 | 284.81 | 165.58 | 0 |
-| Async / replace | 10/10 | 1026 | 74.78 | 115.03 | 241.70 | 82.45 | 3 |
-| Blend | 10/10 | 1021 | 75.08 | 117.63 | 230.05 | 81.64 | 0 |
+| Orin local | 9 | 868 | 71.40 | 125.01 | 127.70 | 192.13 | 0 |
+| Thor local | 9 | 898 | 26.95 | 31.15 | 33.36 | 55.83 | 0 |
+| Sync | 9 | 902 | 74.76 | 134.03 | 285.30 | 167.40 | 0 |
+| Async / replace | 9 | 900 | 65.72 | 113.14 | 235.42 | 82.33 | 3 |
+| Blend | 9 | 893 | 65.94 | 116.92 | 226.76 | 81.35 | 0 |
 
-¹ 每个 episode 的首次调用筛选数见数据页；`—` 表示未记录。推理响应时间按整块动作统计，远程模式包含预处理、传输和服务端推理。
+¹ 每个 episode 的首次调用筛选数见数据页；`—` 表示未记录。推理响应时间按整块动作统计，远程模式包含预处理、传输和服务端推理。任务总耗时仍包含保留回合的首次推理等待。
 
-![实测指标对比](assets/benchmarks/libero-spatial-20261017.svg)
+![实测指标对比](assets/benchmarks/libero-spatial-common-success.svg)
 
 [详细数据、口径与后续追加方式](docs-site/guide/benchmark-results.md) · [JSON 数据](reports/evaluation/catalog.json) · [CSV 汇总](reports/evaluation/summary.csv)
 
-**协同推理耗时构成**
+各运行的采样日期、控制频率及配置见数据页；总耗时包含任务轨迹差异。
 
-![协同推理分阶段耗时](assets/benchmarks/libero-spatial-20261017-stages.svg)
+**推理耗时构成**
 
-每段为相同过滤样本的平均耗时，合计为完整推理响应时间；往返已拆分，不重复计入。HTTP / 传输等开销包含接收等待与系统开销，并非纯网络延迟。
+![本机完整调用与协同推理耗时构成](assets/benchmarks/libero-spatial-common-success-stages.svg)
 
-[下载 SVG](assets/benchmarks/libero-spatial-20261017-stages.svg) · [下载 PNG](assets/benchmarks/libero-spatial-20261017-stages.png)
+本机显示完整调用，协同模式显示各阶段均值；各段之和等于响应均值。HTTP / 传输包含接收等待与系统开销。
+
+[下载 SVG](assets/benchmarks/libero-spatial-common-success-stages.svg) · [下载 PNG](assets/benchmarks/libero-spatial-common-success-stages.png)
 
 <!-- BENCHMARK_RESULTS_END -->
 

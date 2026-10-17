@@ -5,6 +5,7 @@ Raw outputs can be versioned separately; building the catalog needs no raw outpu
 """
 
 import argparse
+import copy
 import csv
 import hashlib
 import json
@@ -16,7 +17,8 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from scripts.libero.benchmark_common import summarize
-from scripts.libero.plot_stage_timings import plot_stage_timings
+from scripts.libero.plot_stage_timings import latency_breakdown, plot_stage_timings
+from scripts.libero.benchmark_style import INK, MUTED, GRID, chart_style, mode_color, mode_label, save_chart
 
 REPORTS = ROOT / "reports/evaluation"
 CATALOG = REPORTS / "catalog.json"
@@ -136,6 +138,8 @@ def add_run(catalog, run, group_id, title=None):
     if group is None:
         group = {"id": group_id, "title": title or group_id, "run_ids": []}
         groups.append(group)
+    elif group.get("selection"):
+        raise ValueError("Add runs to the full source group, then regenerate the selection")
     elif title:
         group["title"] = title
     existing = next((r for r in catalog["runs"] if r["id"] == run["id"]), None)
@@ -150,59 +154,153 @@ def add_run(catalog, run, group_id, title=None):
 
 def group_rows(catalog, group):
     runs = {run["id"]: run for run in catalog["runs"]}
+    if group.get("selection"):
+        return [(runs[item["run_id"]], item["record"]) for item in group["derived_records"]]
     return [(runs[id_], record) for id_ in group["run_ids"] for record in runs[id_]["records"]]
+
+
+def episode_key(episode):
+    return episode["task_id"], episode["episode"]
+
+
+def common_success_group(catalog, source_id, group_id, root=ROOT):
+    """Derive a portable matched cohort from verified raw samples; never run inference."""
+    if not re.fullmatch(r"[a-z0-9][a-z0-9_-]*", group_id) or group_id == source_id:
+        raise ValueError("Use a distinct valid group ID")
+    source = next(g for g in catalog["groups"] if g["id"] == source_id)
+    if source.get("selection"):
+        raise ValueError("Select from a full-run group")
+    rows = group_rows(catalog, source)
+    if not rows:
+        raise ValueError("Empty comparison group")
+    for key in ("task_suite_name", "seed"):
+        values = {run["config"].get(key) for run, _ in rows}
+        if None in values or len(values) != 1:
+            raise ValueError(f"Matched episodes require the same recorded {key}")
+    successful = [{episode_key(e) for e in record["episodes"] if e["success"]} for _, record in rows]
+    retained = set.intersection(*successful)
+    if not retained:
+        raise ValueError("No common successful episodes")
+    all_keys = set.union(*[{episode_key(e) for e in record["episodes"]} for _, record in rows])
+    verified = set()
+    derived = []
+    for run, record in rows:
+        directory = root / run["source_directory"]
+        if run["id"] not in verified:
+            current = import_run(directory)
+            if current != run:
+                raise ValueError(f"Source data changed for {run['id']}; preserve the original provenance")
+            verified.add(run["id"])
+        suffix = "" if run["kind"] == "local" else f"_{record['mode']}"
+        raw = json.loads((directory / f"{run['id']}{suffix}.json").read_text())
+        episodes = [e for e in record["episodes"] if episode_key(e) in retained]
+        if run["kind"] == "remote":
+            from scripts.libero.benchmark_async import summarize_episodes
+            summary = summarize_episodes([e for e in raw["episodes"] if episode_key(e) in retained], run["exclude_first_calls"])
+        else:
+            for task in raw["tasks"]:
+                task["episode_results"] = [e for e in task["episode_results"]
+                                           if (task["task_id"], e["episode"]) in retained]
+            raw["tasks"] = [t for t in raw["tasks"] if t["episode_results"]]
+            raw.update(total_episodes=len(episodes), total_successes=len(episodes), overall_success_rate=1.)
+            summary, _ = summarize(raw, run["exclude_first_calls"])
+            summary.update(episodes=len(episodes), successes=len(episodes))
+        derived.append({"run_id": run["id"], "record": {
+            "mode": record["mode"], "label": record["label"],
+            "metrics": {key: summary.get(key) for key in METRICS}, "episodes": copy.deepcopy(episodes)}})
+    keys = lambda values: [{"task_id": task, "episode": episode} for task, episode in sorted(values)]
+    excluded = all_keys - retained
+    reasons = [{"run_id": run["id"], "mode": record["mode"],
+                "failed": keys({episode_key(e) for e in record["episodes"] if not e["success"]}),
+                "missing": keys(all_keys - {episode_key(e) for e in record["episodes"]})} for run, record in rows]
+    excluded_text = "、".join(f"task {t} / episode {e}" for t, e in sorted(excluded)) or "无"
+    suite = rows[0][0]['config']['task_suite_name'].replace('libero_', 'LIBERO ').title().replace('Libero', 'LIBERO')
+    return {"id": group_id, "title": f"{suite} · 共同成功 {len(retained)} 个案例",
+            "run_ids": list(source["run_ids"]),
+            "selection": {"kind": "common_success", "source_group": source_id,
+                          "keys": ["task_id", "episode"], "retained": keys(retained),
+                          "excluded": keys(excluded), "exclusions_by_mode": reasons},
+            "derived_records": derived,
+            "notes": [f"仅统计全部 {len(rows)} 种模式共同成功的 {len(retained)} 个案例；统一排除：{excluded_text}。",
+                      "使用现有原始记录重算，未重新评测。按 task ID / episode 匹配；均值与 p95 从保留调用和控制步重新汇总。",
+                      "共同成功样本数不代表整体成功率；完整运行的失败记录和成功比例保留在原始全案例分组。",
+                      "推理均值与 p95 仍按每回合排除首次调用；任务总耗时包含首次推理等待，控制间隔不额外剔除回合内的慢间隔。",
+                      *[f"原始组说明：{note}" for note in source.get("notes", [])]]}
+
+
+def selection_caption(group):
+    selection = group.get("selection")
+    if not selection:
+        return "全案例记录 · 包含失败回合"
+    excluded = "、".join(f"{e['task_id']}/{e['episode']}" for e in selection["excluded"]) or "无"
+    return f"共同成功 {len(selection['retained'])} 个案例 · 排除 task/episode：{excluded}"
 
 
 def number(value, digits=2):
     return "—" if value is None else f"{value:.{digits}f}"
 
 
-def table(rows):
-    lines = ["| 设备 / 模式 | 成功 | 执行步数 | 任务总耗时 / s | 平均推理响应时间¹ / ms | 推理响应时间 p95¹ / ms | 控制间隔 p95 / ms | hold 步 |",
+def table(rows, matched=False):
+    heading = "共同成功案例数" if matched else "原始成功 / 总数"
+    lines = [f"| 设备 / 模式 | {heading} | 执行步数 | 任务总耗时 / s | 平均推理响应时间¹ / ms | 推理响应时间 p95¹ / ms | 控制间隔 p95 / ms | hold 步 |",
              "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |"]
     for _, record in rows:
         s = record["metrics"]
-        lines.append(f"| {record['label']} | {s['successes']}/{s['episodes']} | {s['executed_steps']} | "
+        count = str(s['episodes']) if matched else f"{s['successes']}/{s['episodes']}"
+        lines.append(f"| {record['label']} | {count} | {s['executed_steps']} | "
                      f"{number(s['rollout_wall_time_s'])} | {number(s['filtered_calls']['mean_ms'])} | "
                      f"{number(s['filtered_calls']['p95_ms'])} | {number((s['control_intervals'] or {}).get('p95_ms'))} | "
                      f"{number(s['hold_steps'], 0)} |")
     return "\n".join(lines)
 
 
-def plot_group(rows, path, title):
+def plot_group(rows, path, title, matched=False):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
-    plt.rcParams.update({"font.family": "DejaVu Sans", "svg.fonttype": "none", "svg.hashsalt": "turbovla-benchmark"})
-    labels = [r["label"] for _, r in rows]
-    colors = [{"local": "#60758a", "sync": "#d18236", "replace": "#297fa4", "blend": "#41876a"}[r["mode"]] for _, r in rows]
-    specs = [("Task success", lambda m: 100*m['successes']/m['episodes'], "%", 0),
-             ("Total task execution time", lambda m: m['rollout_wall_time_s'], "seconds", 2),
-             ("Mean inference response time", lambda m: m['filtered_calls']['mean_ms'], "ms / chunk", 2),
-             ("Control interval p95", lambda m: (m['control_intervals'] or {}).get('p95_ms'), "ms", 2)]
-    fig, axes = plt.subplots(2, 2, figsize=(12, max(6.7, len(rows)*.65+3.5)), layout="constrained")
-    for ax, (heading, get, unit, digits) in zip(axes.flat, specs):
-        values = [get(r['metrics']) for _, r in rows]
-        maximum = max((v for v in values if v is not None), default=1) or 1
-        ax.barh(range(len(rows)), [v or 0 for v in values], color=colors, height=.55)
-        for i, value in enumerate(values):
-            label = "not recorded" if value is None else f"{value:.{digits}f}"
-            if unit == "%":
-                m=rows[i][1]['metrics']; label += f"% ({m['successes']}/{m['episodes']})"
-            ax.text((value or 0)+maximum*.025, i, label, va="center", fontsize=10)
-        ax.set(yticks=range(len(rows)), yticklabels=labels, xlabel=unit, title=heading, xlim=(0, maximum*1.48))
-        if unit == '%':
-            ax.set_xticks([0, 25, 50, 75, 100])
-            ax.spines['bottom'].set_bounds(0, 100)
-        ax.invert_yaxis()
-        ax.spines[['top','right','left']].set_visible(False)
-        ax.set_axisbelow(True); ax.grid(axis='x', color='#e3eaf0')
-    fig.suptitle(title, fontsize=15, weight="bold")
-    fig.supxlabel("Recorded runs; different trajectories. Missing values are not zero. Call filtering: see run metadata.", fontsize=10)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(path.with_suffix('.svg'), metadata={'Date': None})
-    fig.savefig(path.with_suffix('.png'), dpi=160)
-    plt.close(fig)
+    from matplotlib.ticker import MaxNLocator
+
+    labels = [mode_label(record) for _, record in rows]
+    colors = [mode_color(run, record) for run, record in rows]
+    specs = [("平均推理响应", "ms / 动作块", lambda m: m['filtered_calls']['mean_ms']),
+             ("控制间隔 p95", "ms", lambda m: (m['control_intervals'] or {}).get('p95_ms')),
+             ("任务总耗时", "s", lambda m: m['rollout_wall_time_s']),
+             ("任务成功", "成功次数 / 总次数", lambda m: 100*m['successes']/m['episodes'])]
+    if matched:
+        specs[-1] = ("执行步数", "步", lambda m: m['executed_steps'])
+    with plt.rc_context(chart_style()):
+        fig, axes = plt.subplots(2, 2, figsize=(13, max(8.8, len(rows)*.8+5)))
+        fig.subplots_adjust(left=.12, right=.96, top=.79, bottom=.07, wspace=.47, hspace=.55)
+        suite = rows[0][0]["config"]["task_suite_name"].replace("libero_", "LIBERO ").replace("spatial", "Spatial")
+        fig.text(.045, .95, f"{suite} · 实测对照", fontsize=25, weight="bold")
+        fig.text(.045, .895, title, fontsize=14, color=MUTED)
+        for ax, (heading, unit, get) in zip(axes.flat, specs):
+            values = [get(record['metrics']) for _, record in rows]
+            maximum = max((value for value in values if value is not None), default=1) or 1
+            ax.text(0, 1.17, heading, transform=ax.transAxes, fontsize=19, weight="bold")
+            ax.text(0, 1.065, unit, transform=ax.transAxes, fontsize=13, color=MUTED)
+            ax.barh(range(len(rows)), [value or 0 for value in values], color=colors, height=.5, zorder=3)
+            for index, value in enumerate(values):
+                label = "未记录" if value is None else f"{value:.2f}"
+                if heading == "执行步数":
+                    label = str(value)
+                if heading == "任务成功":
+                    metrics = rows[index][1]['metrics']
+                    label = f"{metrics['successes']}/{metrics['episodes']}"
+                ax.text((value or 0)+maximum*.035, index, label, va="center",
+                        fontsize=15, weight="bold", color=INK)
+            ax.set(yticks=range(len(rows)), yticklabels=labels, xlim=(0, maximum*1.32))
+            ax.invert_yaxis()
+            ax.tick_params(axis='y', length=0, pad=10, labelsize=14)
+            ax.tick_params(axis='x', length=0, pad=9, labelsize=12)
+            ax.xaxis.set_major_locator(MaxNLocator(3))
+            ax.spines[:].set_visible(False)
+            ax.set_axisbelow(True)
+            ax.grid(axis='x', color=GRID, linewidth=.8)
+            if heading == "任务成功":
+                ax.set_xticks([0, 50, 100], ["0%", "50%", "100%"])
+        save_chart(fig, path)
+        plt.close(fig)
 
 
 def replace_block(text, start, end, content):
@@ -222,10 +320,12 @@ def build(catalog):
     featured = None
     for group in catalog['groups']:
         rows = group_rows(catalog, group)
+        matched = bool(group.get('selection'))
+        caption = selection_caption(group)
         image_name = group['id']
-        plot_group(rows, ROOT / f"assets/benchmarks/{image_name}", group['id'])
-        stage_chart = plot_stage_timings(rows, ROOT / f"assets/benchmarks/{image_name}-stages")
-        page += [f"## {group['title']}", "", table(rows), "",
+        plot_group(rows, ROOT / f"assets/benchmarks/{image_name}", caption, matched)
+        stage_chart = plot_stage_timings(rows, ROOT / f"assets/benchmarks/{image_name}-stages", caption)
+        page += [f'<details class="benchmark-archive"><summary>{group["title"]} · 静态图表与明细</summary>', "", f"## {group['title']}", "", caption, "", table(rows, matched), "",
                  f"![{group['title']} 四项指标](../../assets/benchmarks/{image_name}.svg)", ""]
         page += [f"- {note}" for note in group.get('notes', [])] + [""]
         runs = [r for r in catalog['runs'] if r['id'] in group['run_ids']]
@@ -242,20 +342,18 @@ def build(catalog):
                      f"{number(100*overlap if overlap is not None else None)} | {number(m['worker_drain_after_episode_s'],3)} | "
                      f"{number((m['arm_action_changes'] or {}).get('p95_action_l2'),3)} |"]
         page += ["", "重叠比例单位为 %；L2 是相邻六维相对指令差值，混合了平移/旋转单位，不是物理 jerk。", "",
-                 "### 远程调用分阶段均值（过滤后，ms）", ""]
+                 "### 推理耗时构成", ""]
         if stage_chart:
-            page += [f"![三种协同模式的推理响应时间构成](../../assets/benchmarks/{image_name}-stages.svg)", "",
+            page += [f"![本机完整调用与协同推理各阶段耗时](../../assets/benchmarks/{image_name}-stages.svg)", "",
                      f"[下载 SVG](../../assets/benchmarks/{image_name}-stages.svg) · [下载 PNG](../../assets/benchmarks/{image_name}-stages.png)", "",
-                     "堆叠图仅相加互不重叠阶段的均值；往返时间已分解为 Thor 处理与 HTTP/传输等开销，不重复叠加。响应 p95 单独列出。缺少阶段或样本数不一致时不绘制该模式的分解。", ""]
-        page += ["| 模式 | Orin 预处理 | 编码/压缩 | 往返 | Thor 推理与动作转换 | HTTP/传输残差 |",
-                 "| --- | ---: | ---: | ---: | ---: | ---: |"]
+                     "本机显示完整调用；协同模式按同一过滤样本分解，各阶段均值之和等于平均响应。p95 独立统计。完整口径见[数据维护说明](./benchmark-data.md)。", ""]
+        page += ["| 协同模式 | Orin 预处理 | 编码压缩 | Thor 解码/排队 | Thor 推理 | HTTP/传输 | 其他开销 |",
+                 "| --- | ---: | ---: | ---: | ---: | ---: | ---: |"]
         for _, record in rows:
-            stages=record['metrics']['remote_stage_timings']
-            if stages:
-                values=[number(stages[key]['filtered_calls']['mean_ms']) for key in
-                        ('client_preprocess_s','client_encode_s','round_trip_s','server_inference_s','transport_overhead_s')]
-                page += [f"| {record['label']} | " + ' | '.join(values) + ' |']
-        page += ["", "往返包含 Thor 处理，传输残差含 HTTP/响应开销；阶段不可全部相加。", "", "### 数据来源", ""]
+            breakdown = latency_breakdown(record)
+            if breakdown:
+                page += [f"| {record['label']} | " + ' | '.join(number(value) for value in breakdown['values']) + ' |']
+        page += ["", "单位：ms。HTTP/传输包含接收等待与系统开销；阶段不足或样本不齐时不推测分解。", "", "### 数据来源", ""]
         page += ["| 来源运行 | 配置 | 每回合排除调用数 |", "| --- | --- | ---: |"]
         for run in [r for r in catalog['runs'] if r['id'] in group['run_ids']]:
             c=run['config']
@@ -266,6 +364,8 @@ def build(catalog):
         for run, record in rows:
             s=record['metrics']
             all_rows.append({'group':group['id'], 'run_id':run['id'], 'mode':record['mode'], 'label':record['label'],
+                'selection': 'common_success' if matched else 'all_episodes',
+                'source_group': group.get('selection', {}).get('source_group', group['id']),
                 'suite':run['config']['task_suite_name'], 'precision':run['config']['precision'], 'seed':run['config']['seed'],
                 'episodes':s['episodes'], 'successes':s['successes'], 'executed_steps':s['executed_steps'],
                 'rollout_wall_time_s':s['rollout_wall_time_s'], 'all_calls':s['all_calls']['count'],
@@ -276,15 +376,27 @@ def build(catalog):
                 'worker_drain_s':s['worker_drain_after_episode_s']})
             for e in record['episodes']:
                 page += [f"| {record['label']} | {e['task_id']} | {e['episode']} | {'是' if e['success'] else '否'} | {e['steps']} | {number(e['wall_s'])} | {number(e['hold_steps'],0)} |"]
-        page += [""]
+        page += ["", "</details>", ""]
         if group['id'] == catalog['featured_group']:
-            featured = (f"**{group['title']}**\n\n" + table(rows) + "\n\n¹ 每个 episode 的首次调用筛选数见数据页；`—` 表示未记录。推理响应时间按整块动作统计，远程模式包含预处理、传输和服务端推理。\n\n"
+            selection_note = (caption + "。使用现有记录重算，未重新评测。共同成功案例数不代表整体成功率。\n\n"
+                              if matched else caption + "。\n\n")
+            featured = (f"**{group['title']}**\n\n" + selection_note + table(rows, matched) + "\n\n¹ 每个 episode 的首次调用筛选数见数据页；`—` 表示未记录。推理响应时间按整块动作统计，远程模式包含预处理、传输和服务端推理。任务总耗时仍包含保留回合的首次推理等待。\n\n"
                         +f"![实测指标对比](assets/benchmarks/{image_name}.svg)\n\n"
                         +"[详细数据、口径与后续追加方式](docs-site/guide/benchmark-results.md) · [JSON 数据](reports/evaluation/catalog.json) · [CSV 汇总](reports/evaluation/summary.csv)")
+            thor = next((record for run, record in rows
+                         if record['mode'] == 'local' and run['hardware']['device_name'] == 'thor'), None)
+            if thor:
+                m = thor['metrics']
+                highlight = (f"**Thor 本机：平均推理 {number(m['filtered_calls']['mean_ms'])} ms/块 · "
+                             f"控制间隔 p95 {number((m['control_intervals'] or {}).get('p95_ms'))} ms · "
+                             f"任务总耗时 {number(m['rollout_wall_time_s'])} s · "
+                             + (f"共同成功案例 {m['episodes']} 个。**" if matched else f"成功 {m['successes']}/{m['episodes']}。**"))
+                featured = featured.replace("\n\n| 设备", "\n\n" + highlight + "\n\n| 设备", 1)
+                featured += "\n\n各运行的采样日期、控制频率及配置见数据页；总耗时包含任务轨迹差异。"
             if stage_chart:
-                featured += ("\n\n**协同推理耗时构成**\n\n"
-                             + f"![协同推理分阶段耗时](assets/benchmarks/{image_name}-stages.svg)\n\n"
-                             + "每段为相同过滤样本的平均耗时，合计为完整推理响应时间；往返已拆分，不重复计入。HTTP / 传输等开销包含接收等待与系统开销，并非纯网络延迟。\n\n"
+                featured += ("\n\n**推理耗时构成**\n\n"
+                             + f"![本机完整调用与协同推理耗时构成](assets/benchmarks/{image_name}-stages.svg)\n\n"
+                             + "本机显示完整调用，协同模式显示各阶段均值；各段之和等于响应均值。HTTP / 传输包含接收等待与系统开销。\n\n"
                              + f"[下载 SVG](assets/benchmarks/{image_name}-stages.svg) · [下载 PNG](assets/benchmarks/{image_name}-stages.png)")
     if featured is None:
         raise ValueError("featured_group does not exist")
@@ -301,6 +413,10 @@ def main():
     sub=parser.add_subparsers(dest='command',required=True)
     add=sub.add_parser('add',help='Validate and import a completed local or async run')
     add.add_argument('run_dir',type=Path); add.add_argument('--group',required=True); add.add_argument('--title')
+    select = sub.add_parser('select-common-success', help='Recompute matched successful episodes from existing raw records')
+    select.add_argument('--source-group', required=True)
+    select.add_argument('--group', required=True)
+    select.add_argument('--featured', action='store_true')
     sub.add_parser('build',help='Regenerate figures, tables and README from the published catalog')
     args=parser.parse_args()
     catalog=json.loads(CATALOG.read_text()) if CATALOG.exists() else {'schema_version':1,'groups':[],'runs':[]}
@@ -308,6 +424,19 @@ def main():
         add_run(catalog,import_run(args.run_dir),args.group,args.title)
         write_json(CATALOG,catalog)
         print(f'Imported {args.run_dir.name}; run build to update documentation.')
+    elif args.command == 'select-common-success':
+        group = common_success_group(catalog, args.source_group, args.group)
+        existing = next((g for g in catalog['groups'] if g['id'] == args.group), None)
+        if existing is not None:
+            if not existing.get('selection') or existing['selection']['source_group'] != args.source_group:
+                raise ValueError('Cannot overwrite an unrelated group')
+            catalog['groups'][catalog['groups'].index(existing)] = group
+        else:
+            catalog['groups'].insert(0, group)
+        if args.featured:
+            catalog['featured_group'] = args.group
+        write_json(CATALOG, catalog)
+        print(selection_caption(group) + '; recomputed from existing files, no evaluation run.')
     else:
         build(catalog); print('Updated benchmark figures, CSV, README and documentation.')
 

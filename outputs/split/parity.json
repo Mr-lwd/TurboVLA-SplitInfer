@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": 0,
+      "max_abs_error": 0.0,
+      "exact_equal": true
+    },
+    {
+      "case": 1,
+      "max_abs_error": 0.0,
+      "exact_equal": true
+    },
+    {
+      "case": 2,
+      "max_abs_error": 0.0,
+      "exact_equal": true
+    }
+  ],
+  "checkpoint_sha256": "d031ad7be05a2f5d04afb3194ed26b0cb46083685edee7a5e145078a37d26bab"
+}

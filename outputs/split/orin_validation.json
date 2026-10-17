@@ -1,0 +1,143 @@
+{
+  "passed": true,
+  "episodes": 10,
+  "successful_episodes": 9,
+  "requests_matched_to_thor_log": 97,
+  "thor_baseline_outcomes_match": true,
+  "source_client_ip": "192.168.123.141",
+  "thor_gpu": "NVIDIA Thor",
+  "checkpoint_sha256": "d031ad7be05a2f5d04afb3194ed26b0cb46083685edee7a5e145078a37d26bab",
+  "policy_call": {
+    "mean_ms": 189.6069836391539,
+    "median_ms": 147.646588000498,
+    "p95_ms": 416.4626639976632
+  },
+  "server_inference": {
+    "mean_ms": 28.96792537124093,
+    "median_ms": 28.8964869978372,
+    "p95_ms": 31.31054699770175
+  },
+  "round_trip": {
+    "mean_ms": 163.76800495887326,
+    "median_ms": 122.43455199859454,
+    "p95_ms": 393.200386002718
+  },
+  "preprocess": {
+    "mean_ms": 7.592024102966215,
+    "median_ms": 5.9009559990954585,
+    "p95_ms": 12.170429999969201
+  },
+  "encode": {
+    "mean_ms": 18.011303608405214,
+    "median_ms": 17.58343599976797,
+    "p95_ms": 21.503160998690873
+  },
+  "transport_overhead": {
+    "mean_ms": 131.29334119604988,
+    "median_ms": 89.04626700314111,
+    "p95_ms": 360.45873499824665
+  },
+  "mean_request_bytes": 257834.27835051547,
+  "videos_verified": [
+    {
+      "path": "outputs/evaluation/split_thor/videos/turbovla_libero/libero_spatial/task00_ep000_success.mp4",
+      "frames": 80,
+      "duration_s": 4.0
+    },
+    {
+      "path": "outputs/evaluation/split_thor/videos/turbovla_libero/libero_spatial/task00_ep000_success_realtime.mp4",
+      "frames": 134,
+      "duration_s": 6.7
+    },
+    {
+      "path": "outputs/evaluation/split_thor/videos/turbovla_libero/libero_spatial/task01_ep000_success.mp4",
+      "frames": 114,
+      "duration_s": 5.7
+    },
+    {
+      "path": "outputs/evaluation/split_thor/videos/turbovla_libero/libero_spatial/task01_ep000_success_realtime.mp4",
+      "frames": 200,
+      "duration_s": 10.0
+    },
+    {
+      "path": "outputs/evaluation/split_thor/videos/turbovla_libero/libero_spatial/task02_ep000_success.mp4",
+      "frames": 96,
+      "duration_s": 4.8
+    },
+    {
+      "path": "outputs/evaluation/split_thor/videos/turbovla_libero/libero_spatial/task02_ep000_success_realtime.mp4",
+      "frames": 153,
+      "duration_s": 7.65
+    },
+    {
+      "path": "outputs/evaluation/split_thor/videos/turbovla_libero/libero_spatial/task03_ep000_success.mp4",
+      "frames": 86,
+      "duration_s": 4.3
+    },
+    {
+      "path": "outputs/evaluation/split_thor/videos/turbovla_libero/libero_spatial/task03_ep000_success_realtime.mp4",
+      "frames": 178,
+      "duration_s": 8.9
+    },
+    {
+      "path": "outputs/evaluation/split_thor/videos/turbovla_libero/libero_spatial/task04_ep000_failure.mp4",
+      "frames": 220,
+      "duration_s": 11.0
+    },
+    {
+      "path": "outputs/evaluation/split_thor/videos/turbovla_libero/libero_spatial/task04_ep000_failure_realtime.mp4",
+      "frames": 389,
+      "duration_s": 19.45
+    },
+    {
+      "path": "outputs/evaluation/split_thor/videos/turbovla_libero/libero_spatial/task05_ep000_success.mp4",
+      "frames": 96,
+      "duration_s": 4.8
+    },
+    {
+      "path": "outputs/evaluation/split_thor/videos/turbovla_libero/libero_spatial/task05_ep000_success_realtime.mp4",
+      "frames": 173,
+      "duration_s": 8.65
+    },
+    {
+      "path": "outputs/evaluation/split_thor/videos/turbovla_libero/libero_spatial/task06_ep000_success.mp4",
+      "frames": 108,
+      "duration_s": 5.4
+    },
+    {
+      "path": "outputs/evaluation/split_thor/videos/turbovla_libero/libero_spatial/task06_ep000_success_realtime.mp4",
+      "frames": 196,
+      "duration_s": 9.8
+    },
+    {
+      "path": "outputs/evaluation/split_thor/videos/turbovla_libero/libero_spatial/task07_ep000_success.mp4",
+      "frames": 112,
+      "duration_s": 5.6
+    },
+    {
+      "path": "outputs/evaluation/split_thor/videos/turbovla_libero/libero_spatial/task07_ep000_success_realtime.mp4",
+      "frames": 204,
+      "duration_s": 10.2
+    },
+    {
+      "path": "outputs/evaluation/split_thor/videos/turbovla_libero/libero_spatial/task08_ep000_success.mp4",
+      "frames": 94,
+      "duration_s": 4.7
+    },
+    {
+      "path": "outputs/evaluation/split_thor/videos/turbovla_libero/libero_spatial/task08_ep000_success_realtime.mp4",
+      "frames": 156,
+      "duration_s": 7.8
+    },
+    {
+      "path": "outputs/evaluation/split_thor/videos/turbovla_libero/libero_spatial/task09_ep000_success.mp4",
+      "frames": 116,
+      "duration_s": 5.8
+    },
+    {
+      "path": "outputs/evaluation/split_thor/videos/turbovla_libero/libero_spatial/task09_ep000_success_realtime.mp4",
+      "frames": 214,
+      "duration_s": 10.7
+    }
+  ]
+}
