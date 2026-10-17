@@ -1,10 +1,16 @@
 # TurboVLA-SplitInfer
 
+> **在线文档已上线：[splitinfer.wendiann.cn](https://splitinfer.wendiann.cn/)**
+>
+> 查看系统架构、协同推理策略、设备部署指南与最新实测结果。
+
 基于预训练 TurboVLA 的 LIBERO 双设备推理：**Orin 负责仿真、图像/状态预处理和压缩，Thor 负责全部神经网络推理**，动作返回 Orin 执行。支持本机基准，以及同步、异步替换、异步融合三种远程模式。
 
 目标设备为 **Jetson Orin Nano 8GB + Jetson Thor 128GB**。拆分边界在归一化张量与神经网络之间，DINOv3、BERT、视觉语言交互和动作解码器均在 Thor。文档与图稿中的 **Async 对应 CLI 的 `replace`**。
 
-**文档网站**：[源码与本地启动](docs-site/README.md) · [代码完整性](docs-site/guide/completeness.md) · [设备部署](docs-site/guide/deployment.md) · [验证口径](docs-site/guide/validation.md)。在 `docs-site/` 执行 `npm ci && npm run dev`；`npm run build` 生成可自行部署的静态网站。
+**在线导航**：[系统架构](https://splitinfer.wendiann.cn/guide/architecture.html) · [协同推理](https://splitinfer.wendiann.cn/guide/scheduling.html) · [设备部署](https://splitinfer.wendiann.cn/guide/deployment.html) · [实测数据](https://splitinfer.wendiann.cn/guide/benchmark-results.html) · [代码完整性](https://splitinfer.wendiann.cn/guide/completeness.html)。
+
+**文档开发**：[源码与本地启动](docs-site/README.md)。在 `docs-site/` 执行 `npm ci && npm run dev`；`npm run build` 生成可自行部署的静态网站。
 
 ## 拆分推理框架
 
