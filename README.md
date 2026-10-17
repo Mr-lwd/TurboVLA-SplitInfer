@@ -4,13 +4,51 @@
 
 ## 环境与资源
 
-使用 Python 3.10，先安装适配设备的 CUDA PyTorch，再安装项目依赖：
+推荐 Python 3.10。原始 LIBERO 参考环境为 PyTorch 2.3.1、torchvision 0.18.1、Transformers 4.56、TensorFlow 2.20、TFDS 4.9.3；当前依赖范围以 [pyproject.toml](pyproject.toml) 为准：
+
+| 类别 | 前置依赖 |
+| --- | --- |
+| 模型运行 | CUDA PyTorch ≥2.3、与其匹配的 torchvision；Transformers ≥4.56 且 <5、timm ≥1.0 |
+| 基础工具 | NumPy ≥1.26 且 <2、Pillow ≥10、tqdm ≥4.66、PyYAML |
+| LIBERO 仿真与视频 | robosuite 1.4.1、MuJoCo / PyOpenGL、bddl、gym、cloudpickle、easydict、imageio[ffmpeg] ≥2.34；EGL 渲染需要可用的 GPU 驱动 |
+| 训练与数据处理 | h5py ≥3.10、TensorFlow ≥2.20、tensorflow-datasets ≥4.9；当前 `libero` 安装项包含这些依赖 |
+| 双设备快速压缩 | lz4 ≥4.3 且 <5、zstandard ≥0.22 且 <1，由 `split` 安装项提供 |
+
+先创建环境并安装配套的 PyTorch / torchvision。**Jetson Orin、Thor 应使用匹配各自 JetPack/CUDA 的 NVIDIA 构建**，可参考 [Jetson PyTorch 安装说明](https://docs.nvidia.com/deeplearning/frameworks/install-pytorch-jetson-platform/index.html)；已有可用环境可直接复用。
 
 ```bash
-pip install -e '.[libero,split]'
+conda create -n turbovla-libero python=3.10 -y
+conda activate turbovla-libero
+
+# 仅供普通 x86_64 Linux 的原始 CUDA 12.1 参考环境使用；Jetson 按上面的设备说明安装
+python -m pip install torch==2.3.1 torchvision==0.18.1 --index-url https://download.pytorch.org/whl/cu121
 ```
 
-另行安装 [LIBERO](https://github.com/Lifelong-Robot-Learning/LIBERO)。Thor 或本机推理设备需准备 [TurboVLA 权重](https://huggingface.co/H-EmbodVis/TurboVLA)、DINOv3 ViT-B 和 BERT base uncased；远程模式的 Orin 无需模型权重。在线评测需要 LIBERO 的 BDDL、初始状态和 assets，不要求下载演示数据。
+PyTorch 安装完成后，在仓库根目录安装项目和 [LIBERO](https://github.com/Lifelong-Robot-Learning/LIBERO)：
+
+```bash
+python -m pip install -e '.[libero,split]' PyYAML
+git clone https://github.com/Lifelong-Robot-Learning/LIBERO.git ../LIBERO
+python -m pip install -e ../LIBERO
+python -m pip check
+```
+
+已有 LIBERO 目录时跳过 clone，并替换安装路径。LIBERO 的旧 `requirements.txt` 固定了 NumPy 1.22.4、Transformers 4.21.1 等版本，与当前 TurboVLA 依赖冲突，安装时沿用上表版本。安装后可检查 PyTorch/NumPy 转换及 CUDA：
+
+```bash
+python -c "import numpy as np, torch, torchvision, transformers; print('torch:', torch.__version__, 'torchvision:', torchvision.__version__, 'transformers:', transformers.__version__); print('CUDA:', torch.cuda.is_available(), 'BF16:', torch.cuda.is_bf16_supported()); print(torch.from_numpy(np.zeros(1, dtype=np.float32)).numpy())"
+```
+
+Thor 或本机推理设备还需以下模型资源；远程模式的 Orin 无需这些权重：
+
+| 资源 | 用途 |
+| --- | --- |
+| [TurboVLA checkpoint](https://huggingface.co/H-EmbodVis/TurboVLA) | `pretrained/TurboVLA/checkpoints/libero/turbovla_libero.pth` |
+| [DINOv3 ViT-B](https://huggingface.co/facebook/dinov3-vitb16-pretrain-lvd1689m) | 视觉编码器配置、预处理参数及模型资源 |
+| [BERT base uncased](https://huggingface.co/google-bert/bert-base-uncased) | 文本编码器与 tokenizer 资源 |
+| [GroundingDINO Swin-T OGC](https://github.com/IDEA-Research/GroundingDINO) | 原始训练配方的初始化权重；加载完整 TurboVLA checkpoint 评测时不需要额外提供 |
+
+模型路径在下方配置中指定。在线评测需要 LIBERO 的 BDDL、初始状态和 assets，不要求下载演示数据。
 
 ## 运行
 
